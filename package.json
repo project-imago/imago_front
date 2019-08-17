@@ -1,0 +1,27 @@
+{
+  "name": "imago_front",
+  "version": "0.1.0",
+  "scripts": {
+    "clean": "bsb -clean-world",
+    "build": "bsb -make-world",
+    "watch": "bsb -make-world -w -ws _"
+  },
+  "keywords": [
+    "BuckleScript"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "bs-platform": "^6.0.3",
+    "webpack": "^4.39.2",
+    "webpack-bundle-analyzer": "^3.4.1",
+    "webpack-cli": "^3.3.6",
+    "webpack-dev-server": "^3.8.0"
+  },
+  "dependencies": {
+    "bucklescript-tea": "^0.7.5",
+    "matrix-js-sdk": "^2.3.0",
+    "tablecloth-bucklescript": "0.0.6"
+  },
+  "main": "index.js"
+}

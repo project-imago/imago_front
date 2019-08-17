@@ -1,0 +1,21 @@
+{
+  "name": "tea",
+  "version": "0.1.0",
+  "sources": {
+    "dir" : "src",
+    "subdirs" : true
+  },
+  "package-specs": {
+    "module": "es6",
+    "in-source": false
+  },
+  "suffix": ".bs.js",
+  "bs-dependencies": [
+      "bucklescript-tea",
+      "tablecloth-bucklescript"
+  ],
+  "warnings": {
+    "error" : "+101"
+  },
+  "bsc-flags": ["-bs-g"]
+}
