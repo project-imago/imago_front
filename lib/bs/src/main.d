@@ -1,1 +1,1 @@
-src/main.cmj :  src/demo.cmj src/demo.cmi
+src/main.cmj :  src/app.cmj src/app.cmi

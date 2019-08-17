@@ -1,9 +1,11 @@
 type client
 type login_map
+type login_response = <user_id:string; access_token:string; home_server:string;
+device_id: string> Js.t
 
 external create_client: string -> client = "createClient" [@@bs.module "matrix-js-sdk"]
 
-external login: client -> string -> string Js.Dict.t -> string Js.Promise.t = "login" [@@bs.send]
+external login: client -> string -> string Js.Dict.t -> login_response Js.Promise.t = "login" [@@bs.send]
 
 external on: client -> string -> (string -> unit) = "on" [@@bs.send]
 
