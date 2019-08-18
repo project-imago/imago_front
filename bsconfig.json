@@ -17,5 +17,5 @@
   "warnings": {
     "error" : "+101"
   },
-  "bsc-flags": ["-bs-g"]
+  "bsc-flags": ["-bs-super-errors", "-bs-g"]
 }

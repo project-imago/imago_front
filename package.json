@@ -2,9 +2,13 @@
   "name": "imago_front",
   "version": "0.1.0",
   "scripts": {
-    "clean": "bsb -clean-world",
-    "build": "bsb -make-world",
-    "watch": "bsb -make-world -w -ws _"
+    "bsb-clean": "bsb -clean-world",
+    "bsb-build": "bsb -make-world",
+    "bsb-watch": "bsb -make-world -w -ws _",
+    "webpack-server": "webpack-dev-server",
+    "webpack-server-tls": "webpack-dev-server --https --public imago-dev.img --key imago-dev.img.tls.key --cert imago-dev.img.tls.crt",
+    "server": "concurrently -k \"npm:bsb-watch\" \"npm:webpack-server\"",
+    "server-tls": "concurrently -k \"npm:bsb-watch\" \"npm:webpack-server-tls\""
   },
   "keywords": [
     "BuckleScript"
@@ -13,6 +17,7 @@
   "license": "MIT",
   "devDependencies": {
     "bs-platform": "^6.0.3",
+    "concurrently": "^4.1.2",
     "webpack": "^4.39.2",
     "webpack-bundle-analyzer": "^3.4.1",
     "webpack-cli": "^3.3.6",

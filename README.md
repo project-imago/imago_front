@@ -1,20 +1,14 @@
 
 
-# Build
+# Development tools
+
+Watch modifications in `/src` and launch a web server at http://localhost:9000
 ```
-npm run build
+npm run server
 ```
 
-# Watch
-
+Watch modifications in `/src` and launch a web server at https://imago-dev.img:9000
 ```
-npm run watch
+sudo echo "127.0.0.1 imago-dev.img" >> /etc/hosts
+npm run server-tls
 ```
-
-create a http-server
-
-```
-npm install -g http-server
-```
-
-Edit the file and see the changes automatically reloaded in the browser
