@@ -14,11 +14,15 @@ external login: client -> string -> string Js.Dict.t -> login_response Js.Promis
 
 external on: client -> string -> (string -> unit) = "on" [@@bs.send]
 
-external get_joined_rooms_: client -> (<joined_rooms: room_id list> Js.t) Js.Promise.t = "getJoinedRooms" [@@bs.send]
+external get_joined_rooms_: client -> (<joined_rooms: room_id array> Js.t) Js.Promise.t = "getJoinedRooms" [@@bs.send]
 
 let get_joined_rooms client =
   get_joined_rooms_ client
-  |> Js.Promise.then_ (fun res -> Js.Promise.resolve res##joined_rooms)
+  |> Js.Promise.then_ (fun res ->
+      res##joined_rooms
+      |> Tablecloth.Array.to_list
+      |> Js.Promise.resolve
+  )
 
 external start_client: client -> unit = "startClient" [@@bs.send]
 
