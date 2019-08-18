@@ -1,10 +1,7 @@
 [%%debugger.chrome]
 open Tea.App
 open Tea.Html
-
-type route =
-  | Index
-  | Room of Matrix.room_id
+open Router
 
 type msg =
   | ChatMsg of Chat.msg
@@ -15,18 +12,8 @@ type msg =
 type model =
   {
     chat : Chat.model;
-    route : route;
+    route : Router.route;
   }
-
-let route_of_location location =
-  let route = Js.String.split "/" location.Web.Location.hash in
-  match route with
-  | [|"#"; "room"; id|] -> Room id
-  | _ -> Index  (* default route *)
-
-let location_of_route = function
-  | Room id -> Printf.sprintf "#/room/%s" id
-  | Index -> "#/"
 
 let update_route model = function
   | route when model.route = route -> (model, Tea.Cmd.none)
@@ -52,6 +39,7 @@ let update model = function
   | Location_changed location ->
       route_of_location location |> update_route model
   | GoTo route -> update_route model route
+  | ChatMsg (GoTo route) -> update_route model route
   | ChatMsg chat_msg ->
       let chat, chat_cmd = Chat.update model.chat chat_msg in
       {model with chat}, Tea.Cmd.map chatMsg chat_cmd
@@ -59,11 +47,7 @@ let update model = function
 let content model =
   Js.log model;
   match model.route with
-  | Index ->
-      ul
-        []
-        (Belt.List.map model.chat.joined_rooms_ids (fun room_id ->
-          li [] [button [ onClick (GoTo (Room room_id))] [text room_id]]))
+  | Index -> Chat.room_list_view model.chat |> Vdom.map chatMsg
   | Room id -> div [] []
 
 let view model =

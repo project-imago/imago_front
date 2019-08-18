@@ -34,5 +34,3 @@ let login client =
   let () = Js.Dict.set login_map "user" "alice" in
   let () = Js.Dict.set login_map "password" "imago42imago" in
   login client "m.login.password" login_map
-
-let add a b = a + b

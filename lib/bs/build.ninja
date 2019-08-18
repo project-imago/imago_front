@@ -1,9 +1,9 @@
 g_pkg_flg = -bs-package-name tea
 src_root_dir = /home/pierre/dev/imago_front
-bsc = /home/pierre/.npm/lib/node_modules/bs-platform/lib/bsc.exe
-bsdep = /home/pierre/.npm/lib/node_modules/bs-platform/lib/bsb_helper.exe
+bsc = /home/pierre/dev/imago_front/node_modules/bs-platform/lib/bsc.exe
+bsdep = /home/pierre/dev/imago_front/node_modules/bs-platform/lib/bsb_helper.exe
 warnings = -w -30-40+6+7+27+32..39+44+45+101 -warn-error +101
-bsc_flags = -bs-suffix -nostdlib -I '/home/pierre/dev/imago_front/node_modules/bs-platform/lib/ocaml' -bs-g -color always
+bsc_flags = -bs-suffix -nostdlib -I '/home/pierre/dev/imago_front/node_modules/bs-platform/lib/ocaml' -bs-super-errors -bs-g -color always
 ppx_flags = 
 g_pkg_incls = -I /home/pierre/dev/imago_front/node_modules/bucklescript-tea/lib/ocaml -I /home/pierre/dev/imago_front/node_modules/tablecloth-bucklescript/lib/ocaml
 bs_package_dev_includes = 
@@ -37,4 +37,8 @@ build src/main.cmj |  $src_root_dir/lib/es6/src/main.bs.js src/main.cmi : ml_cmj
 build src/matrix.mlast : build_ast_and_module_sets $src_root_dir/src/matrix.ml
 build src/matrix.d : build_deps src/matrix.mlast
 build src/matrix.cmj |  $src_root_dir/lib/es6/src/matrix.bs.js src/matrix.cmi : ml_cmj_cmi src/matrix.mlast ||  src/matrix.d
+  g_pkg_flg = $g_pkg_flg  -bs-package-output es6:lib/es6/src
+build src/router.mlast : build_ast_and_module_sets $src_root_dir/src/router.ml
+build src/router.d : build_deps src/router.mlast
+build src/router.cmj |  $src_root_dir/lib/es6/src/router.bs.js src/router.cmi : ml_cmj_cmi src/router.mlast ||  src/router.d
   g_pkg_flg = $g_pkg_flg  -bs-package-output es6:lib/es6/src

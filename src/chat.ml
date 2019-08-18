@@ -1,7 +1,7 @@
-
 type msg =
   | Login of (Matrix.login_response, string) Tea.Result.t
   | GetJoinedRooms of (Matrix.room_id list, string) Tea.Result.t
+  | GoTo of Router.route
   [@@bs.deriving {accessors}]
 
 type model =
@@ -39,3 +39,12 @@ let update model = function
   | Login (Tea.Result.Error err) -> 
       let () = Js.log err in
       model, Tea.Cmd.none
+  | GoTo _ ->
+      model, Tea.Cmd.none
+      
+let room_list_view model =
+  let open Tea.Html in
+    ul
+      []
+      (Belt.List.map model.joined_rooms_ids (fun room_id ->
+        li [] [button [ onClick (GoTo (Room room_id))] [text room_id]]))
