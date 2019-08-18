@@ -7,17 +7,14 @@ type route =
   | Room of Matrix.room_id
 
 type msg =
-  | Login of (Matrix.login_response, string) Tea.Result.t
-  | GetJoinedRooms of (Matrix.room_id list, string) Tea.Result.t
+  | ChatMsg of Chat.msg
   | Location_changed of Web.Location.location
   | GoTo of route
   [@@bs.deriving {accessors}]
 
 type model =
   {
-    client : Matrix.client;
-    matrix_id : string option;
-    joined_rooms_ids : Matrix.room_id list;
+    chat : Chat.model;
     route : route;
   }
 
@@ -40,39 +37,24 @@ let update_route model = function
 
 let init () location =
   Js.log "init";
-  let client = Matrix.new_client () in
+  let chat_model, chat_cmd = Chat.init in
   let model =
-    { client
-    ; matrix_id = None
-    ; joined_rooms_ids = []
-    ; route = Index
+    {
+      chat = chat_model;
+      route = Index;
     } in
-  let login_cmd = Tea_promise.result (Matrix.login client) login in
   let model, location_cmd =
     route_of_location location |> update_route model
   in
-  (model, Tea.Cmd.batch [login_cmd; location_cmd])
+  (model, Tea.Cmd.batch [Tea.Cmd.map chatMsg chat_cmd; location_cmd])
 
 let update model = function
-  | GetJoinedRooms (Tea.Result.Ok res) -> 
-      let () = Js.log res in
-      let model = {model with joined_rooms_ids = res} in
-      model, Tea.Cmd.none
-  | GetJoinedRooms (Tea.Result.Error err) -> 
-      let () = Js.log err in
-      model, Tea.Cmd.none
-  | Login (Tea.Result.Ok res) -> 
-      let () = Js.log res in
-      let model = {model with matrix_id = Some res##user_id} in
-      let cmd = Tea_promise.result (Matrix.get_joined_rooms model.client)
-      getJoinedRooms in
-      model, cmd
-  | Login (Tea.Result.Error err) -> 
-      let () = Js.log err in
-      model, Tea.Cmd.none
   | Location_changed location ->
       route_of_location location |> update_route model
   | GoTo route -> update_route model route
+  | ChatMsg chat_msg ->
+      let chat, chat_cmd = Chat.update model.chat chat_msg in
+      {model with chat}, Tea.Cmd.map chatMsg chat_cmd
 
 let content model =
   Js.log model;
@@ -80,7 +62,7 @@ let content model =
   | Index ->
       ul
         []
-        (Belt.List.map model.joined_rooms_ids (fun room_id ->
+        (Belt.List.map model.chat.joined_rooms_ids (fun room_id ->
           li [] [button [ onClick (GoTo (Room room_id))] [text room_id]]))
   | Room id -> div [] []
 
@@ -89,7 +71,7 @@ let view model =
     []
     [ span
         [ style "text-weight" "bold" ]
-        [ text (match model.matrix_id with Some str -> str | None ->
+        [ text (match model.chat.matrix_id with Some str -> str | None ->
           "disconnected") ];
       content model;
       button [ onClick (GoTo Index)] [text "Index"]
