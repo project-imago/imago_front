@@ -45,7 +45,6 @@ let update model = function
       {model with chat}, Tea.Cmd.map chatMsg chat_cmd
 
 let content model =
-  Js.log model;
   match model.route with
   | Index -> Chat.room_list_view model.chat |> Vdom.map chatMsg
   | Room id -> div [] []
@@ -60,6 +59,9 @@ let view model =
       content model;
       button [ onClick (GoTo Index)] [text "Index"]
     ]
+
+let subscriptions model =
+  Chat.subscriptions model.chat |> Tea.Sub.map chatMsg
 
 let main =
   Tea.Navigation.navigationProgram location_changed {

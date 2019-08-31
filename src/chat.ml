@@ -48,12 +48,10 @@ let restore_cmd =
   |> Tea_task.sequence
   |> Tea_task.andThen (function
     | [nullable_access_token; nullable_matrix_id] ->
-        Js.log nullable_access_token;
         let access_token =
           nullable_access_token
           |> Js.Nullable.return
           |> Js.Nullable.toOption in
-        Js.log access_token;
         let matrix_id =
           nullable_matrix_id
           |> Js.Nullable.return
@@ -127,3 +125,7 @@ let room_list_view model =
       []
       (Belt.List.map model.joined_rooms_ids (fun room_id ->
         li [] [button [ onClick (GoTo (Room room_id))] [text room_id]]))
+
+let subscriptions =
+  Tea.Sub.none
+
