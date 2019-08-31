@@ -132,6 +132,28 @@ let room_list_view model =
       (Belt.List.map model.joined_rooms_ids (fun room_id ->
         li [] [button [ onClick (GoTo (Room room_id))] [text room_id]]))
 
+let room_view model room_id =
+  Js.log room_id;
+  Js.log model.client##store##rooms;
+  let open Tea.Html in
+  match (model.client##store##rooms |. Js.Dict.get room_id) with
+  | None -> div [] []
+  | Some room ->
+      let message_list =
+        let () = Js.log room##timeline in
+        let filtered = room##timeline
+        |> Tablecloth.Array.filter ~f:(fun matrix_event ->
+            [%raw {|matrix_event.event.type|}] = "m.room.message")
+        in
+        let _ = Js.log filtered in
+      filtered
+        |> Tablecloth.Array.map ~f:(fun matrix_event -> div [] [ text (Printf.sprintf
+        "<%s> %s" matrix_event##event##sender matrix_event##event##content##body) ])
+        |> Tablecloth.Array.to_list
+      in
+      div [] message_list
+
+
 let subscriptions model =
   match model.matrix_id with
   | Some _ -> Matrix.subscribe model.client gotMessage

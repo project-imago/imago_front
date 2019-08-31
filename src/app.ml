@@ -46,8 +46,8 @@ let update model = function
 
 let content model =
   match model.route with
-  | Index -> Chat.room_list_view model.chat |> Vdom.map chatMsg
-  | Room id -> div [] []
+  | Index -> div [] []
+  | Room id -> Chat.room_view model.chat id |> Vdom.map chatMsg
 
 let view model =
   div
@@ -56,7 +56,8 @@ let view model =
         [ style "text-weight" "bold" ]
         [ text (match model.chat.matrix_id with Some str -> str | None ->
           "disconnected") ];
-      content model;
+      div [ id "sidebar" ] [ Chat.room_list_view model.chat |> Vdom.map chatMsg];
+      div [ id "main" ] [ content model ];
       button [ onClick (GoTo Index)] [text "Index"]
     ]
 
