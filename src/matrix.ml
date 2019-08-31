@@ -13,8 +13,6 @@ home_server:home_server; device_id: device_id> Js.t
 external create_client: string -> client = "createClient" [@@bs.module "matrix-js-sdk"]
 external create_client_params: string Js.Dict.t -> client = "createClient" [@@bs.module "matrix-js-sdk"]
 
-external login_with_token: client -> string -> login_response Js.Promise.t =
-  "loginWithToken" [@@bs.send]
 external login: client -> string -> string Js.Dict.t -> login_response Js.Promise.t = "login" [@@bs.send]
 
 external on: client -> string -> (string -> unit) = "on" [@@bs.send]
@@ -46,6 +44,3 @@ let login client =
   let () = Js.Dict.set login_map "user" "alice" in
   let () = Js.Dict.set login_map "password" "imago42imago" in
   login client "m.login.password" login_map
-
-let login_with_token client token =
-  login_with_token client token
