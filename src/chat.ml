@@ -3,8 +3,8 @@ type msg =
   | GetJoinedRooms of (Matrix.room_id list, string) Tea.Result.t
   | GoTo of Router.route
   | Info of (unit list, string) Tea.Result.t
-  | RestoredCredentials of ((Matrix.client * Matrix.access_token *
-  Matrix.user_id), string) Tea.Result.t
+  | RestoredCredentials of ((Matrix.client * Matrix.access_token * Matrix.user_id), string) Tea.Result.t
+  | GotMessage of Matrix.event
   [@@bs.deriving {accessors}]
 
 type model =
@@ -109,6 +109,8 @@ let update model = function
       model, Tea.Cmd.none
   | GetJoinedRooms (Tea.Result.Ok res) -> 
       let () = Js.log res in
+      let () = Js.log "got joined rooms, start client" in
+      let () = Matrix.start_client model.client in
       let model = {model with joined_rooms_ids = res} in
       model, Tea.Cmd.none
   | GetJoinedRooms (Tea.Result.Error err) -> 
@@ -118,14 +120,20 @@ let update model = function
       model, Tea.Cmd.none
   | Info (Tea.Result.Ok _) -> Js.log "info"; model, Tea.Cmd.none
   | Info (Tea.Result.Error err) -> Js.log err; model, Tea.Cmd.none
+  | GotMessage event -> Js.log event; model, Tea.Cmd.none
       
 let room_list_view model =
+      (*let () = Matrix.once model.client (`sync (fun a b c -> Js.log (a, b, c)))
+      |> Js.log
+      in *)
   let open Tea.Html in
     ul
       []
       (Belt.List.map model.joined_rooms_ids (fun room_id ->
         li [] [button [ onClick (GoTo (Room room_id))] [text room_id]]))
 
-let subscriptions =
-  Tea.Sub.none
+let subscriptions model =
+  match model.matrix_id with
+  | Some _ -> Matrix.subscribe model.client gotMessage
+  | None -> Tea.Sub.none
 

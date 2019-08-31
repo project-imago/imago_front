@@ -61,6 +61,7 @@ let view model =
     ]
 
 let subscriptions model =
+  Js.log "subscriptions main function";
   Chat.subscriptions model.chat |> Tea.Sub.map chatMsg
 
 let main =
@@ -68,6 +69,6 @@ let main =
     init;
     update;
     view;
-    subscriptions = (fun _ -> Tea.Sub.none);
+    subscriptions = subscriptions;
     shutdown = (fun _ -> Tea.Cmd.none);
   }

@@ -4,6 +4,10 @@ type access_token = string
 type home_server =  string
 type device_id =    string
 type login_map =    string Js.Dict.t
+type room
+type event
+type data
+type event_emitter
 
 type login_response =
   < user_id:      user_id;
@@ -12,13 +16,20 @@ type login_response =
     device_id:    device_id > Js.t
 
 type client =
-  < credentials: <  user_id : user_id > Js.t;
+  < credentials:    < user_id : user_id > Js.t;
     login:          string -> string Js.Dict.t -> login_response Js.Promise.t [@bs.meth];
-    on:             string -> (string -> unit) [@bs.meth];
+    (*on:             string -> ([ | `test of event -> room -> bool -> bool -> data -> unit
+                               ] [@bs.string]) -> event_emitter [@bs.meth];*)
     getJoinedRooms: unit -> (<joined_rooms: room_id array> Js.t) Js.Promise.t [@bs.meth]
   > Js.t
+external start_client: client -> unit = "startClient" [@@bs.send]
+external on: client -> ([ | `timeline of event -> room -> bool -> bool -> data -> unit [@bs.as "Room.timeline"]
+                        ] [@bs.string]) -> event_emitter  = "on" [@@bs.send]
+external off: client -> ([ | `timeline of event -> room -> bool -> bool -> data -> unit [@bs.as "Room.timeline"]
+                        ] [@bs.string]) -> event_emitter  = "off" [@@bs.send]
+external once: client -> ([ | `sync of string -> string -> string -> unit ] [@bs.string]) -> event_emitter  = "once" [@@bs.send]
 
-external create_client:        string -> client = "createClient" [@@bs.module "matrix-js-sdk"]
+external create_client:        string -> client =           "createClient" [@@bs.module "matrix-js-sdk"]
 external create_client_params: string Js.Dict.t -> client = "createClient" [@@bs.module "matrix-js-sdk"]
 
 
@@ -30,7 +41,16 @@ let get_joined_rooms client =
       |> Js.Promise.resolve
   )
 
-external start_client: client -> unit = "startClient" [@@bs.send]
+let subscribe client tagger =
+  let open Vdom in
+  let enableCall callbacks =
+    let args = (`timeline (fun event _room _toStartOfTimeline _removed _data ->
+          callbacks.enqueue (tagger event))) in
+    let _ = on client args in
+    fun () ->
+      let _ = off client args in
+      ()
+  in Tea_sub.registration "test" enableCall
 
 let new_client () =
   create_client "https://imago-dev.img:8448"
