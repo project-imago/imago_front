@@ -4,7 +4,6 @@ type access_token = string
 type home_server =  string
 type device_id =    string
 type login_map =    string Js.Dict.t
-type room_summary
 type re_emitter
 type room_state
 type group
@@ -15,10 +14,23 @@ type event_emitter
 type storage
 type user
 type tag
-type room_member
 type event_id = string
 type event_type = string
 (* ([ | `room_message [@bs.as "m.room.message"] ] [@bs.string]) *)
+type matrix_event2
+
+type room_member =
+  < events: matrix_event2 Js.Dict.t;
+    membership: string;
+    name: string;
+    powerLevel: int;
+    powerLevelNorm: int;
+    rawDisplayName: string;
+    roomId: room_id;
+    typing: bool;
+    user: string Js.Null.t;
+    userId: user_id;
+  > Js.t
 
 type event_content =
   < body: string;
@@ -42,11 +54,20 @@ type matrix_event =
     target: string Js.Nullable.t;
   > Js.t
 
+type room_summary =
+  < info : < title : string > Js.t;
+    roomId : room_id;
+  > Js.t
+
 type room =
   < accountData: account_data;
     currentState: room_state;
+    myUserId:     user_id;
+    name:         string;
     oldState:     room_state;
     reEmitter:    re_emitter;
+    room_id:      room_id;
+    storageToken: string Js.Undefined.t;
     summary:      room_summary;
     tags:         tag Js.Dict.t;
     timeline:     matrix_event array;
@@ -76,6 +97,7 @@ type client =
     (*on:             string -> ([ | `test of event -> room -> bool -> bool -> data -> unit
                                ] [@bs.string]) -> event_emitter [@bs.meth];*)
     getJoinedRooms: unit -> (<joined_rooms: room_id array> Js.t) Js.Promise.t [@bs.meth];
+    sendMessage:    room_id -> event_content -> string Js.Promise.t [@bs.meth];
     store:          store;
   > Js.t
 external start_client: client -> unit = "startClient" [@@bs.send]
