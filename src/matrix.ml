@@ -66,7 +66,7 @@ type room =
     name:         string;
     oldState:     room_state;
     reEmitter:    re_emitter;
-    room_id:      room_id;
+    roomId:       room_id;
     storageToken: string Js.Undefined.t;
     summary:      room_summary;
     tags:         tag Js.Dict.t;

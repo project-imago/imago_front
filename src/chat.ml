@@ -131,12 +131,13 @@ let update model = function
       
 let room_list_view model =
   let open Tea.Html in
-  let rooms = Js.Dict.keys model.client##store##rooms in
+  let rooms = Js.Dict.values model.client##store##rooms in
     ul
       []
       (rooms
-      |> Tablecloth.Array.map ~f:(fun room_id ->
-        li [] [button [ onClick (GoTo (Room room_id))] [text room_id]])
+      |> Tablecloth.Array.map ~f:(fun room ->
+          Js.log room;
+        li [] [button [ onClick (GoTo (Room room##roomId))] [text room##name]])
       |> Tablecloth.Array.to_list)
 
 let on_input_save_or_send ?(key="") save_msg send_msg =
