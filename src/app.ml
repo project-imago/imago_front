@@ -23,7 +23,6 @@ let update_route model = function
       {model with route}, location_of_route route |> Tea.Navigation.newUrl
 
 let init () location =
-  Js.log "init";
   let chat_model, chat_cmd = Chat.init in
   let model =
     {
@@ -54,15 +53,14 @@ let view model =
     []
     [ span
         [ style "text-weight" "bold" ]
-        [ text (match model.chat.matrix_id with Some str -> str | None ->
-          "disconnected") ];
+        [ text (if model.chat.client##clientRunning then
+          model.chat.client##credentials##userId else "disconnected") ];
       div [ id "sidebar" ] [ Chat.room_list_view model.chat |> Vdom.map chatMsg];
       div [ id "main" ] [ content model ];
       button [ onClick (GoTo Index)] [text "Index"]
     ]
 
 let subscriptions model =
-  Js.log "subscriptions main function";
   Chat.subscriptions model.chat |> Tea.Sub.map chatMsg
 
 let main =

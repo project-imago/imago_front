@@ -69,7 +69,9 @@ type login_response =
   > Js.t
 
 type client =
-  < credentials:    < user_id : user_id > Js.t;
+  < credentials:    < userId : user_id > Js.t;
+    clientRunning:  bool;
+    getAccessToken: unit -> access_token [@bs.meth];
     login:          string -> string Js.Dict.t -> login_response Js.Promise.t [@bs.meth];
     (*on:             string -> ([ | `test of event -> room -> bool -> bool -> data -> unit
                                ] [@bs.string]) -> event_emitter [@bs.meth];*)
@@ -105,6 +107,16 @@ let subscribe client tagger =
       let _ = off client args in
       ()
   in Tea_sub.registration "test" enableCall
+
+let subscribe_once client tagger =
+  let open Vdom in
+  let enableCall callbacks =
+    let args = (`sync (fun state _prevState _data ->
+          callbacks.enqueue (tagger state))) in
+    let _ = once client args in
+    fun () ->
+      ()
+  in Tea_sub.registration "sync" enableCall
 
 let new_client () =
   create_client "https://imago-dev.img:8448"

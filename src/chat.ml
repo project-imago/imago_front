@@ -1,18 +1,17 @@
+
+
 type msg =
   | LoggedIn of (Matrix.login_response, string) Tea.Result.t
-  | GetJoinedRooms of (Matrix.room_id list, string) Tea.Result.t
   | GoTo of Router.route
   | Info of (unit list, string) Tea.Result.t
-  | RestoredCredentials of ((Matrix.client * Matrix.access_token * Matrix.user_id), string) Tea.Result.t
+  | RestoredSession of (Matrix.client, string) Tea.Result.t
   | GotMessage of Matrix.event
+  | Sync of string
   [@@bs.deriving {accessors}]
 
 type model =
   {
     client : Matrix.client;
-    matrix_id : Matrix.user_id option;
-    access_token : Matrix.access_token option;
-    joined_rooms_ids : Matrix.room_id list;
   }
 
 let promiseToTask promise =
@@ -36,11 +35,7 @@ let promiseToTask promise =
 let login_cmd client =
   Tea_promise.result (Matrix.login client) loggedIn
 
-let get_joined_rooms_cmd client =
-  Tea_promise.result (Matrix.get_joined_rooms client) getJoinedRooms
-  
 let restore_cmd =
-  Js.log "init chat";
   [
     Tea.Ex.LocalStorage.getItem "access_token";
     Tea.Ex.LocalStorage.getItem "matrix_id";
@@ -62,15 +57,13 @@ let restore_cmd =
       | _ -> Tea_task.fail "LocalStorage error"
   )
   |> Tea_task.andThen (fun (access_token, matrix_id) ->
-      Js.log access_token;
       let client = Matrix.new_client_params matrix_id access_token in
-      (client, access_token, matrix_id)
-      |> Tea_task.succeed)
-  |> Tea_task.attempt restoredCredentials
+      Tea_task.succeed client)
+  |> Tea_task.attempt restoredSession
 
-let save_cmd access_token matrix_id =
-  [ Tea.Ex.LocalStorage.setItem "access_token" access_token;
-    Tea.Ex.LocalStorage.setItem "matrix_id" matrix_id; ]
+let save_cmd client =
+  [ Tea.Ex.LocalStorage.setItem "access_token" (client##getAccessToken ());
+    Tea.Ex.LocalStorage.setItem "matrix_id" client##credentials##userId; ]
   |> Tea_task.sequence
   |> Tea_task.attempt info
 
@@ -79,74 +72,59 @@ let init =
   let model =
     {
       client;
-      matrix_id = None;
-      access_token = None;
-      joined_rooms_ids = [];
     } in
   let cmd = restore_cmd in
   model, cmd
 
 let update model = function
-  | RestoredCredentials (Tea.Result.Ok (client, access_token, matrix_id)) ->
-      let model =
-        { model with client;
-          access_token = Some access_token;
-          matrix_id = Some matrix_id } in
-      model, get_joined_rooms_cmd model.client
-  | RestoredCredentials (Tea.Result.Error err) ->
-      Js.log ("restore failed: " ^ err);
+  | RestoredSession (Tea.Result.Ok (client)) ->
+      let model = { client } in
+      let () = Matrix.start_client model.client in
+      model, Tea.Cmd.none
+  | RestoredSession (Tea.Result.Error err) ->
+      let () = Js.log ("restore failed: " ^ err) in
       model, login_cmd model.client
   | LoggedIn (Tea.Result.Ok res) -> 
       let () = Js.log res in
-      let model =
-        { model with
-          matrix_id = Some res##user_id;
-          access_token = Some res##access_token } in
-      model, Tea.Cmd.batch [save_cmd res##access_token res##user_id;
-      get_joined_rooms_cmd model.client]
+      let () = Matrix.start_client model.client in
+      model, save_cmd model.client
   | LoggedIn (Tea.Result.Error err) -> 
       let () = Js.log ("login failed: " ^ err) in
       model, Tea.Cmd.none
-  | GetJoinedRooms (Tea.Result.Ok res) -> 
-      let () = Js.log res in
-      let () = Js.log "got joined rooms, start client" in
-      let () = Matrix.start_client model.client in
-      let model = {model with joined_rooms_ids = res} in
-      model, Tea.Cmd.none
-  | GetJoinedRooms (Tea.Result.Error err) -> 
-      let () = Js.log ("get joined rooms failed: " ^ err) in
-      model, Tea.Cmd.none
   | GoTo _ ->
       model, Tea.Cmd.none
-  | Info (Tea.Result.Ok _) -> Js.log "info"; model, Tea.Cmd.none
-  | Info (Tea.Result.Error err) -> Js.log err; model, Tea.Cmd.none
-  | GotMessage event -> Js.log event; model, Tea.Cmd.none
+  | Info (Tea.Result.Ok _) ->
+      let () = Js.log "info" in
+      model, Tea.Cmd.none
+  | Info (Tea.Result.Error err) ->
+      let () = Js.log err in
+      model, Tea.Cmd.none
+  | GotMessage event ->
+      let () = Js.log event in
+      model, Tea.Cmd.none
+  | Sync state ->
+      let () = Js.log state in
+      model, Tea.Cmd.none
       
 let room_list_view model =
-      (*let () = Matrix.once model.client (`sync (fun a b c -> Js.log (a, b, c)))
-      |> Js.log
-      in *)
   let open Tea.Html in
+  let rooms = Js.Dict.keys model.client##store##rooms in
     ul
       []
-      (Belt.List.map model.joined_rooms_ids (fun room_id ->
-        li [] [button [ onClick (GoTo (Room room_id))] [text room_id]]))
+      (rooms
+      |> Tablecloth.Array.map ~f:(fun room_id ->
+        li [] [button [ onClick (GoTo (Room room_id))] [text room_id]])
+      |> Tablecloth.Array.to_list)
 
 let room_view model room_id =
-  Js.log room_id;
-  Js.log model.client##store##rooms;
   let open Tea.Html in
   match (model.client##store##rooms |. Js.Dict.get room_id) with
   | None -> div [] []
   | Some room ->
       let message_list =
-        let () = Js.log room##timeline in
-        let filtered = room##timeline
+        room##timeline
         |> Tablecloth.Array.filter ~f:(fun matrix_event ->
             [%raw {|matrix_event.event.type|}] = "m.room.message")
-        in
-        let _ = Js.log filtered in
-      filtered
         |> Tablecloth.Array.map ~f:(fun matrix_event -> div [] [ text (Printf.sprintf
         "<%s> %s" matrix_event##event##sender matrix_event##event##content##body) ])
         |> Tablecloth.Array.to_list
@@ -155,7 +133,7 @@ let room_view model room_id =
 
 
 let subscriptions model =
-  match model.matrix_id with
-  | Some _ -> Matrix.subscribe model.client gotMessage
-  | None -> Tea.Sub.none
-
+  match model.client##clientRunning with
+  | true -> Tea.Sub.batch [Matrix.subscribe model.client gotMessage;
+  Matrix.subscribe_once model.client sync]
+  | false -> Tea.Sub.none
