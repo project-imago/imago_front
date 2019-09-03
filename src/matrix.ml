@@ -54,6 +54,12 @@ type matrix_event =
     target: string Js.Nullable.t;
   > Js.t
 
+type timeline =      matrix_event array
+
+type event_timeline =
+  < getEvents:  unit -> timeline [@bs.meth];
+  > Js.t
+
 type room_summary =
   < info : < title : string > Js.t;
     roomId : room_id;
@@ -70,7 +76,8 @@ type room =
     storageToken: string Js.Undefined.t;
     summary:      room_summary;
     tags:         tag Js.Dict.t;
-    timeline:     matrix_event array;
+    timeline:     timeline;
+    getLiveTimeline:     unit -> event_timeline [@bs.meth];
   > Js.t
 
 type store =

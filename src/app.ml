@@ -17,10 +17,12 @@ type model =
 
 let update_route model = function
   | route when model.route = route -> (model, Tea.Cmd.none)
-  | Room _ as route ->
-      {model with route}, location_of_route route |> Tea.Navigation.newUrl
+  | ChatRoute chat_route ->
+      let chat, route = Chat.update_route model.chat chat_route in
+      {model with chat; route}, location_of_route route |> Tea.Navigation.newUrl
   | Index as route ->
-      {model with route}, location_of_route route |> Tea.Navigation.newUrl
+      let chat = Chat.reset_route model.chat in
+      {model with chat; route}, location_of_route route |> Tea.Navigation.newUrl
 
 let init () location =
   let chat_model, chat_cmd = Chat.init in
@@ -46,7 +48,7 @@ let update model = function
 let content model =
   match model.route with
   | Index -> div [] []
-  | Room id -> Chat.room_view model.chat id |> Vdom.map chatMsg
+  | ChatRoute chat_route -> Chat.view model.chat chat_route |> Vdom.map chatMsg
 
 let view model =
   div

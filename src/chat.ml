@@ -7,15 +7,16 @@ type msg =
   | ListInfo of (unit list, string) Tea.Result.t
   | RestoredSession of (Matrix.client, string) Tea.Result.t
   | GotMessage of Matrix.event
-  | SaveMessage of string * Matrix.room_id
-  | SendMessage of string * Matrix.room_id
+  | SaveMessage of string
+  | SendMessage of string
   | Sync of string
   [@@bs.deriving {accessors}]
 
 type model =
   {
     client : Matrix.client;
-    new_message : string;
+    new_messages : string Js.Dict.t;
+    current_room : Matrix.room option;
   }
 
 let promiseToTask promise =
@@ -72,20 +73,34 @@ let save_cmd client =
   |> Tea_task.attempt listInfo
 
 let send_message_cmd client room_id message =
-  Js.log room_id; Js.log message;
-  let content : Matrix.event_content = [%bs.obj { body = message; msgtype =
-    "m.room.message" }] in
+  let content : Matrix.event_content =
+    [%bs.obj
+      { body =    message;
+        msgtype = "m.room.message";
+      }] in
   Tea_promise.result (client##sendMessage room_id content) info
 
 let init = 
   let client = Matrix.new_client () in
   let model =
-    {
-      client;
-      new_message = "";
+    { client;
+      new_messages = Js.Dict.empty ();
+      current_room = None;
     } in
   let cmd = restore_cmd in
   model, cmd
+
+let update_route model = function
+  | Router.Room room_id as route ->
+      match (model.client##store##rooms |. Js.Dict.get room_id) with
+      | Some room ->
+          let model = {model with current_room = Some room } in
+          model, Router.ChatRoute route
+      | None -> 
+          { model with current_room = None }, Router.Index
+
+let reset_route model =
+  {model with current_room = None}
 
 let update model = function
   | RestoredSession (Tea.Result.Ok (client)) ->
@@ -119,16 +134,29 @@ let update model = function
   | GotMessage event ->
       let () = Js.log event in
       model, Tea.Cmd.none
-  | SaveMessage (room_id, message) ->
-      let model = { model with new_message = message} in
+  | SaveMessage message ->
+      let () = match model.current_room with
+      | Some room ->
+          Js.Dict.set model.new_messages room##roomId message
+      | None ->
+          () in
       model, Tea.Cmd.none
-  | SendMessage (room_id, message) ->
-      let model = { model with new_message = ""} in
-      model, send_message_cmd model.client room_id message
+  | SendMessage message ->
+      let cmd = match model.current_room with
+      | Some room ->
+          let () = Js.Dict.set model.new_messages room##roomId "" in
+          send_message_cmd model.client room##roomId message
+      | None ->
+          Tea.Cmd.none in
+      model, cmd
   | Sync state ->
       let () = Js.log state in
       model, Tea.Cmd.none
-      
+
+let equal_to_option value = function
+  | None -> false
+  | Some v -> v = value
+
 let room_list_view model =
   let open Tea.Html in
   let rooms = Js.Dict.values model.client##store##rooms in
@@ -136,50 +164,73 @@ let room_list_view model =
       []
       (rooms
       |> Tablecloth.Array.map ~f:(fun room ->
-          Js.log room;
-        li [] [button [ onClick (GoTo (Room room##roomId))] [text room##name]])
+          let room_name_text =
+            if equal_to_option room model.current_room then
+              b [] [text room##name]
+            else
+              text room##name in
+        li [] [button [ onClick (GoTo (ChatRoute (Room room##roomId)))]
+        [room_name_text]])
       |> Tablecloth.Array.to_list)
 
-let on_input_save_or_send ?(key="") save_msg send_msg =
+let on_ctrl_enter ?(key="") msg =
   let open Tea.Html in
   onCB "keydown" key
     (fun ev ->
-      Js.log ev;
        match Js.Undefined.toOption ev##target with
        | None -> None
        | Some target -> match Js.Undefined.toOption target##value with
          | None -> None
          | Some value ->
              if ev##keyCode = 13 && [%raw {|ev.ctrlKey|}] then
-               Some (send_msg value)
+               Some (msg value)
              else
-               Some (save_msg value)
-    )
+               None)
+    
+let string_of_option = function
+  | Some str -> str
+  | None -> ""
 
-let room_view model room_id =
+let get_messages room =
+  (room##getLiveTimeline ())##getEvents ()
+  |> Tablecloth.Array.filter ~f:(fun matrix_event ->
+      [%raw {|matrix_event.event.type|}] = "m.room.message")
+
+let message_view matrix_event =
   let open Tea.Html in
-  match (model.client##store##rooms |. Js.Dict.get room_id) with
-  | None -> div [] []
-  | Some room ->
-      Js.log room##timeline;
-      let message_list =
-        room##timeline
-        |> Tablecloth.Array.filter ~f:(fun matrix_event ->
-            [%raw {|matrix_event.event.type|}] = "m.room.message")
-        |> Tablecloth.Array.map ~f:(fun matrix_event ->
-            div
-              [style "white-space" "pre"]
-              [ text (Printf.sprintf
-                        "<%s> %s"
-                        matrix_event##sender##rawDisplayName
-                        matrix_event##event##content##body
-        ) ])
-        |> Tablecloth.Array.to_list in
-      let input_area =
-        textarea [value model.new_message; on_input_save_or_send (saveMessage
-        room_id) (sendMessage room_id)] [] in
-      div [] [div [] message_list; div [] [input_area]]
+  let message_display =
+    Printf.sprintf
+      "<%s> %s"
+      matrix_event##sender##rawDisplayName
+      matrix_event##event##content##body in
+  div
+    [style "white-space" "pre"]
+    [text message_display]
 
+let room_view room new_message =
+  let open Tea.Html in
+  let message_list =
+    get_messages room
+    |> Tablecloth.Array.map ~f:message_view
+    |> Tablecloth.Array.to_list in
+  let input_area =
+    textarea
+      [class' room##roomId;
+       value new_message;
+       on_ctrl_enter sendMessage;
+       onInput saveMessage]
+      [] in
+  div
+    []
+    [div [] message_list;
+     div [] [input_area]]
+
+let view model = function
+  | Router.Room _ ->
+      match model.current_room with
+      | Some room -> room_view room (Js.Dict.get model.new_messages room##roomId |>
+      string_of_option)
+      | None -> Tea.Html.div [] []
 
 let subscriptions model =
   match model.client##clientRunning with
