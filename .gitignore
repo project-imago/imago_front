@@ -54,11 +54,14 @@ logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+lib/bs/.ninja_log
+
 
 
 # Dependency directories
 node_modules/
 jspm_packages/
+lib/bs/.bsdeps
 
 # Optional npm cache directory
 .npm
@@ -133,6 +136,9 @@ _build
 
 # ocamlbuild working directory
 _build/
+
+# bucklescript 
+lib/es6/src 
 
 # ocamlbuild targets
 *.byte
