@@ -17,15 +17,15 @@
   "license": "MIT",
   "devDependencies": {
     "bs-platform": "^6.0.3",
-    "concurrently": "^4.1.2",
-    "webpack": "^4.39.2",
-    "webpack-bundle-analyzer": "^3.4.1",
-    "webpack-cli": "^3.3.6",
-    "webpack-dev-server": "^3.8.0"
+    "concurrently": "^5.0.0",
+    "webpack": "^4.41.2",
+    "webpack-bundle-analyzer": "^3.5.2",
+    "webpack-cli": "^3.3.9",
+    "webpack-dev-server": "^3.8.2"
   },
   "dependencies": {
-    "bucklescript-tea": "^0.7.5",
-    "matrix-js-sdk": "^2.3.0",
+    "bucklescript-tea": "^0.12.0",
+    "matrix-js-sdk": "^2.4.1",
     "tablecloth-bucklescript": "0.0.6"
   },
   "main": "index.js"
