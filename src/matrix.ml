@@ -148,11 +148,11 @@ let subscribe_once client tagger =
   in Tea_sub.registration "sync" enableCall
 
 let new_client () =
-  create_client "https://imago-dev.img:8448"
+  create_client "https://matrix.imago.local:8448"
 
 let new_client_params matrix_id access_token =
   let login_map = Js.Dict.empty () in
-  let () = Js.Dict.set login_map "baseUrl"  "https://imago-dev.img:8448" in
+  let () = Js.Dict.set login_map "baseUrl"  "https://matrix.imago.local:8448" in
   let () = Js.Dict.set login_map "accessToken" access_token in
   let () = Js.Dict.set login_map "userId" matrix_id in
   create_client_params login_map

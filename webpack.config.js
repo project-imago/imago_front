@@ -10,11 +10,11 @@ module.exports = {
     devServer: {
         //allowedHosts: ['imago-dev.img', 'localhost'],
         contentBase: __dirname,
-        //disableHostCheck: true,
+        disableHostCheck: true,
         //headers: {
         //    'Access-Control-Allow-Origin': '*',
         //},
-        //host: '0.0.0.0',
+        host: '0.0.0.0',
         //hot: false,
         //http2: true,
         //https: true,

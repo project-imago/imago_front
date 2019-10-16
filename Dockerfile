@@ -18,4 +18,4 @@ VOLUME ["/home/node/app"]
 
 EXPOSE 8081
 
-CMD npm run server
+CMD rm -f .bsb.lock; npm run server
