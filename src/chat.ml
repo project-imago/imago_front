@@ -163,7 +163,7 @@ let room_list_view model =
     ul
       []
       (rooms
-      |> Tablecloth.Array.map ~f:(fun room ->
+      |. Belt.Array.map (fun room ->
           let room_name_text =
             if equal_to_option room model.current_room then
               b [] [text room##name]
@@ -171,7 +171,7 @@ let room_list_view model =
               text room##name in
         li [] [button [ onClick (GoTo (ChatRoute (Room room##roomId)))]
         [room_name_text]])
-      |> Tablecloth.Array.to_list)
+      |> Belt.List.fromArray)
 
 let on_ctrl_enter ?(key="") msg =
   let open Tea.Html in
@@ -193,7 +193,7 @@ let string_of_option = function
 
 let get_messages room =
   (room##getLiveTimeline ())##getEvents ()
-  |> Tablecloth.Array.filter ~f:(fun matrix_event ->
+  |. Belt.Array.keep (fun matrix_event ->
       [%raw {|matrix_event.event.type|}] = "m.room.message")
 
 let message_view matrix_event =
@@ -211,8 +211,8 @@ let room_view room new_message =
   let open Tea.Html in
   let message_list =
     get_messages room
-    |> Tablecloth.Array.map ~f:message_view
-    |> Tablecloth.Array.to_list in
+    |. Belt.Array.map message_view
+    |> Belt.List.fromArray in
   let input_area =
     textarea
       [class' room##roomId;

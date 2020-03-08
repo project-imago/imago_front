@@ -66,7 +66,7 @@ type room_summary =
   > Js.t
 
 type room =
-  < accountData: account_data;
+  < accountData:  account_data;
     currentState: room_state;
     myUserId:     user_id;
     name:         string;
@@ -99,30 +99,85 @@ type login_response =
 type client =
   < credentials:    < userId : user_id > Js.t;
     clientRunning:  bool;
-    getAccessToken: unit -> access_token [@bs.meth];
-    login:          string -> string Js.Dict.t -> login_response Js.Promise.t [@bs.meth];
+    getAccessToken: unit
+                    -> access_token [@bs.meth];
+    login:          string
+                    -> string Js.Dict.t
+                    -> login_response Js.Promise.t [@bs.meth];
+    logout:         unit
+                    -> string Js.Dict.t [@bs.meth];
     (*on:             string -> ([ | `test of event -> room -> bool -> bool -> data -> unit
                                ] [@bs.string]) -> event_emitter [@bs.meth];*)
-    getJoinedRooms: unit -> (<joined_rooms: room_id array> Js.t) Js.Promise.t [@bs.meth];
-    sendMessage:    room_id -> event_content -> string Js.Promise.t [@bs.meth];
+    getJoinedRooms: unit
+                    -> (<joined_rooms: room_id array> Js.t) Js.Promise.t [@bs.meth];
+    sendMessage:    room_id
+                    -> event_content
+                    -> string Js.Promise.t [@bs.meth];
     store:          store;
   > Js.t
-external start_client: client -> unit = "startClient" [@@bs.send]
-external on: client -> ([ | `timeline of event -> room -> bool -> bool -> data -> unit [@bs.as "Room.timeline"]
-                        ] [@bs.string]) -> event_emitter  = "on" [@@bs.send]
-external off: client -> ([ | `timeline of event -> room -> bool -> bool -> data -> unit [@bs.as "Room.timeline"]
-                        ] [@bs.string]) -> event_emitter  = "off" [@@bs.send]
-external once: client -> ([ | `sync of string -> string -> string -> unit ] [@bs.string]) -> event_emitter  = "once" [@@bs.send]
 
-external create_client:        string -> client =           "createClient" [@@bs.module "matrix-js-sdk"]
-external create_client_params: string Js.Dict.t -> client = "createClient" [@@bs.module "matrix-js-sdk"]
+external start_client:
+  client
+  -> unit
+  = "startClient" [@@bs.send]
+
+external on:
+  client
+  -> ([
+      | `timeline of
+        event
+        -> room
+        -> bool
+        -> bool
+        -> data
+        -> unit
+      [@bs.as "Room.timeline"] ]
+      [@bs.string])
+  -> event_emitter 
+  = "on" [@@bs.send]
+
+external off:
+  client
+  -> ([
+      | `timeline of
+        event
+        -> room
+        -> bool
+        -> bool
+        -> data
+        -> unit
+      [@bs.as "Room.timeline"] ]
+      [@bs.string])
+  -> event_emitter 
+  = "off" [@@bs.send]
+
+external once:
+  client
+  -> ([ | `sync of
+          string
+          -> string
+          -> string
+          -> unit
+      ] [@bs.string])
+  -> event_emitter
+  = "once" [@@bs.send]
+
+external create_client:
+  string
+  -> client
+  = "createClient" [@@bs.module "matrix-js-sdk"]
+
+external create_client_params:
+  string Js.Dict.t
+  -> client
+  = "createClient" [@@bs.module "matrix-js-sdk"]
 
 
 let get_joined_rooms client =
   client##getJoinedRooms ()
   |> Js.Promise.then_ (fun res ->
       res##joined_rooms
-      |> Tablecloth.Array.to_list
+      |> Belt.List.fromArray
       |> Js.Promise.resolve
   )
 
