@@ -7,6 +7,7 @@ type msg =
   | ChatMsg of Chat.msg
   | Location_changed of Web.Location.location
   | GoTo of route
+  | Logout
   [@@bs.deriving {accessors}]
 
 type model =
@@ -37,6 +38,8 @@ let init () location =
   (model, Tea.Cmd.batch [Tea.Cmd.map chatMsg chat_cmd; location_cmd])
 
 let update model = function
+  | Logout ->
+      {model with chat = Auth.logout model.chat}, Tea.Cmd.none
   | Location_changed location ->
       route_of_location location |> update_route model
   | GoTo route -> update_route model route
@@ -53,10 +56,16 @@ let content model =
 let view model =
   div
     []
-    [ span
-        [ style "text-weight" "bold" ]
-        [ text (if model.chat.client##clientRunning then
-          model.chat.client##credentials##userId else "disconnected") ];
+    [ div [ style "text-weight" "bold" ]
+        (if model.chat.client##clientRunning then
+          let () = Js.log model.chat.client in
+          [ p [] [(text model.chat.client##credentials##userId)];
+            button [ onClick (Logout)] [text "Logout"]
+          ]
+         else
+           [ p [] [(text "disconnected")];
+            button [ onClick (GoTo Index)] [text "Index"]
+           ]);
       div [ id "sidebar" ] [ Chat.room_list_view model.chat |> Vdom.map chatMsg];
       div [ id "main" ] [ content model ];
       button [ onClick (GoTo Index)] [text "Index"]
