@@ -221,9 +221,9 @@ let room_view room new_message =
        onInput saveMessage]
       [] in
   div
-    []
-    [div [] message_list;
-     div [] [input_area]]
+    [ id "room-view" ]
+    [div [ id "message-list" ] message_list;
+     div [ id "input-area" ] [input_area]]
 
 let view model = function
   | Router.Room _ ->

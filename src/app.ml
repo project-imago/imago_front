@@ -55,8 +55,8 @@ let content model =
 
 let view model =
   div
-    []
-    [ div [ style "text-weight" "bold" ]
+    [ id "body" ]
+    [ header [ style "text-weight" "bold" ]
         (if model.chat.client##clientRunning then
           let () = Js.log model.chat.client in
           [ p [] [(text model.chat.client##credentials##userId)];
@@ -66,9 +66,14 @@ let view model =
            [ p [] [(text "disconnected")];
             button [ onClick (GoTo Index)] [text "Index"]
            ]);
-      div [ id "sidebar" ] [ Chat.room_list_view model.chat |> Vdom.map chatMsg];
-      div [ id "main" ] [ content model ];
-      button [ onClick (GoTo Index)] [text "Index"]
+      main [] [
+        div [ id "sidebar" ] [
+          Chat.room_list_view model.chat |> Vdom.map chatMsg;
+          button [ onClick (GoTo Index)] [text "Index"]
+        ];
+        div [ id "content" ] [ content model ]
+      ];
+      footer [] [ text "Imago 2020" ]
     ]
 
 let subscriptions model =
