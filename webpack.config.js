@@ -1,9 +1,15 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 module.exports = {
     mode: "development",
-    entry: "./lib/es6/src/main.bs.js",
+    entry: {
+        main: [
+            "./lib/es6/src/main.bs.js",
+            "./styles/main.scss"
+        ]
+    },
     output: {
         publicPath: '/dist/',
         path: __dirname+'/dist',
@@ -14,8 +20,17 @@ module.exports = {
         new HtmlWebpackPlugin({
             filename: './index.html',
             template: './src/index.ejs'
-        })
+        }),
+        new MiniCssExtractPlugin()
     ],
+    module: {
+        rules: [
+            {
+                test:/\.(s*)css$/,
+                use:[MiniCssExtractPlugin.loader, 'css-loader']
+            }
+        ]
+    },
     devtool: "source-map",
     devServer: {
         //allowedHosts: ['imago-dev.img', 'localhost'],
