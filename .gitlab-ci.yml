@@ -47,7 +47,7 @@ Push latest:
 Push tags:
   stage: docker_push
   only:
-    - master
+    - tags
   variables:
     GIT_STRATEGY: none
     IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
