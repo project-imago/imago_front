@@ -9,8 +9,8 @@
     "bsb-watch": "bsb -make-world -w -ws _",
     "webpack-server": "webpack-dev-server",
     "webpack-server-tls": "webpack-dev-server --https --public imago-dev.img --key imago-dev.img.tls.key --cert imago-dev.img.tls.crt",
-    "start": "concurrently -k \"npm:bsb-watch\" \"npm:webpack-server\"",
-    "start-tls": "concurrently -k \"npm:bsb-watch\" \"npm:webpack-server-tls\""
+    "server": "concurrently -k \"npm:bsb-watch\" \"npm:webpack-server\"",
+    "server-tls": "concurrently -k \"npm:bsb-watch\" \"npm:webpack-server-tls\""
   },
   "keywords": [
     "BuckleScript"

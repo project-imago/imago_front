@@ -1,4 +1,4 @@
-FROM node:8
+FROM node:13
 
 USER node
 
@@ -14,4 +14,4 @@ ENV PATH=./node_modules/.bin:$PATH
 
 EXPOSE 8081
 
-CMD rm -f .bsb.lock; npm start
+CMD rm -f .bsb.lock; npm run server
