@@ -1,0 +1,61 @@
+# Inspired by https://blog.callr.tech/building-docker-images-with-gitlab-ci-best-practices/
+
+
+stages:
+  - docker_build
+  - docker_push
+
+Build container:
+  stage: docker_build
+  only:
+    changes:
+      - Dockerfile
+      - package.json
+  variables:
+    IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+  image: docker:18
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - docker pull $CI_REGISTRY_IMAGE:latest || true
+    - >
+      docker build
+      --pull
+      --build-arg VCS_REF=$CI_COMMIT_SHA
+      --build-arg VCS_URL=$CI_PROJECT_URL
+      --cache-from $CI_REGISTRY_IMAGE:latest
+      --tag $IMAGE_TAG
+      .
+    - docker push $IMAGE_TAG
+
+Push latest:
+  stage: docker_push
+  only:
+    - master
+  variables:
+    GIT_STRATEGY: none
+    IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    IMAGE_NEW_TAG: $CI_REGISTRY_IMAGE:latest
+  image: docker:18
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - docker pull $IMAGE_TAG
+    - docker tag $IMAGE_TAG $IMAGE_NEW_TAG
+    - docker push $IMAGE_NEW_TAG
+
+Push tags:
+  stage: docker_push
+  only:
+    - master
+  variables:
+    GIT_STRATEGY: none
+    IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    IMAGE_NEW_TAG: $CI_REGISTRY_IMAGE:CI_COMMIT_REF_NAME
+  image: docker:18
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - docker pull $IMAGE_TAG
+    - docker tag $IMAGE_TAG $IMAGE_NEW_TAG
+    - docker push $IMAGE_NEW_TAG
