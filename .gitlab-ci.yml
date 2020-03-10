@@ -13,9 +13,11 @@ Build container:
       - package.json
   variables:
     IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
-  image: docker:18
+  image: docker:19.03.1
+  services:
+    - docker:19.03.1-dind
   before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - echo -n $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
   script:
     - docker pull $CI_REGISTRY_IMAGE:latest || true
     - >
@@ -36,9 +38,11 @@ Push latest:
     GIT_STRATEGY: none
     IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
     IMAGE_NEW_TAG: $CI_REGISTRY_IMAGE:latest
-  image: docker:18
+  image: docker:19.03.1
+  services:
+    - docker:19.03.1-dind
   before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - echo -n $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
   script:
     - docker pull $IMAGE_TAG
     - docker tag $IMAGE_TAG $IMAGE_NEW_TAG
@@ -52,9 +56,11 @@ Push tags:
     GIT_STRATEGY: none
     IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
     IMAGE_NEW_TAG: $CI_REGISTRY_IMAGE:CI_COMMIT_REF_NAME
-  image: docker:18
+  image: docker:19.03.1
+  services:
+    - docker:19.03.1-dind
   before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - echo -n $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
   script:
     - docker pull $IMAGE_TAG
     - docker tag $IMAGE_TAG $IMAGE_NEW_TAG
