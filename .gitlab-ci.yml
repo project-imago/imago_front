@@ -11,6 +11,7 @@ Build container:
     changes:
       - Dockerfile
       - package.json
+      - package-lock.json
   variables:
     IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
   image: docker:19.03.1
@@ -33,7 +34,12 @@ Build container:
 Push latest:
   stage: docker_push
   only:
-    - master
+    refs:
+      - master
+    changes:
+      - Dockerfile
+      - package.json
+      - package-lock.json
   variables:
     GIT_STRATEGY: none
     IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
@@ -51,7 +57,12 @@ Push latest:
 Push tags:
   stage: docker_push
   only:
-    - tags
+    refs:
+      - tags
+    changes:
+      - Dockerfile
+      - package.json
+      - package-lock.json
   variables:
     GIT_STRATEGY: none
     IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
