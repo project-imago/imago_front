@@ -1,5 +1,3 @@
-[%%debugger.chrome]
-open Tea.App
 open Tea.Html
 open Router
 
@@ -20,10 +18,10 @@ let update_route model = function
   | route when model.route = route -> (model, Tea.Cmd.none)
   | ChatRoute chat_route ->
       let chat, route = Chat.update_route model.chat chat_route in
-      {model with chat; route}, location_of_route route |> Tea.Navigation.newUrl
+      {chat; route}, location_of_route route |> Tea.Navigation.newUrl
   | Index as route ->
       let chat = Chat.reset_route model.chat in
-      {model with chat; route}, location_of_route route |> Tea.Navigation.newUrl
+      {chat; route}, location_of_route route |> Tea.Navigation.newUrl
 
 let init () location =
   let chat_model, chat_cmd = Chat.init in

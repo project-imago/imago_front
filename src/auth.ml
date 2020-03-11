@@ -1,4 +1,4 @@
 
 let logout (model: Chat.model) =
-  Matrix.logout model.client;
+  let _  = Matrix.logout model.client in
   model

@@ -193,8 +193,8 @@ let string_of_option = function
 
 let get_messages room =
   (room##getLiveTimeline ())##getEvents ()
-  |. Belt.Array.keep (fun matrix_event ->
-      [%raw {|matrix_event.event.type|}] = "m.room.message")
+  |. Belt.Array.keep (fun _matrix_event ->
+      [%raw {|_matrix_event.event.type|}] = "m.room.message")
 
 let message_view matrix_event =
   let open Tea.Html in

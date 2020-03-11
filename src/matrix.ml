@@ -218,6 +218,5 @@ let login client =
   let () = Js.Dict.set login_map "password" "imago42imago" in
   client##login "m.login.password" login_map
 
-
 let logout client =
   client##logout ()
