@@ -20,14 +20,14 @@ module.exports = {
         new HtmlWebpackPlugin({
             filename: './index.html',
             template: './src/index.ejs'
-        }),
-        new MiniCssExtractPlugin()
+        })
+        // new MiniCssExtractPlugin()
     ],
     module: {
         rules: [
             {
                 test:/\.(s*)css$/,
-                use:[MiniCssExtractPlugin.loader, 'css-loader', 'sass-loader']
+                use:['style-loader', 'css-loader', 'sass-loader']
             }
         ]
     },
@@ -40,11 +40,11 @@ module.exports = {
         //    'Access-Control-Allow-Origin': '*',
         //},
         host: '0.0.0.0',
-        //hot: false,
+        hot: true,
         //http2: true,
         //https: true,
         //inline: true,
-        //liveReload: true,
+        liveReload: false,
         port: 9000,
         //public: 'imago-dev.img',
         publicPath: '/dist/',
