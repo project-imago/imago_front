@@ -8,6 +8,13 @@ type msg =
   | Logout
   [@@bs.deriving {accessors}]
 
+let msg_to_string (msg : msg) =
+  match msg with
+  | ChatMsg chatMsg -> "chat msg: " ^ Chat.msg_to_string chatMsg
+  | Location_changed _ -> "location changed"
+  | GoTo _ -> "go to"
+  | Logout -> "logout"
+
 type model =
   {
     chat : Chat.model;
@@ -78,10 +85,10 @@ let subscriptions model =
   Chat.subscriptions model.chat |> Tea.Sub.map chatMsg
 
 let main =
-  Tea.Navigation.navigationProgram location_changed {
+  Tea.Debug.navigationProgram location_changed {
     init;
     update;
     view;
     subscriptions = subscriptions;
     shutdown = (fun _ -> Tea.Cmd.none);
-  }
+  } msg_to_string

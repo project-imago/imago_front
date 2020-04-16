@@ -12,6 +12,19 @@ type msg =
   | Sync of string
   [@@bs.deriving {accessors}]
 
+let msg_to_string (msg : msg) =
+  match msg with
+  | LoggedIn _ -> "logged in"
+  | GoTo _ -> "go to"
+  | Info _ -> "info"
+  | ListInfo _ -> "list info"
+  | RestoredSession _ -> "restored session"
+  | GotMessage _ -> "got msg"
+  | SaveMessage _ -> "save message"
+  | SendMessage _ -> "send message"
+  | Sync _ -> "sync"
+
+
 type model =
   {
     client : Matrix.client;
