@@ -111,7 +111,9 @@ let view model room_id =
       [div [ id "message-list" ] message_list;
        div [ id "input-area" ] [input_area]]
   | None ->
-      div [] [text "room not found"]
+      div
+        [ id "room-view" ]
+        [text "room not found"]
 
 (* let view model = function *)
 (*   | Router.Room _ -> *)
