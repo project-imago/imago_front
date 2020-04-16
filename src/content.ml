@@ -23,6 +23,12 @@ let init matrix_client =
     create_group = Create_group.init matrix_client;
   }
 
+let update model = function
+  | RoomMsg room_msg ->
+      let room, room_cmd = Room.update model.room room_msg in
+      {model with room},
+      Tea.Cmd.map roomMsg room_cmd
+
 let view (route : Router.route) model =
   let open Tea.Html in
   div [ id "content" ]

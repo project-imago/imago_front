@@ -81,9 +81,14 @@ let update model = function
   | ChatMsg (GoTo route) -> update_route model route
   | HeaderMsg (GoTo route) -> update_route model route
   | SidebarMsg (GoTo route) -> update_route model route
+  | ContentMsg content_msg ->
+      let content, content_cmd = Content.update model.content content_msg in
+      {model with content},
+      Tea.Cmd.map contentMsg content_cmd
   | ChatMsg chat_msg ->
       let chat, chat_cmd = Chat.update model.chat chat_msg in
-      model, Tea.Cmd.map chatMsg chat_cmd
+      {model with chat},
+      Tea.Cmd.map chatMsg chat_cmd
 
 let view model =
   div

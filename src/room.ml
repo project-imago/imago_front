@@ -1,14 +1,14 @@
 type msg =
   | GoTo of Router.route
-  | SaveMessage of string
-  | SendMessage of string
+  | SaveMessage of Matrix.room_id * string
+  | SendMessage of Matrix.room_id * string
   | Info of (string, string) Tea.Result.t
   [@@bs.deriving {accessors}]
 
 type model =
   {
     new_messages : string Js.Dict.t;
-    current_room : Matrix.room option;
+    (* current_room : Matrix.room option; *)
     matrix_client : Matrix.client ref;
   }
 
@@ -16,7 +16,7 @@ let init matrix_client =
   {
       matrix_client;
       new_messages = Js.Dict.empty ();
-      current_room = None;
+      (* current_room = None; *)
   }
 
 let send_message_cmd client room_id message =
@@ -30,20 +30,13 @@ let send_message_cmd client room_id message =
 let update model = function
   | GoTo _ ->
       model, Tea.Cmd.none
-  | SaveMessage message ->
-      let () = match model.current_room with
-      | Some room ->
-          Js.Dict.set model.new_messages room##roomId message
-      | None ->
-          () in
+  | SaveMessage (room_id, message) ->
+      Js.Dict.set model.new_messages room_id message;
       model, Tea.Cmd.none
-  | SendMessage message ->
-      let cmd = match model.current_room with
-      | Some room ->
-          let () = Js.Dict.set model.new_messages room##roomId "" in
-          send_message_cmd !(model.matrix_client) room##roomId message
-      | None ->
-          Tea.Cmd.none in
+  | SendMessage (room_id, message) ->
+      Js.Dict.set model.new_messages room_id "";
+      let cmd =
+        send_message_cmd !(model.matrix_client) room_id message in
       model, cmd
   | Info (Tea.Result.Ok res) ->
       let () = Js.log res in
@@ -86,10 +79,16 @@ let message_view matrix_event =
     [style "white-space" "pre"]
     [text message_display]
 
-let new_message_value model room = 
-  Js.Dict.get model.new_messages room##roomId
-  |> string_of_option
-
+let input_area model room_id =
+  let open Tea.Html in
+  let new_message_value model room_id = 
+    Js.Dict.get model.new_messages room_id
+    |> string_of_option in
+  textarea
+    [value (new_message_value model room_id);
+     on_ctrl_enter ~key:room_id (sendMessage room_id);
+     onInput ~key:room_id (saveMessage room_id)]
+    [text ""]
 
 let view model room_id =
   let open Tea.Html in
@@ -99,17 +98,10 @@ let view model room_id =
       get_messages room
       |. Belt.Array.map message_view
       |> Belt.List.fromArray in
-    let input_area =
-      textarea
-        [class' room##roomId;
-         value (new_message_value model room);
-         on_ctrl_enter sendMessage;
-         onInput saveMessage]
-        [] in
     div
       [ id "room-view" ]
       [div [ id "message-list" ] message_list;
-       div [ id "input-area" ] [input_area]]
+       div [ id "input-area" ] [input_area model room_id]]
   | None ->
       div
         [ id "room-view" ]
