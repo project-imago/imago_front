@@ -28,6 +28,11 @@ let update model = function
       let room, room_cmd = Room.update model.room room_msg in
       {model with room},
       Tea.Cmd.map roomMsg room_cmd
+  | CreateGroupMsg create_group_msg ->
+      let create_group, create_group_cmd = Create_group.update
+      model.create_group create_group_msg in
+      {model with create_group},
+      Tea.Cmd.map createGroupMsg create_group_cmd
 
 let view (route : Router.route) model =
   let open Tea.Html in
@@ -38,7 +43,8 @@ let view (route : Router.route) model =
     | Login -> Login.view model.login |> Vdom.map loginMsg
     | Signup -> Signup.view model.signup |> Vdom.map signupMsg
     | Logout -> div [] []
-    | CreateGroup -> Create_group.view model.create_group |> Vdom.map loginMsg
+    | CreateGroup -> Create_group.view model.create_group |> Vdom.map
+    createGroupMsg
     | Room room_id -> Room.view model.room room_id |> Vdom.map roomMsg
   ]
 
