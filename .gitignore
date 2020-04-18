@@ -139,6 +139,8 @@ _build/
 
 # bucklescript 
 lib/es6/src 
+lib/bs
+.bsb.lock
 
 # ocamlbuild targets
 *.byte
