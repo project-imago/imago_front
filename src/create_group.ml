@@ -48,7 +48,7 @@ let obj_search_cmd property obj =
   let url =
     "http://api.imago.local:4000/obj/search"
     ^ "?property=" ^ property
-    ^ "?term=" ^ obj
+    ^ "&term=" ^ obj
   in
   let handle_response response =
     let { status; body; _ } = response in
@@ -83,7 +83,7 @@ let update model = function
       Tea.Cmd.none
   | SaveObjSearch obj ->
       {model with obj_search = obj},
-      obj_search_cmd model.obj_selected obj
+      obj_search_cmd model.property_selected obj
   | SelectObj obj ->
       {model with obj_selected = obj},
       Tea.Cmd.none
@@ -118,7 +118,8 @@ let statement_form_view model =
        onInput savePropertySearch]
       [text model.property_search];
     select
-      [onChange selectProperty]
+      [onChange selectProperty;
+       Tea.Html2.Attributes.size 5]
       (Belt.Array.map model.property_suggestions property_option
       |> Belt.List.fromArray);
     input'
@@ -126,7 +127,8 @@ let statement_form_view model =
        onInput saveObjSearch]
       [text model.obj_search];
     select
-      [onChange selectObj]
+      [onChange selectObj;
+       Tea.Html2.Attributes.size 5]
       (Belt.Array.map model.obj_suggestions obj_option
       |> Belt.List.fromArray);
   ]
