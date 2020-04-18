@@ -33,15 +33,9 @@ type msg =
   | SelectProperty of string
   | SaveObjSearch of string
   | SelectObj of string
-  | ReceivedObjResults of (string array, string Tea.Http.error) Tea.Result.t
+  | ReceivedObjResults of ((string * string array), string Tea.Http.error) Tea.Result.t
   [@@bs.deriving {accessors}]
 
-let decode_response = 
-  let open Tea.Json.Decoder in
-  (* decodeString (list string) json *)
-  (* map (fun ) *)
-  field "results" (array string)
-  |> decodeValue
 
 let obj_search_cmd property obj =
   let open Tea.Http in
@@ -49,6 +43,15 @@ let obj_search_cmd property obj =
     "http://api.imago.local:4000/obj/search"
     ^ "?property=" ^ property
     ^ "&term=" ^ obj
+  in
+    let decode_response = 
+      let open Tea.Json.Decoder in
+      (* decodeString (list string) json *)
+      (* map (fun ) *)
+      map2 (fun a b -> (a, b))
+      (field "term" string)
+      (field "results" (array string))
+      |> decodeValue
   in
   let handle_response response =
     let { status; body; _ } = response in
@@ -69,8 +72,8 @@ let obj_search_cmd property obj =
     ; withCredentials = false
     }
   |> send receivedObjResults
+  (* TODO: debounce, maybe cache *)
   (* |> toTask *)
-  (* |> Tea.Task. *)
 
 let update model = function
   | GoTo _ ->
@@ -90,8 +93,13 @@ let update model = function
   | ReceivedObjResults(Error err) ->
       Js.log err;
       model, Tea.Cmd.none
-  | ReceivedObjResults(Ok results) ->
-      {model with obj_suggestions = results},
+  | ReceivedObjResults(Ok (term, results)) ->
+      let model = if term == model.obj_search then
+        {model with obj_suggestions = results}
+      else
+        model
+      in
+      model,
       Tea.Cmd.none
 
 let statement_list_view model =
