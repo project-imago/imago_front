@@ -3,11 +3,19 @@ type obj = string
 
 type statement = obj Js.Dict.t
 
+module StmCmp =
+  Belt.Id.MakeComparable
+  (struct
+    type t = property
+    let cmp a b = String.compare a b
+  end)
+
 type model =
   {
     matrix_client : Matrix.client ref;
     (* statements : (property * obj) array; *)
-    statements : (obj array) Belt.Map.String.t;
+    (* statements : (obj array) Belt.Map.String.t; *)
+    statements : (StmCmp.t, (obj array), StmCmp.identity) Belt.Map.t;
     property_search : string;
     property_suggestions : property array;
     property_selected : string;
@@ -19,7 +27,7 @@ type model =
 let init matrix_client =
   {
       matrix_client;
-      statements = Belt.Map.String.empty;
+      statements = Belt.Map.make ~id:(module StmCmp);
       property_search = "img:location";
       property_suggestions = [|"img:location"; "img:subgroup"; "img:about"|];
       property_selected = "";
@@ -109,7 +117,7 @@ let update model = function
       Tea.Cmd.none
   | AddStatement ->
       let new_statements = 
-        Belt.Map.String.update model.statements model.property_selected
+        Belt.Map.update model.statements model.property_selected
         (function
           | None -> Some (Belt.Array.make 1 model.obj_selected)
           | Some objs -> Some (Belt.Array.concat objs [|model.obj_selected|])
@@ -119,7 +127,7 @@ let update model = function
         Tea.Cmd.none
   | RemoveObj (property, obj) ->
       let new_statements = 
-        Belt.Map.String.update model.statements property
+        Belt.Map.update model.statements property
         (function
           | None -> None
           | Some objs -> Some (Belt.Array.keep objs (fun x -> x <> obj))
@@ -147,7 +155,7 @@ let statement_list_view model =
     (* text (property ^ ": " ^ obj) *)
   in
   div []
-    (Belt.Map.String.toList model.statements
+    (Belt.Map.toList model.statements
     |. Belt.List.map statement_view)
     (* (Belt.Array.map model.statements statement_view *)
     (* |> Belt.List.fromArray) *)
