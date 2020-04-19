@@ -76,7 +76,9 @@ let update model = function
   (* | Logout -> *)
   (*     {model with chat = Auth.logout model.chat}, Tea.Cmd.none *)
   | Location_changed location ->
-      route_of_location location |> update_route model
+      {model with route = route_of_location location;},
+      Tea.Cmd.none
+      (* route_of_location location |> update_route model *)
   | GoTo route -> update_route model route
   | ChatMsg (GoTo route) -> update_route model route
   | HeaderMsg (GoTo route) -> update_route model route

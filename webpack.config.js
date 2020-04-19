@@ -48,6 +48,9 @@ module.exports = {
         port: 9000,
         //public: 'imago-dev.img',
         publicPath: '/dist/',
+        historyApiFallback: {
+            disableDotRule: true
+        },
         //sockHost: 'imago-dev.img',
         //useLocalIp: false,
         writeToDisk: true
