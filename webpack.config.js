@@ -19,7 +19,8 @@ module.exports = {
         new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({
             filename: './index.html',
-            template: './src/index.ejs'
+            template: './src/index.ejs',
+            title: 'Imago'
         })
         // new MiniCssExtractPlugin()
     ],
