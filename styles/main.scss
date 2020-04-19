@@ -1,9 +1,12 @@
-@import '~sscaffold-css';
+@import "~sscaffold-css";
 
-#body {
-	min-height: 100vh;
-	display: flex;
-	flex-direction: column;
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 15px;
+
+  background-color: aliceblue;
 }
 
 main {
@@ -31,4 +34,54 @@ main {
 
 select {
   height: 10em;
+}
+
+// Ajouts Hadrien
+
+header {
+  margin-bottom: 15px;
+}
+
+#content, #room-view,
+#sidebar,
+header,
+footer {
+  border-radius: 0.4rem;
+  border: 1px gray solid;
+  padding: 15px;
+  background-color: white;
+}
+
+#content, #room-view {
+  margin-left: 15px;
+}
+
+.button,
+button,
+[type="button"],
+[type="reset"],
+[type="submit"] {
+  border: 0.1rem solid #595959;
+  background-color: beige;
+  color: #595959;
+  width: 100%;
+}
+
+header button {
+  width: auto;
+  margin-bottom: 0;
+}
+
+header p {
+  float: right;
+}
+
+footer {
+  margin-top: 15px;
+  font-size: 0.8em;
+  text-align: right;
+}
+
+#debug nav .toggle:before {
+  border: none;
 }
