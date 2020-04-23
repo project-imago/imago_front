@@ -47,23 +47,28 @@ let update_route model = function
       {model with route = route},
       location_of_route route |> Tea.Navigation.newUrl
   | Logout as route ->
+      let () = Auth.logout model.chat.matrix_client in
+      {model with route = route},
+      location_of_route Index |> Tea.Navigation.newUrl
+  | Room _ as route ->
       {model with route = route},
       location_of_route route |> Tea.Navigation.newUrl
-  | Room _ as route ->
+  | Signup _ as route ->
       {model with route = route},
       location_of_route route |> Tea.Navigation.newUrl
 
 let init () location =
+  let chat_model, chat_cmd = Chat.init matrix_client in
   let model =
     {
-      chat = Chat.init_model matrix_client;
+      chat = chat_model;
       content = Content.init matrix_client;
       sidebar = Sidebar.init matrix_client;
       route = Index;
     } in
   let model, location_cmd =
     route_of_location location |> update_route model in
-  let chat_cmd = Chat.init_cmd in
+  (* let chat_cmd = Chat.init_cmd in *)
   let cmd =
     Tea.Cmd.batch [
       Tea.Cmd.map chatMsg chat_cmd;
@@ -83,6 +88,7 @@ let update model = function
   | ChatMsg (GoTo route) -> update_route model route
   | HeaderMsg (GoTo route) -> update_route model route
   | SidebarMsg (GoTo route) -> update_route model route
+  | ContentMsg (GoTo route) -> update_route model route
   | ContentMsg content_msg ->
       let content, content_cmd = Content.update model.content content_msg in
       {model with content},

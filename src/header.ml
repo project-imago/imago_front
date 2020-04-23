@@ -10,6 +10,5 @@ let view signedIn userId =
       ]
      else
        [ p [] [(text "disconnected")];
-        button [ onClick (GoTo Index)] [text "Index"]
        ])
 

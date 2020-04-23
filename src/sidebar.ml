@@ -25,6 +25,8 @@ let equal_to_room room (route : Router.route) =
 
 let room_list_view route model =
   let open Tea.Html in
+  let () = Js.log !(model.matrix_client) in
+  (* TODO: fix trouver si connecté (et username si oui) *)
   let rooms = Js.Dict.values !(model.matrix_client)##store##rooms in
     ul
       []

@@ -104,8 +104,15 @@ type client =
     login:          string
                     -> string Js.Dict.t
                     -> login_response Js.Promise.t [@bs.meth];
+    loginWithPassword:          string
+                    -> string
+                    -> login_response Js.Promise.t [@bs.meth];
+    (* loginWithToken:          string *)
+    (*                 -> login_response Js.Promise.t [@bs.meth]; *)
     logout:         unit
                     -> string Js.Dict.t [@bs.meth];
+    isLoggedIn:     unit
+                    -> bool [@bs.meth];
     (*on:             string -> ([ | `test of event -> room -> bool -> bool -> data -> unit
                                ] [@bs.string]) -> event_emitter [@bs.meth];*)
     getJoinedRooms: unit
@@ -212,11 +219,17 @@ let new_client_params matrix_id access_token =
   let () = Js.Dict.set login_map "userId" matrix_id in
   create_client_params login_map
 
-let login client =
-  let login_map = Js.Dict.empty () in
-  let () = Js.Dict.set login_map "user" "alice" in
-  let () = Js.Dict.set login_map "password" "imago42imago" in
-  client##login "m.login.password" login_map
+(* let login client username password = *)
+  (* let login_map = Js.Dict.empty () in *)
+  (* let () = Js.Dict.set login_map "user" username in *)
+  (* let () = Js.Dict.set login_map "password" password in *)
+  (* client##login "m.login.password" login_map *)
+
+let login_with_password client username password =
+  client##loginWithPassword username password
+
+(* let login_with_token client token = *)
+(*   client##loginWithToken token *)
 
 let logout client =
   client##logout ()
