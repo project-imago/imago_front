@@ -107,6 +107,14 @@ type client =
     loginWithPassword:          string
                     -> string
                     -> login_response Js.Promise.t [@bs.meth];
+    (* register:       string *)
+    (*                 -> string *)
+    (*                 -> login_response Js.Promise.t [@bs.meth]; *)
+    register:       string
+                    -> string
+                    -> string option
+                    -> [%bs.obj: <session: string; _type: string> ] option
+                    -> login_response Js.Promise.t [@bs.meth];
     (* loginWithToken:          string *)
     (*                 -> login_response Js.Promise.t [@bs.meth]; *)
     logout:         unit
@@ -230,6 +238,12 @@ let login_with_password client username password =
 
 (* let login_with_token client token = *)
 (*   client##loginWithToken token *)
+
+(* let register client username password = *)
+(*   client##register username password *)
+
+let register client username password session_id auth =
+  client##register username password session_id auth 
 
 let logout client =
   client##logout ()

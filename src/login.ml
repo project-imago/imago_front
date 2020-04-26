@@ -59,15 +59,18 @@ let view model =
   let open Tea.Html in
   div []
   [
-    input'
-      [type' "text";
-       onInput saveUserName]
-      [text model.username];
-    input'
-      [type' "password";
-       onInput savePassword]
-      [text model.password];
-    button
-      [onClick login]
-      [text "Login"]
+    form [Tea.Html2.Events.onSubmit login]
+    [
+      input'
+        [type' "text";
+         onInput saveUserName]
+        [text model.username];
+      input'
+        [type' "password";
+         onInput savePassword]
+        [text model.password];
+      button
+        [type' "submit"]
+        [text "Login"]
+    ]
   ]

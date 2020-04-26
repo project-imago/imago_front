@@ -15,7 +15,12 @@ type msg =
   | GoTo of Router.route
   [@@bs.deriving {accessors}]
 
-let msg_to_string _msg = "content msg"
+let msg_to_string = function
+  | RoomMsg msg -> "room msg" (*Room.msg_to_string msg*)
+  | LoginMsg msg -> "login msg" (*Login.msg_to_string msg*)
+  | SignupMsg msg -> Signup.msg_to_string msg
+  | CreateGroupMsg msg -> "create group msg" (*CreateGroup.msg_to_string msg*)
+  | GoTo msg -> "goto"
 
 let init matrix_client = 
   {
@@ -43,8 +48,11 @@ let update model = function
       Tea.Cmd.map loginMsg login_cmd
   | GoTo route ->
       model, Tea.Cmd.none
-  | SignupMsg _signup_msg ->
-      model, Tea.Cmd.none
+  | SignupMsg (GoTo route) -> model, Tea.Cmd.msg (GoTo route)
+  | SignupMsg signup_msg ->
+      let signup, signup_cmd = Signup.update model.signup signup_msg in
+      {model with signup},
+      Tea.Cmd.map signupMsg signup_cmd
 
 let logged_out_index_view model =
   let open Tea.Html in

@@ -16,7 +16,7 @@ type msg =
 let msg_to_string (msg : msg) =
   match msg with
   | ChatMsg chatMsg -> "chat msg: " ^ Chat.msg_to_string chatMsg
-  | ContentMsg contentMsg -> "chat msg: " ^ Content.msg_to_string contentMsg
+  | ContentMsg contentMsg -> Content.msg_to_string contentMsg
   | HeaderMsg headerMsg -> "header msg"
   | SidebarMsg sidebarMsg -> "sidebar msg"
   | Location_changed _ -> "location changed"
