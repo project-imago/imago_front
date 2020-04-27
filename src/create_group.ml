@@ -1,33 +1,22 @@
-type property = string
-type obj = {item : string; label : string; description : string}
-
-type statement = obj Js.Dict.t
-
-module StmCmp =
-  Belt.Id.MakeComparable
-  (struct
-    type t = property
-    let cmp a b = String.compare a b
-  end)
 
 type model =
   {
     matrix_client : Matrix.client ref;
     (* statements : (property * obj) array; *)
     (* statements : (obj array) Belt.Map.String.t; *)
-    statements : (StmCmp.t, (obj array), StmCmp.identity) Belt.Map.t;
+    statements : Group.Statements.t;
     property_search : string;
-    property_suggestions : property array;
+    property_suggestions : Group.Statements.property array;
     property_selected : string option;
     obj_search : string;
-    obj_suggestions : obj array;
-    obj_selected : obj option;
+    obj_suggestions : Group.Statements.obj array;
+    obj_selected : Group.Statements.obj option;
   }
 
 let init matrix_client =
   {
       matrix_client;
-      statements = Belt.Map.make ~id:(module StmCmp);
+      statements = Group.Statements.empty;
       property_search = "img:location";
       property_suggestions = [|"img:location"; "img:subgroup"; "img:about"|];
       property_selected = None;
@@ -42,9 +31,12 @@ type msg =
   | SelectProperty of string
   | SaveObjSearch of string
   | SelectObj of string
-  | ReceivedObjResults of ((string * obj array), string Tea.Http.error) Tea.Result.t
+  | ReceivedObjResults of ((string * Group.Statements.obj array), string Tea.Http.error) Tea.Result.t
   | AddStatement
-  | RemoveObj of string * obj
+  | RemoveObj of string * Group.Statements.obj
+  | CreateGroup
+  | CreatedGroup of (Matrix.create_room_response, string) Tea.Result.t
+  | SentGroupEvents of (string array, string) Tea.Result.t
   [@@bs.deriving {accessors}]
   (* TODO: rename module so its used for create and edit *)
   (* TODO: add create/edit room *)
@@ -56,22 +48,22 @@ let obj_search_cmd property obj =
     ^ "?property=" ^ property
     ^ "&term=" ^ obj
   in
-    let decode_response = 
-      let open Tea.Json.Decoder in
-      (* decodeString (list string) json *)
-      (* map (fun ) *)
-      map2 (fun a b -> (a, b))
-        (field "term" string)
-        (field "results"
-          (array
-            (map3 (fun a b c -> {item = a; label = b; description = c})
-              (field "item" string)
-              (field "label" string)
-              (field "description" string)
-            )
+  let decode_response = 
+    let open Tea.Json.Decoder in
+    (* decodeString (list string) json *)
+    (* map (fun ) *)
+    map2 (fun a b -> (a, b))
+      (field "term" string)
+      (field "results"
+        (array
+          (map3 (fun a b c : Group.Statements.obj -> {item = a; label = b; description = c})
+            (field "item" string)
+            (field "label" string)
+            (field "description" string)
           )
         )
-      |> decodeValue
+      )
+    |> decodeValue
   in
   let handle_response response =
     let { status; body; _ } = response in
@@ -92,10 +84,42 @@ let obj_search_cmd property obj =
     ; withCredentials = false
     }
   |> send receivedObjResults
-  (* TODO: fetch with IRI,
-   * use it so property/obj are (IRI * "name (description)") *)
   (* TODO: debounce, maybe cache *)
   (* |> toTask *)
+
+let create_group_cmd model =
+  (* let group = Group.create_group model.statements in *)
+  (* Tea.Cmd.msg (GoTo group) *)
+  (* Tea.Cmd.msg (GoTo Index) *)
+  let options : Matrix.create_room_options =
+    [%bs.obj {
+      invite = [||];
+      name = "Project name";
+      room_alias_name = ""; (*TODO send undefined (None) *)
+      topic = "Project topic";
+      visibility = "public";
+    }] in
+  !(model.matrix_client)##createRoom options
+  |. Tea_promise.result createdGroup
+  (* |> Js.Promise.then_ (fun result -> *)
+  (*     !(model.matrix_client)##sendStateEvent result##room_id *)
+  (*     "pm.imago.groups.statement" {objects = objects} property *)
+  (*     ) *)
+
+let send_group_events_cmd model room_id =
+  model.statements
+  |> Belt.Map.toArray
+  |. Belt.Array.map (fun (property, obj_array) ->
+      let obj_items = Belt.Array.map obj_array (fun o -> o.item) in
+      !(model.matrix_client)##sendStateEvent room_id
+      "pm.imago.groups.statement" [%bs.obj {objects = obj_items}] property
+    )
+  |> Js.Promise.all
+  |. Tea_promise.result sentGroupEvents
+  (* TODO: add type group *)
+    
+  (* !(model.matrix_client)##sendStateEvent room_id *)
+  (* "pm.imago.groups.statement" {objects = objects} property *)
 
 let update model = function
   | GoTo _ ->
@@ -157,11 +181,27 @@ let update model = function
       in
         {model with statements = new_statements},
         Tea.Cmd.none
+  | CreateGroup ->
+      model,
+      create_group_cmd model
+  | CreatedGroup (Tea.Result.Ok res) ->
+      model, (* TODO: add room_id in state to use for edit group *)
+      send_group_events_cmd model res##room_id
+  | CreatedGroup (Tea.Result.Error err) ->
+      Js.Exn.raiseError "erreur" |> ignore;
+      let () = Js.log ("create group failed: " ^ err) in
+      model, Tea.Cmd.none
+  | SentGroupEvents (Tea.Result.Ok res) ->
+      Js.log res;
+      model, Tea.Cmd.none
+  | SentGroupEvents (Tea.Result.Error err) ->
+      Js.log err;
+      model, Tea.Cmd.none
 
 
 let statement_list_view model =
   let open Tea.Html in
-  let obj_view property obj =
+  let obj_view property (obj : Group.Statements.obj) =
     div []
     [
       div [] [text (obj.label ^ " (" ^ obj.description ^ ")")];
@@ -195,7 +235,7 @@ let statement_form_view model =
   (*   let open Vdom in *)
   (*   if b then attribute "" "selected" "true" else attribute "" "selected" "false" *)
   (* in *)
-  let obj_option obj =
+  let obj_option (obj : Group.Statements.obj) =
     option'
       [value obj.item; Attributes.selected (is_obj_selected model obj)]
       [text (obj.label ^ " (" ^ obj.description ^ ")")]
@@ -222,7 +262,10 @@ let statement_form_view model =
       |> Belt.List.fromArray);
     button
       [onClick addStatement]
-      [text "Add"]
+      [text "Add"];
+    button
+      [onClick createGroup]
+      [text "Create group"]
   ]
 
 let view model =

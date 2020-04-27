@@ -96,6 +96,17 @@ type login_response =
     device_id:    device_id;
   > Js.t
 
+type create_room_options =
+  < room_alias_name: string;
+    visibility:      string; (* either public or private *)
+    invite:          user_id array;
+    name:            string;
+    topic:           string;
+  > Js.t
+
+type create_room_response =
+  <room_id: room_id; room_alias: string option> Js.t
+
 type client =
   < credentials:    < userId : user_id > Js.t;
     clientRunning:  bool;
@@ -123,10 +134,17 @@ type client =
                     -> bool [@bs.meth];
     (*on:             string -> ([ | `test of event -> room -> bool -> bool -> data -> unit
                                ] [@bs.string]) -> event_emitter [@bs.meth];*)
+    createRoom:     create_room_options
+                    -> create_room_response Js.Promise.t [@bs.meth];
     getJoinedRooms: unit
                     -> (<joined_rooms: room_id array> Js.t) Js.Promise.t [@bs.meth];
     sendMessage:    room_id
                     -> event_content
+                    -> string Js.Promise.t [@bs.meth];
+    sendStateEvent: room_id
+                    -> string (* event type *)
+                    -> [%bs.obj: <objects: string array;> ] (* can be anything *)
+                    -> string (* state key *)
                     -> string Js.Promise.t [@bs.meth];
     store:          store;
   > Js.t

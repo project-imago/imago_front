@@ -111,12 +111,13 @@ let update model = function
       model, Tea.Cmd.none
 
 let subscriptions model =
-  let () = Js.log "chat subs" in
+  (* let () = Js.log "chat subs" in *)
   match !(model.matrix_client)##clientRunning with
   | true ->
       Tea.Sub.batch
         [ Matrix.subscribe !(model.matrix_client) gotMessage
-        ; Matrix.subscribe_once !(model.matrix_client) sync
+        ; Matrix.subscribe_once !(model.matrix_client) sync (* TODO: move so it's
+        really once *)
         ]
   | false ->
       Tea.Sub.none
