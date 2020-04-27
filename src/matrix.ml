@@ -97,7 +97,7 @@ type login_response =
   > Js.t
 
 type create_room_options =
-  < room_alias_name: string;
+  < room_alias_name: string option;
     visibility:      string; (* either public or private *)
     invite:          user_id array;
     name:            string;
@@ -141,11 +141,11 @@ type client =
     sendMessage:    room_id
                     -> event_content
                     -> string Js.Promise.t [@bs.meth];
-    sendStateEvent: room_id
-                    -> string (* event type *)
-                    -> [%bs.obj: <objects: string array;> ] (* can be anything *)
-                    -> string (* state key *)
-                    -> string Js.Promise.t [@bs.meth];
+    (* sendStateEvent: room_id *)
+    (*                 -> string (1* event type *1) *)
+    (*                 -> [%bs.obj: <objects: string array;> ] (1* can be anything *1) *)
+    (*                 -> string (1* state key *1) *)
+    (*                 -> string Js.Promise.t [@bs.meth]; *)
     store:          store;
   > Js.t
 
@@ -153,6 +153,24 @@ external start_client:
   client
   -> unit
   = "startClient" [@@bs.send]
+
+external sendStateEventStatement:
+  client
+  -> room_id
+  -> string (* event type *)
+  -> [%bs.obj: <objects: string array;> ] (* can be anything *)
+  -> string (* state key *)
+  -> string Js.Promise.t
+  = "sendStateEvent" [@@bs.send]
+
+external sendStateEventType:
+  client
+  -> room_id
+  -> string (* event type *)
+  -> [%bs.obj: <_type: string;> ] (* can be anything *)
+  -> string (* state key *)
+  -> string Js.Promise.t
+  = "sendStateEvent" [@@bs.send]
 
 external on:
   client

@@ -95,7 +95,7 @@ let create_group_cmd model =
     [%bs.obj {
       invite = [||];
       name = "Project name";
-      room_alias_name = ""; (*TODO send undefined (None) *)
+      room_alias_name = None; (*TODO send undefined (None) *)
       topic = "Project topic";
       visibility = "public";
     }] in
@@ -111,9 +111,13 @@ let send_group_events_cmd model room_id =
   |> Belt.Map.toArray
   |. Belt.Array.map (fun (property, obj_array) ->
       let obj_items = Belt.Array.map obj_array (fun o -> o.item) in
-      !(model.matrix_client)##sendStateEvent room_id
+      Matrix.sendStateEventStatement !(model.matrix_client) room_id
       "pm.imago.groups.statement" [%bs.obj {objects = obj_items}] property
     )
+  |. Belt.Array.concat [|
+      Matrix.sendStateEventType !(model.matrix_client) room_id
+      "pm.imago.type" [%bs.obj {_type = "group"}] ""
+      |]
   |> Js.Promise.all
   |. Tea_promise.result sentGroupEvents
   (* TODO: add type group *)
