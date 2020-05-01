@@ -23,23 +23,104 @@ let equal_to_room room (route : Router.route) =
   | Room room_id -> room_id = room##roomId
   | _ -> false
 
+module RoomCmp =
+  Belt.Id.MakeComparable
+  (struct
+    type t = Matrix.room option
+    let cmp ao bo = match (ao, bo) with
+    | (Some a, Some b) ->
+      String.compare a##roomId b##roomId
+    | (Some _, None) -> -1
+    | (None, Some _) -> 1
+    | (None, None) -> 0
+  end)
+
+type room_tree = (RoomCmp.t, (Matrix.room list), RoomCmp.identity) Belt.Map.t
+
+type room_type =
+  | Group
+  | SubChat of Matrix.room
+  | Chat
+
+let get_room_type room client =
+  let room_state = room##currentState in
+  let state_type = Matrix.get_state_type room_state in
+  let () = Js.log state_type in
+  match state_type with
+  | [|state_event|] ->
+      (match (state_event##getContent ())##_type with
+      | "group" -> Group
+      | _ -> Chat)
+  | [||] -> Chat
+  | _ ->
+      (* let state_parent = Matrix.get_state_parent room_state *)
+      (* match state_parent with *)
+      Chat
+      (* SubChat (client##getRoom room##roomId) *)
+
+
 let room_list_view route model =
   let open Tea.Html in
   (* let () = Js.log !(model.matrix_client) in *)
   (* TODO: fix trouver si connecté (et username si oui) *)
   let rooms = Js.Dict.values !(model.matrix_client)##store##rooms in
-    ul
-      []
-      (rooms
-      |. Belt.Array.map (fun room ->
-          let room_name_text =
-            if equal_to_room room route then
-              text ("* " ^ room##name)
-            else
-              text room##name in
-        li [] [button [ onClick (GoTo (Room room##roomId))]
-        [room_name_text]])
-      |> Belt.List.fromArray)
+  let rooms_t_empty = Belt.Map.make ~id:(module RoomCmp) in
+  let rooms_t : room_tree =
+    Belt.Array.reduce rooms rooms_t_empty (fun acc room ->
+      match get_room_type room !(model.matrix_client) with
+      | Group ->
+          Belt.Map.set acc (Some room) []
+      | SubChat group ->
+          Belt.Map.update acc (Some group)
+          (function
+            | None -> Some (Belt.List.make 1 room)
+            | Some chats -> Some (Belt.List.concat chats [room])
+          )
+      | Chat ->
+          Belt.Map.update acc (None)
+          (function
+            | None -> Some (Belt.List.make 1 room)
+            | Some chats -> Some (Belt.List.concat chats [room])
+          )
+  ) in
+  let room_view room =
+    (* let () = Js.log room in *)
+    (* let () = Js.log !(model.matrix_client) in *)
+    let room_name_text =
+      if equal_to_room room route then
+        text ("* " ^ room##name)
+      else
+        text room##name in
+    li [] [button [ onClick (GoTo (Room room##roomId))]
+      [room_name_text]]
+  in
+  let group_view (group, chats) =
+    match group with
+    | Some g ->
+        div [] [
+          div [] [
+            text g##name
+          ];
+          ul []
+          (Belt.List.map chats room_view)
+        ]
+    | None ->
+        div [] [
+          div [] [
+            text "Outside groups"
+          ];
+          ul []
+          (Belt.List.map chats room_view)
+        ]
+  in
+  ul
+    []
+    (* (rooms *)
+    (* |. Belt.Array.map room_view *)
+    (* |> Belt.List.fromArray) *)
+    (Belt.Map.toList rooms_t
+    |. Belt.List.map group_view
+    )
 
 let view route model =
   let open Tea.Html in

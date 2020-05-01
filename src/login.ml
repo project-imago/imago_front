@@ -58,6 +58,8 @@ let update model = function
   | ListInfo (Tea.Result.Error err) ->
       let () = Js.log err in
       model, Tea.Cmd.none
+  | GoTo _ -> (* this should never match *)
+      model, Tea.Cmd.none
 
 let view model =
   let open Tea.Html in

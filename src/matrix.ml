@@ -5,7 +5,6 @@ type home_server =  string
 type device_id =    string
 type login_map =    string Js.Dict.t
 type re_emitter
-type room_state
 type group
 type data
 type filter
@@ -64,6 +63,20 @@ type room_summary =
   < info : < title : string > Js.t;
     roomId : room_id;
   > Js.t
+
+type room_state =
+  <
+    truc: string;
+  > Js.t
+
+type state_type =
+  < getContent: unit -> <_type: string> Js.t [@bs.meth] > Js.t
+
+external get_state_type:
+  room_state
+  -> (_ [@bs.as "pm.imago.type"])
+  -> state_type array
+  = "getStateEvents" [@@bs.send]
 
 type room =
   < accountData:  account_data;
@@ -147,6 +160,8 @@ type client =
     (*                 -> string (1* state key *1) *)
     (*                 -> string Js.Promise.t [@bs.meth]; *)
     store:          store;
+    getRoom:        room_id
+                    -> room [@bs.meth]
   > Js.t
 
 external start_client:
