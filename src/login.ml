@@ -44,7 +44,11 @@ let update model = function
   | LoggedIn (Tea.Result.Ok res) -> 
       let () = Js.log res in
       let () = Matrix.start_client !(model.matrix_client) in
-      model, Tea.Cmd.msg (GoTo Index) (*save_cmd !(model.matrix_client)*)
+      model,
+      Tea.Cmd.batch
+      [ Tea.Cmd.msg (GoTo Index);
+      save_cmd !(model.matrix_client)
+  ]
   | LoggedIn (Tea.Result.Error err) -> 
       let () = Js.log ("login failed: " ^ err) in
       model, Tea.Cmd.none
