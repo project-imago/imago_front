@@ -1,7 +1,7 @@
 @import "~sscaffold-css";
 
 #body {
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
   padding: 15px;
@@ -12,6 +12,7 @@
 main {
   display: flex;
   flex-direction: row;
+  min-height: 0;
 }
 
 #content {
@@ -26,6 +27,7 @@ main {
 
 #message-list {
   flex-grow: 1;
+  overflow-y: scroll;
 }
 
 #input-area {
@@ -86,12 +88,12 @@ footer {
 
 #sidebar {
   // padding: 0;
+  background-color: #d6dfe8;
+  overflow-y: auto;
 
   .button {
     // margin: 5px;
   }
-
-  background-color: #d6dfe8;
 
   ul {
     margin: 0;
