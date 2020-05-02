@@ -43,10 +43,6 @@ form {
   margin-left: auto;
   margin-right: auto;
   margin-top: 30px;
-
-  button {
-    width: auto;
-  }
 }
 
 header {
@@ -87,6 +83,19 @@ footer {
 
 #content, #room-view {
   margin-left: 15px;
+}
+
+#logged-out-index {
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 30px;
+
+    text-align: center;
+
+  button {
+    display: block;
+  }
 }
 
 .button,

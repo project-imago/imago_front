@@ -66,11 +66,15 @@ let update model = function
 
 let logged_out_index_view _model =
   let open Tea.Html in
-  div []
+  div [id "logged-out-index"]
   [
-    text "Welcome";
-    button [ onClick (GoTo Login)] [text "Login"];
-    button [ onClick (GoTo Signup)] [text "Signup"];
+    p [id "welcome"]
+    [text "Welcome, please sign in"];
+    Router.link goTo Login
+    (div [class' "button"] [text "Login"]);
+    br' [] [];
+    Router.link goTo Signup
+    (div [class' "button"] [text "Signup"]);
   ]
 
 let logged_in_index_view _model =
@@ -79,7 +83,7 @@ let logged_in_index_view _model =
   [ text "Welcome"; ]
 
 let index_view model =
-  if !(model.matrix_client)##isLoggedIn () then
+  if (Auth.is_logged_in model.matrix_client) then
     logged_in_index_view model
   else
     logged_out_index_view model
