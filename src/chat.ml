@@ -41,7 +41,7 @@ let promiseToTask promise =
       ()
     )
 
-let restore_cmd matrix_client =
+let restore_cmd _matrix_client =
   [
     Tea.Ex.LocalStorage.getItem "access_token";
     Tea.Ex.LocalStorage.getItem "matrix_id";

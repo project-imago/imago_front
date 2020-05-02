@@ -5,6 +5,7 @@ type model =
     login : Login.model;
     signup : Signup.model;
     create_group : Create_group.model;
+    create_chat : Create_chat.model;
   }
 
 type msg =
@@ -12,15 +13,17 @@ type msg =
   | LoginMsg of Login.msg
   | SignupMsg of Signup.msg
   | CreateGroupMsg of Create_group.msg
+  | CreateChatMsg of Create_chat.msg
   | GoTo of Router.route
   [@@bs.deriving {accessors}]
 
 let msg_to_string = function
-  | RoomMsg msg -> "room msg" (*Room.msg_to_string msg*)
-  | LoginMsg msg -> "login msg" (*Login.msg_to_string msg*)
+  | RoomMsg _msg -> "room msg" (*Room.msg_to_string msg*)
+  | LoginMsg _msg -> "login msg" (*Login.msg_to_string msg*)
   | SignupMsg msg -> Signup.msg_to_string msg
-  | CreateGroupMsg msg -> "create group msg" (*CreateGroup.msg_to_string msg*)
-  | GoTo msg -> "goto"
+  | CreateGroupMsg _msg -> "create group msg" (*CreateGroup.msg_to_string msg*)
+  | CreateChatMsg _msg -> "create chat msg"
+  | GoTo _msg -> "goto"
 
 let init matrix_client = 
   {
@@ -29,6 +32,7 @@ let init matrix_client =
     login = Login.init matrix_client;
     signup = Signup.init matrix_client;
     create_group = Create_group.init matrix_client;
+    create_chat = Create_chat.init matrix_client;
   }
 
 let update model = function
@@ -46,7 +50,7 @@ let update model = function
       let login, login_cmd = Login.update model.login login_msg in
       {model with login},
       Tea.Cmd.map loginMsg login_cmd
-  | GoTo route ->
+  | GoTo _ -> (* this should never match *)
       model, Tea.Cmd.none
   | SignupMsg (GoTo route) -> model, Tea.Cmd.msg (GoTo route)
   | SignupMsg signup_msg ->
@@ -54,7 +58,7 @@ let update model = function
       {model with signup},
       Tea.Cmd.map signupMsg signup_cmd
 
-let logged_out_index_view model =
+let logged_out_index_view _model =
   let open Tea.Html in
   div []
   [
@@ -63,7 +67,7 @@ let logged_out_index_view model =
     button [ onClick (GoTo Signup)] [text "Signup"];
   ]
 
-let logged_in_index_view model =
+let logged_in_index_view _model =
   let open Tea.Html in
   div []
   [ text "Welcome"; ]
@@ -80,12 +84,24 @@ let view (route : Router.route) model =
   div [ id "content" ]
   [
     match route with
-    | Index -> index_view model
-    | Login -> Login.view model.login |> Vdom.map loginMsg
-    | Signup -> Signup.view model.signup |> Vdom.map signupMsg
-    | Logout -> div [] []
-    | CreateGroup -> Create_group.view model.create_group |> Vdom.map
-    createGroupMsg
-    | Room room_id -> Room.view model.room room_id |> Vdom.map roomMsg
+    | Index ->
+        index_view model
+    | Login ->
+        Login.view model.login
+        |> Vdom.map loginMsg
+    | Signup ->
+        Signup.view model.signup
+        |> Vdom.map signupMsg
+    | Logout ->
+        div [] []
+    | CreateGroup ->
+        Create_group.view model.create_group
+        |> Vdom.map createGroupMsg
+    | Room room_id ->
+        Room.view model.room room_id
+        |> Vdom.map roomMsg
+    | CreateChat maybe_group ->
+        Create_chat.view model.create_chat maybe_group
+        |> Vdom.map createChatMsg
   ]
 

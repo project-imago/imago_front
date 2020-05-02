@@ -17,8 +17,8 @@ let msg_to_string (msg : msg) =
   match msg with
   | ChatMsg chatMsg -> "chat msg: " ^ Chat.msg_to_string chatMsg
   | ContentMsg contentMsg -> Content.msg_to_string contentMsg
-  | HeaderMsg headerMsg -> "header msg"
-  | SidebarMsg sidebarMsg -> "sidebar msg"
+  | HeaderMsg _headerMsg -> "header msg"
+  | SidebarMsg _sidebarMsg -> "sidebar msg"
   | Location_changed _ -> "location changed"
   | GoTo _ -> "go to"
   (* | Logout -> "logout" *)
@@ -36,24 +36,11 @@ let update_route model = function
   (* | ChatRoute chat_route -> *)
   (*     let chat, route = Chat.update_route model.chat chat_route in *)
   (*     {chat; route}, location_of_route route |> Tea.Navigation.newUrl *)
-  | CreateGroup as route ->
-      (* let chat = Chat.reset_route model.chat in *)
-      {model with route = route},
-      location_of_route route |> Tea.Navigation.newUrl
-  | Index as route ->
-      {model with route = route},
-      location_of_route route |> Tea.Navigation.newUrl
-  | Login as route ->
-      {model with route = route},
-      location_of_route route |> Tea.Navigation.newUrl
   | Logout as route ->
       let () = Auth.logout model.chat.matrix_client in
       {model with route = route},
       location_of_route Index |> Tea.Navigation.newUrl
-  | Room _ as route ->
-      {model with route = route},
-      location_of_route route |> Tea.Navigation.newUrl
-  | Signup _ as route ->
+  | route ->
       {model with route = route},
       location_of_route route |> Tea.Navigation.newUrl
 

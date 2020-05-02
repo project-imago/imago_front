@@ -95,7 +95,7 @@ let create_group_cmd model =
     [%bs.obj {
       invite = [||];
       name = "Project name";
-      room_alias_name = None; (*TODO send undefined (None) *)
+      room_alias_name = None;
       topic = "Project topic";
       visibility = "public";
     }] in
@@ -119,7 +119,6 @@ let send_group_events_cmd model room_id =
       |]
   |> Js.Promise.all
   |. Tea_promise.result sentGroupEvents
-  (* TODO: add type group *)
     
   (* !(model.matrix_client)##sendStateEvent room_id *)
   (* "pm.imago.groups.statement" {objects = objects} property *)
@@ -273,7 +272,7 @@ let statement_form_view model =
 
 let view model =
   let open Tea.Html in
-  div []
+  div [id "create-group"]
   [
     statement_list_view model;
     statement_form_view model;

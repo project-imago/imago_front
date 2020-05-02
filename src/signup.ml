@@ -22,12 +22,12 @@ type msg =
   [@@bs.deriving {accessors}]
 
 let msg_to_string = function
-  | SaveUserName msg -> "save username"
-  | SavePassword msg -> "save password"
+  | SaveUserName _msg -> "save username"
+  | SavePassword _msg -> "save password"
   | Register -> "register"
-  | Registered msg -> "registered" (*CreateGroup.msg_to_string msg*)
-  | GoTo msg -> "goto"
-  | ListInfo msg -> "list info"
+  | Registered _msg -> "registered" (*CreateGroup.msg_to_string msg*)
+  | GoTo _msg -> "goto"
+  | ListInfo _msg -> "list info"
 
 (* let result promise msg = *)
 (*   let open Vdom in *)
@@ -92,7 +92,6 @@ let update model = function
       let () = Matrix.start_client !(model.matrix_client) in
       model, Tea.Cmd.msg (GoTo Index) (*save_cmd !(model.matrix_client)*)
   | Registered (Tea.Result.Error err) -> 
-      Js.Exn.raiseError "erreur";
       let () = Js.log ("register failed: " ^ err) in
       model, Tea.Cmd.none
   | ListInfo (Tea.Result.Ok res) ->
@@ -100,6 +99,8 @@ let update model = function
       model, Tea.Cmd.none
   | ListInfo (Tea.Result.Error err) ->
       let () = Js.log err in
+      model, Tea.Cmd.none
+  | GoTo _ -> (* this should never match *)
       model, Tea.Cmd.none
 
 let view model =

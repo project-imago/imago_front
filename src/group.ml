@@ -15,5 +15,5 @@ module Statements = struct
     Belt.Map.make ~id:(module StmCmp)
 end
 
-let create_group (statements: Statements.t) =
+let create_group (_statements: Statements.t) =
   ()

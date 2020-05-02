@@ -7,15 +7,25 @@ type route =
   | CreateChat of Matrix.room_id option
   | Room of Matrix.room_id
 
+module StringCmp =
+  Belt.Id.MakeComparable
+  (struct
+    type t = string
+    let cmp a b = String.compare a b
+  end)
+
+type route_params = (StringCmp.t, string, StringCmp.identity) Belt.Map.t
+(* we use Belt.Map until Belt.Map.String is fixed *)
+
 let route_of_location location =
   let parse_params params =
     params
     |> Js.String.sliceToEnd ~from:1
     |> Js.String.split "&"
-    |. Belt.Array.reduce Belt.Map.String.empty  (fun acc param ->
+    |. Belt.Array.reduce (Belt.Map.make ~id:(module StringCmp))  (fun acc param ->
         match Js.String.split param "=" with
         | [|key; value|] ->
-          Belt.Map.String.set acc key value
+          Belt.Map.set acc key value
         | _ -> acc
         )
   in
@@ -29,7 +39,7 @@ let route_of_location location =
   | [|""; "room"; "new"|] ->
       let group =
         parse_params location.Web.Location.search
-        |. Belt.Map.String.get "group" in
+        |. Belt.Map.get "group" in
       CreateChat group
   | [|""; "room"; room_id|] -> Room room_id
   | _ -> Index  (* default route *)

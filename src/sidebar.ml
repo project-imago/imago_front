@@ -42,7 +42,7 @@ type room_type =
   | SubChat of Matrix.room
   | Chat
 
-let get_room_type room client =
+let get_room_type room _client =
   let room_state = room##currentState in
   let state_type = Matrix.get_state_type room_state in
   let () = Js.log state_type in
