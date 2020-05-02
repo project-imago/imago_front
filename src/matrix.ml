@@ -169,6 +169,11 @@ external start_client:
   -> unit
   = "startClient" [@@bs.send]
 
+external stop_client:
+  client
+  -> unit
+  = "stopClient" [@@bs.send]
+
 external sendStateEventStatement:
   client
   -> room_id
@@ -220,10 +225,13 @@ external off:
 external once:
   client
   -> ([ | `sync of
-          string
-          -> string
-          -> string
+          string    (* state *)
+          -> string (* prevState *)
+          -> string (* data *)
           -> unit
+        | `logged_out of
+          string
+          -> unit [@bs.as "Session.logged_out"]
       ] [@bs.string])
   -> event_emitter
   = "once" [@@bs.send]
@@ -258,11 +266,21 @@ let subscribe client tagger =
       ()
   in Tea_sub.registration "test" enableCall
 
-let subscribe_once client tagger =
+let subscribe_once_sync client tagger =
   let open Vdom in
   let enableCall callbacks =
-    let args = (`sync (fun state _prevState _data ->
-          callbacks.enqueue (tagger state))) in
+    let args = (`sync (fun state prevState data ->
+          callbacks.enqueue (tagger state prevState data))) in
+    let _ = once client args in
+    fun () ->
+      ()
+  in Tea_sub.registration "sync" enableCall
+
+let subscribe_once_logged_out client tagger =
+  let open Vdom in
+  let enableCall callbacks =
+    let args = (`logged_out (fun error ->
+          callbacks.enqueue (tagger error))) in
     let _ = once client args in
     fun () ->
       ()

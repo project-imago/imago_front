@@ -78,17 +78,28 @@ let form_view model maybe_group =
   let open Tea.Html in
   form [Tea.Html2.Events.onSubmit (createChat maybe_group)]
   [
-    input'
-      [type' "text";
-       onInput saveName]
-      [text model.name];
-    input'
-      [type' "text";
-       onInput saveTopic]
-      [text model.topic];
-    button
-      [type' "submit"]
-      [text "Send"]
+    fieldset []
+    [
+      label
+        [for' "name-field"]
+        [text "Name"];
+      input'
+        [type' "text";
+         id "name-field";
+         onInput saveName]
+        [text model.name];
+      label
+        [for' "topic-field"]
+        [text "Topic"];
+      input'
+        [type' "text";
+         id "topic-field";
+         onInput saveTopic]
+        [text model.topic];
+      button
+        [type' "submit"]
+        [text "Send"]
+    ]
   ]
 
   let view model maybe_group =

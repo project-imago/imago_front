@@ -57,6 +57,12 @@ let update model = function
       let signup, signup_cmd = Signup.update model.signup signup_msg in
       {model with signup},
       Tea.Cmd.map signupMsg signup_cmd
+  | CreateChatMsg (GoTo route) -> model, Tea.Cmd.msg (GoTo route)
+  | CreateChatMsg create_chat_msg ->
+      let create_chat, create_chat_cmd = Create_chat.update model.create_chat
+      create_chat_msg in
+      {model with create_chat},
+      Tea.Cmd.map createChatMsg create_chat_cmd
 
 let logged_out_index_view _model =
   let open Tea.Html in

@@ -6,6 +6,7 @@ type msg =
   | RestoredSession of (string * string, string) Tea.Result.t
   | GotMessage of Matrix.event
   | Sync of string
+  | LoggedOut of string
   [@@bs.deriving {accessors}]
 
 let msg_to_string (msg : msg) =
@@ -15,6 +16,7 @@ let msg_to_string (msg : msg) =
   | RestoredSession _ -> "restored session"
   | GotMessage _ -> "got msg"
   | Sync _ -> "sync"
+  | LoggedOut _ -> "logged out"
 
 
 type model =
@@ -68,7 +70,16 @@ let restore_cmd _matrix_client =
       Tea_task.succeed (access_token, matrix_id))
   |> Tea_task.attempt restoredSession
 
+let remove_storage_cmd : msg Tea.Cmd.t =
+  Tea.Cmd.batch [
+    Tea.Ex.LocalStorage.removeItemCmd "access_token";
+    Tea.Ex.LocalStorage.removeItemCmd "matrix_id"
+  ]
+
 (* let init_cmd = restore_cmd *)
+
+let create_client () = 
+  Matrix.create_client "https://matrix.imago.local:8448"
 
 let init matrix_client =
   {
@@ -109,6 +120,10 @@ let update model = function
   | Sync state ->
       let () = Js.log state in
       model, Tea.Cmd.none
+  | LoggedOut state ->
+      let () = Js.log state in
+      (* let () = Auth.logout model.matrix_client in *)
+      model, Tea.Cmd.none
 
 let subscriptions model =
   (* let () = Js.log "chat subs" in *)
@@ -116,8 +131,9 @@ let subscriptions model =
   | true ->
       Tea.Sub.batch
         [ Matrix.subscribe !(model.matrix_client) gotMessage
-        ; Matrix.subscribe_once !(model.matrix_client) sync (* TODO: move so it's
-        really once *)
+        ; Matrix.subscribe_once_logged_out !(model.matrix_client) loggedOut
+        (* ; Matrix.subscribe_once !(model.matrix_client) sync *)
+        (* TODO: move so it's really once *)
         ]
   | false ->
       Tea.Sub.none

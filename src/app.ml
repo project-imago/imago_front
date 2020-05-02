@@ -1,7 +1,7 @@
 open Tea.Html
 open Router
 
-let matrix_client = ref (Matrix.create_client "https://matrix.imago.local:8448")
+(* let matrix_client = ref (Matrix.create_client "https://matrix.imago.local:8448") *)
 
 type msg =
   | ChatMsg of Chat.msg
@@ -25,6 +25,7 @@ let msg_to_string (msg : msg) =
 
 type model =
   {
+    matrix_client : Matrix.client ref;
     chat : Chat.model;
     content: Content.model;
     sidebar : Sidebar.model;
@@ -39,15 +40,20 @@ let update_route model = function
   | Logout as route ->
       let () = Auth.logout model.chat.matrix_client in
       {model with route = route},
-      location_of_route Index |> Tea.Navigation.newUrl
+      Tea.Cmd.batch [
+        Tea.Cmd.map chatMsg Chat.remove_storage_cmd;
+        location_of_route Index |> Tea.Navigation.newUrl;
+      ]
   | route ->
       {model with route = route},
       location_of_route route |> Tea.Navigation.newUrl
 
 let init () location =
+  let matrix_client = ref (Chat.create_client ()) in
   let chat_model, chat_cmd = Chat.init matrix_client in
   let model =
     {
+      matrix_client = matrix_client;
       chat = chat_model;
       content = Content.init matrix_client;
       sidebar = Sidebar.init matrix_client;
@@ -89,8 +95,8 @@ let view model =
   div
     [ id "body" ]
     [
-      Header.view !matrix_client##clientRunning
-      !matrix_client##credentials##userId |> Vdom.map headerMsg;
+      Header.view !(model.matrix_client)##clientRunning
+      !(model.matrix_client)##credentials##userId |> Vdom.map headerMsg;
       main []
       [
         Sidebar.view model.route model.sidebar |> Vdom.map sidebarMsg;
