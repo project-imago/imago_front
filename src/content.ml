@@ -86,7 +86,6 @@ let index_view model =
 
 let view (route : Router.route) model =
   let open Tea.Html in
-  (* let is_logged_in = !(model.matrix_client)##isLoggedIn () in *)
   div [ id "content" ]
   [
     match route with

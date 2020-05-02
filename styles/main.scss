@@ -38,6 +38,17 @@ select {
   height: 10em;
 }
 
+form {
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 30px;
+
+  button {
+    width: auto;
+  }
+}
+
 header {
   margin-bottom: 15px;
   padding: 10px;
@@ -58,12 +69,9 @@ header {
 
     button {
       float: right;
+      width: auto;
+      margin-bottom: 0;
     }
-  }
-
-  button {
-    width: auto;
-    margin-bottom: 0;
   }
 }
 
@@ -89,7 +97,6 @@ button,
   border: 0.1rem solid #595959;
   background-color: beige;
   color: #595959;
-  width: 100%;
 }
 
 footer {

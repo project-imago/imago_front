@@ -4,7 +4,7 @@ open Router
 (* let matrix_client = ref (Matrix.create_client "https://matrix.imago.local:8448") *)
 
 type msg =
-  | ChatMsg of Chat.msg
+  | AuthMsg of Auth.msg
   | ContentMsg of Content.msg
   | HeaderMsg of Header.msg
   | SidebarMsg of Sidebar.msg
@@ -15,7 +15,7 @@ type msg =
 
 let msg_to_string (msg : msg) =
   match msg with
-  | ChatMsg chatMsg -> "chat msg: " ^ Chat.msg_to_string chatMsg
+  | AuthMsg authMsg -> "auth msg: " ^ Auth.msg_to_string authMsg
   | ContentMsg contentMsg -> Content.msg_to_string contentMsg
   | HeaderMsg _headerMsg -> "header msg"
   | SidebarMsg _sidebarMsg -> "sidebar msg"
@@ -26,7 +26,7 @@ let msg_to_string (msg : msg) =
 type model =
   {
     matrix_client : Matrix.client ref;
-    chat : Chat.model;
+    auth : Auth.model;
     content: Content.model;
     sidebar : Sidebar.model;
     route : Router.route;
@@ -34,14 +34,14 @@ type model =
 
 let update_route model = function
   | route when model.route = route -> (model, Tea.Cmd.none)
-  (* | ChatRoute chat_route -> *)
-  (*     let chat, route = Chat.update_route model.chat chat_route in *)
-  (*     {chat; route}, location_of_route route |> Tea.Navigation.newUrl *)
+  (* | AuthRoute auth_route -> *)
+  (*     let auth, route = Auth.update_route model.auth auth_route in *)
+  (*     {auth; route}, location_of_route route |> Tea.Navigation.newUrl *)
   | Logout as route ->
-      let () = Auth.logout model.chat.matrix_client in
+      let () = Auth.logout model.auth.matrix_client in
       {model with route = route},
       Tea.Cmd.batch [
-        Tea.Cmd.map chatMsg Chat.remove_storage_cmd;
+        Tea.Cmd.map authMsg Auth.remove_storage_cmd;
         location_of_route Index |> Tea.Navigation.newUrl;
       ]
   | route ->
@@ -49,22 +49,22 @@ let update_route model = function
       location_of_route route |> Tea.Navigation.newUrl
 
 let init () location =
-  let matrix_client = ref (Chat.create_client ()) in
-  let chat_model, chat_cmd = Chat.init matrix_client in
+  let matrix_client = ref (Auth.create_client ()) in
+  let auth_model, auth_cmd = Auth.init matrix_client in
   let model =
     {
       matrix_client = matrix_client;
-      chat = chat_model;
+      auth = auth_model;
       content = Content.init matrix_client;
       sidebar = Sidebar.init matrix_client;
       route = Index;
     } in
   let model, location_cmd =
     route_of_location location |> update_route model in
-  (* let chat_cmd = Chat.init_cmd in *)
+  (* let auth_cmd = Auth.init_cmd in *)
   let cmd =
     Tea.Cmd.batch [
-      Tea.Cmd.map chatMsg chat_cmd;
+      Tea.Cmd.map authMsg auth_cmd;
       location_cmd
     ]
   in
@@ -72,13 +72,13 @@ let init () location =
 
 let update model = function
   (* | Logout -> *)
-  (*     {model with chat = Auth.logout model.chat}, Tea.Cmd.none *)
+  (*     {model with auth = Auth.logout model.auth}, Tea.Cmd.none *)
   | Location_changed location ->
       {model with route = route_of_location location;},
       Tea.Cmd.none
       (* route_of_location location |> update_route model *)
   | GoTo route -> update_route model route
-  | ChatMsg (GoTo route) -> update_route model route
+  | AuthMsg (GoTo route) -> update_route model route
   | HeaderMsg (GoTo route) -> update_route model route
   | SidebarMsg (GoTo route) -> update_route model route
   | ContentMsg (GoTo route) -> update_route model route
@@ -86,17 +86,17 @@ let update model = function
       let content, content_cmd = Content.update model.content content_msg in
       {model with content},
       Tea.Cmd.map contentMsg content_cmd
-  | ChatMsg chat_msg ->
-      let chat, chat_cmd = Chat.update model.chat chat_msg in
-      {model with chat},
-      Tea.Cmd.map chatMsg chat_cmd
+  | AuthMsg auth_msg ->
+      let auth, auth_cmd = Auth.update model.auth auth_msg in
+      {model with auth},
+      Tea.Cmd.map authMsg auth_cmd
 
 let view model =
   div
     [ id "body" ]
     [
-      Header.view !(model.matrix_client)##clientRunning
-      !(model.matrix_client)##credentials##userId |> Vdom.map headerMsg;
+      Header.view model.matrix_client
+      |> Vdom.map headerMsg;
       main []
       [
         Sidebar.view model.route model.sidebar |> Vdom.map sidebarMsg;
@@ -108,7 +108,7 @@ let view model =
 
 let subscriptions model =
   (* Tea.Sub.none *)
-  Chat.subscriptions model.chat |> Tea.Sub.map chatMsg
+  Auth.subscriptions model.auth |> Tea.Sub.map authMsg
 
 let main =
   Tea.Debug.navigationProgram location_changed {
