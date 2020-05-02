@@ -136,6 +136,5 @@ let view route model =
   div [ id "sidebar" ] [
     Router.link goTo Router.CreateGroup (div [class' "button"] [text "Create Group"]);
     room_list_view route model;
-    Router.link goTo Router.Index (div [class' "button"] [text "Index"])
   ];
 

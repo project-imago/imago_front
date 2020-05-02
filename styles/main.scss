@@ -38,10 +38,32 @@ select {
   height: 10em;
 }
 
-// Ajouts Hadrien
-
 header {
   margin-bottom: 15px;
+  padding: 10px;
+
+  #logo h1 {
+    text-transform: uppercase;
+    margin: 0.3em;
+  }
+
+  #auth-status {
+    float: right;
+
+    p {
+      margin-top: 0;
+      margin-bottom: 0.5em;
+    }
+
+    button {
+      float: right;
+    }
+  }
+
+  button {
+    width: auto;
+    margin-bottom: 0;
+  }
 }
 
 #content,
@@ -67,17 +89,6 @@ button,
   background-color: beige;
   color: #595959;
   width: 100%;
-}
-
-header {
-  button {
-    width: auto;
-    margin-bottom: 0;
-  }
-
-  p {
-    float: right;
-  }
 }
 
 footer {
