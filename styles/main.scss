@@ -1,6 +1,6 @@
 @import "~sscaffold-css";
 
-body {
+#body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -42,7 +42,7 @@ header {
   margin-bottom: 15px;
 }
 
-#content, #room-view,
+#content,
 #sidebar,
 header,
 footer {
@@ -67,19 +67,62 @@ button,
   width: 100%;
 }
 
-header button {
-  width: auto;
-  margin-bottom: 0;
-}
+header {
+  button {
+    width: auto;
+    margin-bottom: 0;
+  }
 
-header p {
-  float: right;
+  p {
+    float: right;
+  }
 }
 
 footer {
   margin-top: 15px;
   font-size: 0.8em;
   text-align: right;
+}
+
+#sidebar {
+  // padding: 0;
+
+  .button {
+    // margin: 5px;
+  }
+
+  background-color: #d6dfe8;
+
+  ul {
+    margin: 0;
+
+    li {
+      margin: 0;
+
+      .room_link, .group_link {
+        padding: 10px;
+        margin: 0 -15px;
+
+        &:hover {
+          background-color: #b8bfc6;
+        }
+
+        &.active {
+          background-color: #979ca2;
+        }
+      }
+
+      .group_link {
+        .create_chat_link {
+          float: right;
+        }
+      }
+
+      .room_link {
+        padding-left: 20px;
+      }
+    }
+  }
 }
 
 #debug nav .toggle:before {
