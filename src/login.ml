@@ -63,16 +63,24 @@ let update model = function
 
 let view model =
   let open Tea.Html in
-  div []
+  form [Tea.Html2.Events.onSubmit login]
   [
-    form [Tea.Html2.Events.onSubmit login]
+    fieldset []
     [
+      label
+        [for' "username-field"]
+        [text "Username"];
       input'
         [type' "text";
+         id "username-field";
          onInput saveUserName]
         [text model.username];
+      label
+        [for' "password-field"]
+        [text "Password"];
       input'
         [type' "password";
+         id "password-field";
          onInput savePassword]
         [text model.password];
       button
