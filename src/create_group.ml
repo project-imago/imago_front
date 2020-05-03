@@ -2,6 +2,8 @@
 type model =
   {
     matrix_client : Matrix.client ref;
+    name : string;
+    topic : string;
     (* statements : (property * obj) array; *)
     (* statements : (obj array) Belt.Map.String.t; *)
     statements : Group.Statements.t;
@@ -16,6 +18,8 @@ type model =
 let init matrix_client =
   {
       matrix_client;
+      name = "";
+      topic = "";
       statements = Group.Statements.empty;
       property_search = "img:location";
       property_suggestions = [|"img:location"; "img:subgroup"; "img:about"|];
@@ -27,6 +31,8 @@ let init matrix_client =
 
 type msg =
   | GoTo of Router.route
+  | SaveName of string
+  | SaveTopic of string
   | SavePropertySearch of string
   | SelectProperty of string
   | SaveObjSearch of string
@@ -94,9 +100,9 @@ let create_group_cmd model =
   let options : Matrix.create_room_options =
     [%bs.obj {
       invite = [||];
-      name = "Project name";
+      name = model.name;
       room_alias_name = None;
-      topic = "Project topic";
+      topic = model.topic;
       visibility = "public";
     }] in
   !(model.matrix_client)##createRoom options
@@ -126,6 +132,12 @@ let send_group_events_cmd model room_id =
 let update model = function
   | GoTo _ ->
       model, Tea.Cmd.none
+  | SaveName name ->
+      {model with name = name},
+      Tea.Cmd.none
+  | SaveTopic topic ->
+      {model with topic = topic},
+      Tea.Cmd.none
   | SavePropertySearch property ->
       {model with property_search = property},
       Tea.Cmd.none
@@ -204,21 +216,21 @@ let update model = function
 let statement_list_view model =
   let open Tea.Html in
   let obj_view property (obj : Group.Statements.obj) =
-    div []
+    div [id "object-item"]
     [
-      div [] [text (obj.label ^ " (" ^ obj.description ^ ")")];
+      span [] [text (obj.label ^ " (" ^ obj.description ^ ")")];
       button [onClick (removeObj property obj)] [text "X"]
     ]
   in
   let statement_view (property, objs) =
-    div []
+    div [id "statement-item"]
     [
-      div [] [text property];
-      div [] (Belt.Array.map objs (obj_view property) |> Belt.List.fromArray)
+      div [id "property-item"] [text property];
+      div [id "objects-list"] (Belt.Array.map objs (obj_view property) |> Belt.List.fromArray)
     ]
     (* text (property ^ ": " ^ obj) *)
   in
-  div []
+  div [id "statements-list"]
     (Belt.Map.toList model.statements
     |. Belt.List.map statement_view)
     (* (Belt.Array.map model.statements statement_view *)
@@ -242,31 +254,69 @@ let statement_form_view model =
       [value obj.item; Attributes.selected (is_obj_selected model obj)]
       [text (obj.label ^ " (" ^ obj.description ^ ")")]
   in (* TODO: add selected for what is really selected *)
-  div []
+  form
+  [Tea.Html2.Events.onSubmit createGroup]
   [
-    input'
-      [type' "text";
-       onInput savePropertySearch]
-      [text model.property_search];
-    select
-      [onChange selectProperty;
-       Tea.Html2.Attributes.size 5]
-      (Belt.Array.map model.property_suggestions property_option
-      |> Belt.List.fromArray);
-    input'
-      [type' "text";
-       onInput saveObjSearch]
-      [text model.obj_search];
-    select
-      [onChange selectObj;
-       Tea.Html2.Attributes.size 5]
-      (Belt.Array.map model.obj_suggestions obj_option
-      |> Belt.List.fromArray);
+    fieldset []
+    [
+      label
+        [for' "name-field"]
+        [text "Name"];
+      input'
+        [type' "text";
+         id "name-field";
+         onInput saveName]
+        [text model.name];
+      label
+        [for' "topic-field"]
+        [text "Topic"];
+      input'
+        [type' "text";
+         id "topic-field";
+         onInput saveTopic]
+        [text model.topic];
+    ];
+    statement_list_view model;
+    fieldset [id "statement-fields"]
+    [
+      fieldset [id "property-fields"]
+      [
+        label
+          [for' "property-search-field"]
+          [text "Property"];
+        input'
+          [type' "text";
+           id "property-search-field";
+           onInput savePropertySearch]
+          [text model.property_search];
+        select
+          [onChange selectProperty;
+           Tea.Html2.Attributes.size 5]
+          (Belt.Array.map model.property_suggestions property_option
+          |> Belt.List.fromArray);
+      ];
+      fieldset [id "object-fields"]
+      [
+        label
+          [for' "object-search-field"]
+          [text "Object"];
+        input'
+          [type' "text";
+           id "object-search-field";
+           onInput saveObjSearch]
+          [text model.obj_search];
+        select
+          [onChange selectObj;
+           Tea.Html2.Attributes.size 5]
+          (Belt.Array.map model.obj_suggestions obj_option
+          |> Belt.List.fromArray);
+      ];
+      button
+        [onClick addStatement]
+        [text "Add"];
+    ];
     button
-      [onClick addStatement]
-      [text "Add"];
-    button
-      [onClick createGroup]
+      [type' "submit"]
       [text "Create group"]
   ]
 
@@ -274,6 +324,5 @@ let view model =
   let open Tea.Html in
   div [id "create-group"]
   [
-    statement_list_view model;
     statement_form_view model;
   ]
