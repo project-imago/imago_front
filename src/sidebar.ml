@@ -42,21 +42,31 @@ type room_type =
   | SubChat of Matrix.room
   | Chat
 
-let get_room_type room _client =
-  let room_state = room##currentState in
-  let state_type = Matrix.get_state_type room_state in
-  let () = Js.log state_type in
-  match state_type with
-  | [|state_event|] ->
-      (match (state_event##getContent ())##_type with
-      | "group" -> Group
-      | _ -> Chat)
-  | [||] -> Chat
-  | _ ->
-      (* let state_parent = Matrix.get_state_parent room_state *)
-      (* match state_parent with *)
-      Chat
-      (* SubChat (client##getRoom room##roomId) *)
+let get_room_type room matrix_client =
+  let room_type =
+    let room_state = room##currentState in
+    let state_type = Matrix.get_state_type room_state in
+    match state_type with
+    | [|state_event|] ->
+        (match (state_event##getContent ())##_type with
+        | "group" -> Group
+        | _ -> Chat)
+    | _ ->
+        Chat
+  in
+  let room_group =
+    let room_state = room##currentState in
+    let state_type = Matrix.get_state_group room_state in
+    match state_type with
+    | [|state_event|] ->
+        Some ((state_event##getContent ())##id)
+    | _ ->
+        None
+  in
+  match (room_type, room_group) with
+  | (Group, _) -> Group
+  | (_, Some group) -> SubChat (matrix_client##getRoom group)
+  | (_, None) -> Chat
 
 
 let room_list_view route model =

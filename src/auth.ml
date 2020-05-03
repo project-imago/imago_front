@@ -135,10 +135,10 @@ let update model = function
       let () = Js.log err in
       model, Tea.Cmd.none
   | GotMessage event ->
-      let () = Js.log event in
+      (* let () = Js.log event in *)
       model, Tea.Cmd.none
-  | Sync state ->
-      let () = Js.log state in
+  | Sync _state ->
+      (* let () = Js.log state in *)
       model, Tea.Cmd.none
   | LoggedOut state ->
       let () = Js.log state in

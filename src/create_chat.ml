@@ -19,14 +19,15 @@ type msg =
   | SaveName of string
   | SaveTopic of string
   | CreateChat of Matrix.room_id option
-  | CreatedChat of (Matrix.create_room_response, string) Tea.Result.t
+  | CreatedChat of Matrix.room_id option * (Matrix.create_room_response, string) Tea.Result.t
   | SentChatEvents of (string array, string) Tea.Result.t
   [@@bs.deriving {accessors}]
 
-let create_group_cmd model =
+let create_group_cmd model maybe_group =
   (* let group = Group.create_group model.statements in *)
   (* Tea.Cmd.msg (GoTo group) *)
   (* Tea.Cmd.msg (GoTo Index) *)
+  Js.log (Belt.Option.getWithDefault maybe_group "no parent group");
   let options : Matrix.create_room_options =
     [%bs.obj {
       invite = [||];
@@ -36,13 +37,22 @@ let create_group_cmd model =
       visibility = "public";
     }] in
   !(model.matrix_client)##createRoom options
-  |. Tea_promise.result createdChat
+  |. Tea_promise.result (createdChat maybe_group)
 
-let send_group_events_cmd model room_id =
-  [||]
+let send_group_events_cmd model room_id maybe_group =
+  let maybe_have_group = match maybe_group with
+  | Some group ->
+      [|
+        Matrix.sendStateEventId !(model.matrix_client) room_id
+        "pm.imago.group" [%bs.obj {id = group}] ""
+      |]
+  | None ->
+    [||]
+  in
+  maybe_have_group
   |. Belt.Array.concat [|
       Matrix.sendStateEventType !(model.matrix_client) room_id
-      "pm.imago.type" [%bs.obj {_type = "group"}] ""
+      "pm.imago.type" [%bs.obj {_type = "chat"}] ""
       |]
   |> Js.Promise.all
   |. Tea_promise.result sentChatEvents
@@ -58,12 +68,14 @@ let update model = function
       {model with topic = topic},
       Tea.Cmd.none
   | CreateChat maybe_group ->
-      {model with group = maybe_group},
-      create_group_cmd model
-  | CreatedChat (Tea.Result.Ok res) ->
-      model, (* TODO: add room_id in state to use for edit chat *)
-      send_group_events_cmd model res##room_id
-  | CreatedChat (Tea.Result.Error err) ->
+      (* {model with group = maybe_group}, *)
+      model,
+      create_group_cmd model maybe_group
+      (* TODO: add room_id in state to use for edit chat *)
+  | CreatedChat (maybe_group, Tea.Result.Ok res) ->
+      model,
+      send_group_events_cmd model res##room_id maybe_group
+  | CreatedChat (_maybe_group, Tea.Result.Error err) ->
       Js.Exn.raiseError "erreur" |> ignore;
       let () = Js.log ("create group failed: " ^ err) in
       model, Tea.Cmd.none
@@ -75,8 +87,14 @@ let update model = function
       model, Tea.Cmd.none
 
 let form_view model maybe_group =
+  let group = (Belt.Option.getWithDefault maybe_group "") in
+  let () = Js.log group in
   let open Tea.Html in
-  form [Tea.Html2.Events.onSubmit (createChat maybe_group)]
+  let onSubmit ?(key="") msg =
+    Tea.Html2.Events.preventDefaultOn ~key "submit"
+    (Tea_json.Decoder.succeed msg) in
+  form
+  [onSubmit ~key:(Belt.Option.getWithDefault maybe_group "") (createChat maybe_group)]
   [
     fieldset []
     [

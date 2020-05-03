@@ -78,6 +78,15 @@ external get_state_type:
   -> state_type array
   = "getStateEvents" [@@bs.send]
 
+type state_group =
+  < getContent: unit -> <id: room_id> Js.t [@bs.meth] > Js.t
+
+external get_state_group:
+  room_state
+  -> (_ [@bs.as "pm.imago.group"])
+  -> state_group array
+  = "getStateEvents" [@@bs.send]
+
 type room =
   < accountData:  account_data;
     currentState: room_state;
@@ -188,6 +197,15 @@ external sendStateEventType:
   -> room_id
   -> string (* event type *)
   -> [%bs.obj: <_type: string;> ] (* can be anything *)
+  -> string (* state key *)
+  -> string Js.Promise.t
+  = "sendStateEvent" [@@bs.send]
+
+external sendStateEventId:
+  client
+  -> room_id
+  -> string (* event type *)
+  -> [%bs.obj: <id: string;> ] (* can be anything *)
   -> string (* state key *)
   -> string Js.Promise.t
   = "sendStateEvent" [@@bs.send]
