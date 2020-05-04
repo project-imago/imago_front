@@ -2,6 +2,7 @@ type model =
   {
     matrix_client : Matrix.client ref;
     chat : Chat.model;
+    group : Group.model;
     login : Login.model;
     signup : Signup.model;
     create_group : Create_group.model;
@@ -10,6 +11,7 @@ type model =
 
 type msg =
   | ChatMsg of Chat.msg
+  | GroupMsg of Group.msg
   | LoginMsg of Login.msg
   | SignupMsg of Signup.msg
   | CreateGroupMsg of Create_group.msg
@@ -19,6 +21,7 @@ type msg =
 
 let msg_to_string = function
   | ChatMsg _msg -> "chat msg" (*Chat.msg_to_string msg*)
+  | GroupMsg _msg -> "group msg" (*Chat.msg_to_string msg*)
   | LoginMsg _msg -> "login msg" (*Login.msg_to_string msg*)
   | SignupMsg msg -> Signup.msg_to_string msg
   | CreateGroupMsg _msg -> "create group msg" (*CreateGroup.msg_to_string msg*)
@@ -29,6 +32,7 @@ let init matrix_client =
   {
     matrix_client;
     chat = Chat.init matrix_client;
+    group = Group.init matrix_client;
     login = Login.init matrix_client;
     signup = Signup.init matrix_client;
     create_group = Create_group.init matrix_client;
@@ -40,6 +44,10 @@ let update model = function
       let chat, chat_cmd = Chat.update model.chat chat_msg in
       {model with chat},
       Tea.Cmd.map chatMsg chat_cmd
+  | GroupMsg group_msg ->
+      let group, group_cmd = Group.update model.group group_msg in
+      {model with group},
+      Tea.Cmd.map groupMsg group_cmd
   | CreateGroupMsg create_group_msg ->
       let create_group, create_group_cmd = Create_group.update
       model.create_group create_group_msg in
@@ -109,6 +117,9 @@ let view (route : Router.route) model =
     | Chat room_id ->
         Chat.view model.chat room_id
         |> Vdom.map chatMsg
+    | Group room_id ->
+        Group.view model.group room_id
+        |> Vdom.map groupMsg
     | CreateChat maybe_group ->
         Create_chat.view model.create_chat maybe_group
         |> Vdom.map createChatMsg
