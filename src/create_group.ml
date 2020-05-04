@@ -6,13 +6,13 @@ type model =
     topic : string;
     (* statements : (property * obj) array; *)
     (* statements : (obj array) Belt.Map.String.t; *)
-    statements : Group.Statements.t;
+    statements : Statements.t;
     property_search : string;
-    property_suggestions : Group.Statements.property array;
+    property_suggestions : Statements.property array;
     property_selected : string option;
     obj_search : string;
-    obj_suggestions : Group.Statements.obj array;
-    obj_selected : Group.Statements.obj option;
+    obj_suggestions : Statements.obj array;
+    obj_selected : Statements.obj option;
   }
 
 let init matrix_client =
@@ -20,7 +20,7 @@ let init matrix_client =
       matrix_client;
       name = "";
       topic = "";
-      statements = Group.Statements.empty;
+      statements = Statements.empty;
       property_search = "img:location";
       property_suggestions = [|"img:location"; "img:subgroup"; "img:about"|];
       property_selected = None;
@@ -37,9 +37,9 @@ type msg =
   | SelectProperty of string
   | SaveObjSearch of string
   | SelectObj of string
-  | ReceivedObjResults of ((string * Group.Statements.obj array), string Tea.Http.error) Tea.Result.t
+  | ReceivedObjResults of ((string * Statements.obj array), string Tea.Http.error) Tea.Result.t
   | AddStatement
-  | RemoveObj of string * Group.Statements.obj
+  | RemoveObj of string * Statements.obj
   | CreateGroup
   | CreatedGroup of (Matrix.create_room_response, string) Tea.Result.t
   | SentGroupEvents of (string array, string) Tea.Result.t
@@ -62,7 +62,7 @@ let obj_search_cmd property obj =
       (field "term" string)
       (field "results"
         (array
-          (map3 (fun a b c : Group.Statements.obj -> {item = a; label = b; description = c})
+          (map3 (fun a b c : Statements.obj -> {item = a; label = b; description = c})
             (field "item" string)
             (field "label" string)
             (field "description" string)
@@ -215,7 +215,7 @@ let update model = function
 
 let statement_list_view model =
   let open Tea.Html in
-  let obj_view property (obj : Group.Statements.obj) =
+  let obj_view property (obj : Statements.obj) =
     div [id "object-item"]
     [
       span [] [text (obj.label ^ " (" ^ obj.description ^ ")")];
@@ -249,7 +249,7 @@ let statement_form_view model =
   (*   let open Vdom in *)
   (*   if b then attribute "" "selected" "true" else attribute "" "selected" "false" *)
   (* in *)
-  let obj_option (obj : Group.Statements.obj) =
+  let obj_option (obj : Statements.obj) =
     option'
       [value obj.item; Attributes.selected (is_obj_selected model obj)]
       [text (obj.label ^ " (" ^ obj.description ^ ")")]
