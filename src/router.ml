@@ -51,12 +51,12 @@ let route_of_location location =
   | [|""; "login"|] -> Login
   | [|""; "signup"|] -> Signup
   | [|""; "logout"|] -> Logout
-  | [|""; "room"; "new"|] ->
+  | [|""; "chat"; "new"|] ->
       let group =
         parse_params location.Web.Location.search
         |. Belt.Map.get "group" in
       CreateChat group
-  | [|""; "room"; room_id|] -> Chat room_id
+  | [|""; "chat"; room_id|] -> Chat room_id
   | [|""; "group"; "new"|] -> CreateGroup
   | [|""; "group"; room_id|] -> Group room_id
   | _ -> Index  (* default route *)
@@ -68,8 +68,8 @@ let location_of_route = function
   | Logout -> "/logout"
   | CreateGroup -> "/group/new"
   | CreateChat None -> "/room/new"
-  | CreateChat (Some group_id) -> "/room/new?group=" ^ group_id
-  | Chat room_id -> Printf.sprintf "/room/%s" room_id
+  | CreateChat (Some group_id) -> "/chat/new?group=" ^ group_id
+  | Chat room_id -> Printf.sprintf "/chat/%s" room_id
   | Group room_id -> Printf.sprintf "/group/%s" room_id
 
 let link msg route content =

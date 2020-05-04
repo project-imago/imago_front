@@ -93,7 +93,7 @@ let room_list_view route model =
             | Some chats -> Some (Belt.List.concat chats [room])
           )
   ) in
-  let room_view room =
+  let chat_view room =
     (* let () = Js.log room in *)
     (* let () = Js.log !(model.matrix_client) in *)
     li [] [
@@ -113,13 +113,13 @@ let room_list_view route model =
           [classList
             [("group_link", true);
              ("active", equal_to_room g route)]]
-          [ Router.link goTo (Chat g##roomId)
+          [ Router.link goTo (Group g##roomId)
               (span [] [text g##name]);
             Router.link goTo (CreateChat (Some g##roomId))
               (span [class' "create_chat_link"] [text "+"])
           ];
           ul []
-          (Belt.List.map chats room_view)
+          (Belt.List.map chats chat_view)
         ]
     | None ->
         li [] [
@@ -129,7 +129,7 @@ let room_list_view route model =
             (span [class' "create_chat_link"] [text "+"])
           ];
           ul []
-          (Belt.List.map chats room_view)
+          (Belt.List.map chats chat_view)
         ]
   in
   ul
