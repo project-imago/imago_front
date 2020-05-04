@@ -5,7 +5,7 @@ type route =
   | Logout
   | CreateGroup
   | CreateChat of Matrix.room_id option
-  | Room of Matrix.room_id
+  | Chat of Matrix.room_id
 
 module StringCmp =
   Belt.Id.MakeComparable
@@ -56,7 +56,7 @@ let route_of_location location =
         parse_params location.Web.Location.search
         |. Belt.Map.get "group" in
       CreateChat group
-  | [|""; "room"; room_id|] -> Room room_id
+  | [|""; "room"; room_id|] -> Chat room_id
   | _ -> Index  (* default route *)
 
 let location_of_route = function
@@ -67,7 +67,7 @@ let location_of_route = function
   | CreateGroup -> "/group/new"
   | CreateChat None -> "/room/new"
   | CreateChat (Some group_id) -> "/room/new?group=" ^ group_id
-  | Room room_id -> Printf.sprintf "/room/%s" room_id
+  | Chat room_id -> Printf.sprintf "/room/%s" room_id
 
 let link msg route content =
   let open Tea.Html in

@@ -20,7 +20,7 @@ let equal_to_option value = function
 
 let equal_to_room room (route : Router.route) =
   match route with
-  | Room room_id -> room_id = room##roomId
+  | Chat room_id -> room_id = room##roomId
   | _ -> false
 
 module RoomCmp =
@@ -97,10 +97,10 @@ let room_list_view route model =
     (* let () = Js.log room in *)
     (* let () = Js.log !(model.matrix_client) in *)
     li [] [
-      Router.link goTo (Room room##roomId)
+      Router.link goTo (Chat room##roomId)
       (div
       [classList
-        [("room_link", true);
+        [("chat_link", true);
          ("active", equal_to_room room route)]]
       [text room##name])
       ]
@@ -113,7 +113,7 @@ let room_list_view route model =
           [classList
             [("group_link", true);
              ("active", equal_to_room g route)]]
-          [ Router.link goTo (Room g##roomId)
+          [ Router.link goTo (Chat g##roomId)
               (span [] [text g##name]);
             Router.link goTo (CreateChat (Some g##roomId))
               (span [class' "create_chat_link"] [text "+"])

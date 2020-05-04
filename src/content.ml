@@ -1,7 +1,7 @@
 type model =
   {
     matrix_client : Matrix.client ref;
-    room : Room.model;
+    chat : Chat.model;
     login : Login.model;
     signup : Signup.model;
     create_group : Create_group.model;
@@ -9,7 +9,7 @@ type model =
   }
 
 type msg =
-  | RoomMsg of Room.msg
+  | ChatMsg of Chat.msg
   | LoginMsg of Login.msg
   | SignupMsg of Signup.msg
   | CreateGroupMsg of Create_group.msg
@@ -18,7 +18,7 @@ type msg =
   [@@bs.deriving {accessors}]
 
 let msg_to_string = function
-  | RoomMsg _msg -> "room msg" (*Room.msg_to_string msg*)
+  | ChatMsg _msg -> "chat msg" (*Chat.msg_to_string msg*)
   | LoginMsg _msg -> "login msg" (*Login.msg_to_string msg*)
   | SignupMsg msg -> Signup.msg_to_string msg
   | CreateGroupMsg _msg -> "create group msg" (*CreateGroup.msg_to_string msg*)
@@ -28,7 +28,7 @@ let msg_to_string = function
 let init matrix_client = 
   {
     matrix_client;
-    room = Room.init matrix_client;
+    chat = Chat.init matrix_client;
     login = Login.init matrix_client;
     signup = Signup.init matrix_client;
     create_group = Create_group.init matrix_client;
@@ -36,10 +36,10 @@ let init matrix_client =
   }
 
 let update model = function
-  | RoomMsg room_msg ->
-      let room, room_cmd = Room.update model.room room_msg in
-      {model with room},
-      Tea.Cmd.map roomMsg room_cmd
+  | ChatMsg chat_msg ->
+      let chat, chat_cmd = Chat.update model.chat chat_msg in
+      {model with chat},
+      Tea.Cmd.map chatMsg chat_cmd
   | CreateGroupMsg create_group_msg ->
       let create_group, create_group_cmd = Create_group.update
       model.create_group create_group_msg in
@@ -106,9 +106,9 @@ let view (route : Router.route) model =
     | CreateGroup ->
         Create_group.view model.create_group
         |> Vdom.map createGroupMsg
-    | Room room_id ->
-        Room.view model.room room_id
-        |> Vdom.map roomMsg
+    | Chat room_id ->
+        Chat.view model.chat room_id
+        |> Vdom.map chatMsg
     | CreateChat maybe_group ->
         Create_chat.view model.create_chat maybe_group
         |> Vdom.map createChatMsg
