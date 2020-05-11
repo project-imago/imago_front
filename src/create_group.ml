@@ -200,7 +200,10 @@ let update model = function
       create_group_cmd model
   | CreatedGroup (Tea.Result.Ok res) ->
       model, (* TODO: add room_id in state to use for edit group *)
-      send_group_events_cmd model res##room_id
+      Tea.Cmd.batch [
+        send_group_events_cmd model res##room_id;
+        Tea.Cmd.msg (goTo (Group res##room_id))
+      ]
   | CreatedGroup (Tea.Result.Error err) ->
       Js.Exn.raiseError "erreur" |> ignore;
       let () = Js.log ("create group failed: " ^ err) in
@@ -312,7 +315,8 @@ let statement_form_view model =
           |> Belt.List.fromArray);
       ];
       button
-        [onClick addStatement]
+        [type' "button";
+         onClick addStatement]
         [text "Add"];
     ];
     button
@@ -322,7 +326,7 @@ let statement_form_view model =
 
 let view model =
   let open Tea.Html in
-  div [id "create-group"]
+  div ~unique:"create_group" [id "create-group"]
   [
     statement_form_view model;
   ]

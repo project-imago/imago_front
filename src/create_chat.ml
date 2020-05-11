@@ -74,7 +74,10 @@ let update model = function
       (* TODO: add room_id in state to use for edit chat *)
   | CreatedChat (maybe_group, Tea.Result.Ok res) ->
       model,
-      send_group_events_cmd model res##room_id maybe_group
+      Tea.Cmd.batch [
+        send_group_events_cmd model res##room_id maybe_group;
+        Tea.Cmd.msg (goTo (Chat res##room_id))
+      ]
   | CreatedChat (_maybe_group, Tea.Result.Error err) ->
       Js.Exn.raiseError "erreur" |> ignore;
       let () = Js.log ("create group failed: " ^ err) in
@@ -93,8 +96,8 @@ let form_view model maybe_group =
   let onSubmit ?(key="") msg =
     Tea.Html2.Events.preventDefaultOn ~key "submit"
     (Tea_json.Decoder.succeed msg) in
-  form
-  [onSubmit ~key:(Belt.Option.getWithDefault maybe_group "") (createChat maybe_group)]
+  form ~unique:(Belt.Option.getWithDefault maybe_group "")
+  [onSubmit (createChat maybe_group)]
   [
     fieldset []
     [
@@ -122,7 +125,7 @@ let form_view model maybe_group =
 
   let view model maybe_group =
     let open Tea.Html in
-    div [id "create-chat"]
+    div ~unique:"create_chat" [id "create-chat"]
     [
       form_view model maybe_group;
     ]

@@ -105,7 +105,7 @@ let update model = function
 
 let view model =
   let open Tea.Html in
-  form [Tea.Html2.Events.onSubmit register]
+  form ~unique:"signup" [Tea.Html2.Events.onSubmit register]
   [
     fieldset []
     [

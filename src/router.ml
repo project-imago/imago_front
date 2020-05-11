@@ -43,8 +43,8 @@ let route_of_location location =
     (*     | _ -> acc *)
     (*     ) *)
   in
-  Js.log location.Web.Location.search;
-  Js.log (parse_params location.Web.Location.search);
+  (* Js.log location.Web.Location.search; *)
+  (* Js.log (parse_params location.Web.Location.search); *)
   let route = Js.String.split "/" location.Web.Location.pathname in
   (* let () = Js.log (Js.String.split "/" location.Web.Location.pathname) in *)
   match route with

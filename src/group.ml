@@ -16,7 +16,8 @@ let update model = function
   | GoTo _ ->
       model, Tea.Cmd.none
 
-let view _model _room_id =
+let view _model room_id =
   let open Tea.Html in
-  div []
+  div ~unique:"group" ~key:room_id
+  []
   []

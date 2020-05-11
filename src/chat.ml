@@ -98,10 +98,10 @@ let view model room_id =
       get_messages room
       |. Belt.Array.map message_view
       |> Belt.List.fromArray in
-    div
+    div ~unique:"chat"
       [ id "room-view" ]
-      [div [ id "message-list" ] message_list;
-       div [ id "input-area" ] [input_area model room_id]]
+      [div ~unique:room_id [ id "message-list" ] message_list;
+       div ~unique:room_id [ id "input-area" ] [input_area model room_id]]
   | None ->
       div
         [ id "room-view" ]
