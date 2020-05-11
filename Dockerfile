@@ -16,4 +16,4 @@ RUN mkdir -p /home/node/app/lib/bs
 
 EXPOSE 8081
 
-CMD rm -f .bsb.lock; npm run server
+CMD rm -f .bsb.lock .merlin; npm run server
