@@ -1,7 +1,7 @@
 
 
 let create_client () = 
-  Matrix.create_client "https://matrix.imago.local:8448"
+  Matrix.create_client "http://matrix.imago.local:8008"
 
 let login_with_password (matrix_client: Matrix.client ref) username password =
   Matrix.login_with_password !matrix_client username password
