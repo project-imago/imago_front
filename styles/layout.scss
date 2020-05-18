@@ -1,0 +1,43 @@
+
+#body {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 15px;
+
+  background-color: aliceblue;
+}
+
+main {
+  display: flex;
+  flex-direction: row;
+  min-height: 0;
+}
+
+#content {
+  flex-grow: 1;
+}
+
+#debug nav .toggle:before {
+  border: none;
+}
+
+#content,
+#sidebar,
+header,
+footer {
+  border-radius: 0.4rem;
+  border: 1px gray solid;
+  padding: 15px;
+  background-color: white;
+}
+
+#content, #room-view {
+  margin-left: 15px;
+}
+
+footer {
+  margin-top: 15px;
+  font-size: 0.8em;
+  text-align: right;
+}

@@ -1,0 +1,52 @@
+
+#create-group {
+  form {
+    max-width: 900px;
+  }
+
+  #statements-list {
+    margin-left: 2px;
+    margin-bottom: 10px;
+
+    #statement-item {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+
+      #property-item, #objects-list {
+        flex: 1 1 0;
+      }
+
+      #object-item {
+        display: flex;
+        align-items: center;
+
+        span {
+          flex-grow: 1;
+        }
+
+        button {
+          padding: 0 8px;
+          margin-bottom: 0;
+          margin-left: 5px;
+        }
+      }
+    }
+  }
+
+  #statement-fields {
+    display: flex;
+    flex-direction: row;
+
+    #property-fields, #object-fields {
+      flex: 1 1 0;
+      margin-bottom: 0;
+    }
+
+    button {
+      height: auto;
+      margin: 20px;
+      margin-right: 0;
+    }
+  }
+}

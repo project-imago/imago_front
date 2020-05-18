@@ -1,0 +1,26 @@
+
+header {
+  margin-bottom: 15px;
+  padding: 10px;
+
+  #logo h1 {
+    text-transform: uppercase;
+    margin: 0.3em;
+    font-family: "Verdana";
+  }
+
+  #auth-status {
+    float: right;
+
+    p {
+      margin-top: 0;
+      margin-bottom: 0.5em;
+    }
+
+    button {
+      float: right;
+      width: auto;
+      margin-bottom: 0;
+    }
+  }
+}

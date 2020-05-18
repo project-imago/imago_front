@@ -1,0 +1,42 @@
+
+#sidebar {
+  // padding: 0;
+  background-color: #d6dfe8;
+  overflow-y: auto;
+  min-width: 220px;
+
+  .button {
+    // margin: 5px;
+  }
+
+  ul {
+    margin: 0;
+
+    li {
+      margin: 0;
+
+      .chat_link, .group_link {
+        padding: 10px;
+        margin: 0 -15px;
+
+        &:hover {
+          background-color: #b8bfc6;
+        }
+
+        &.active {
+          background-color: #979ca2;
+        }
+      }
+
+      .group_link {
+        .create_chat_link {
+          float: right;
+        }
+      }
+
+      .room_link {
+        padding-left: 20px;
+      }
+    }
+  }
+}
