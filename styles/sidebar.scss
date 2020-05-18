@@ -4,9 +4,15 @@
   background-color: #d6dfe8;
   overflow-y: auto;
   min-width: 220px;
+  padding: 0;
 
-  .button {
-    // margin: 5px;
+  > .button {
+    margin: 10px 25px;
+  }
+
+  > ul > li {
+    border-bottom: 1px solid black;
+    padding: 0 10px;
   }
 
   ul {
@@ -31,11 +37,16 @@
       .group_link {
         .create_chat_link {
           float: right;
+
+          svg {
+            width: 1.5rem;
+            height: 1.5rem;
+          }
         }
       }
 
-      .room_link {
-        padding-left: 20px;
+      .chat_link {
+        padding-left: 30px;
       }
     }
   }

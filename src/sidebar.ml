@@ -21,6 +21,7 @@ let equal_to_option value = function
 let equal_to_room room (route : Router.route) =
   match route with
   | Chat room_id -> room_id = room##roomId
+  | Group room_id -> room_id = room##roomId
   | _ -> false
 
 module RoomCmp =
@@ -148,7 +149,10 @@ let room_list_view route model =
 let view route model =
   let open Tea.Html in
   div [ id "sidebar" ] [
-    Router.link goTo Router.CreateGroup [div [class' "button"] [text "Create Group"]];
+    Router.link
+      ~props:[class' "button"]
+      goTo Router.CreateGroup
+      [text "Create Group"];
     room_list_view route model;
   ];
 
