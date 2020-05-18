@@ -221,8 +221,15 @@ let statement_list_view model =
   let obj_view property (obj : Statements.obj) =
     div [id "object-item"]
     [
-      span [] [text (obj.label ^ " (" ^ obj.description ^ ")")];
-      button [onClick (removeObj property obj)] [text "X"]
+      span
+        []
+        [text (obj.label ^ " (" ^ obj.description ^ ")")];
+      button
+        [onClick (removeObj property obj);
+         class' "icon";
+         Icons.aria_label "Remove statement"
+        ]
+        [Icons.icon "trash"]
     ]
   in
   let statement_view (property, objs) =
@@ -280,9 +287,10 @@ let statement_form_view model =
         [text model.topic];
     ];
     statement_list_view model;
-    fieldset [id "statement-fields"]
+    div [id "statement-fields"]
+    (* wanted to use fieldset but chromium bug 375693, maybe nest fieldset in div *)
     [
-      fieldset [id "property-fields"]
+      div [id "property-fields"]
       [
         label
           [for' "property-search-field"]
@@ -298,7 +306,7 @@ let statement_form_view model =
           (Belt.Array.map model.property_suggestions property_option
           |> Belt.List.fromArray);
       ];
-      fieldset [id "object-fields"]
+      div [id "object-fields"]
       [
         label
           [for' "object-search-field"]
