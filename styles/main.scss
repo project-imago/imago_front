@@ -34,6 +34,17 @@ main {
   flex-shrink: 0;
 }
 
+svg[class^="icon"] {
+  stroke: currentcolor;
+  stroke-width: 2px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  width: 2rem;
+  height: 2rem;
+  margin: 0.4em;
+}
+
 select {
   height: 10em;
 }
@@ -106,6 +117,11 @@ button,
   border: 0.1rem solid #595959;
   background-color: beige;
   color: #595959;
+
+  &.icon {
+    padding: 0;
+    line-height: 50%;
+  }
 }
 
 footer {

@@ -72,10 +72,13 @@ let location_of_route = function
   | Chat room_id -> Printf.sprintf "/chat/%s" room_id
   | Group room_id -> Printf.sprintf "/group/%s" room_id
 
-let link msg route content =
+let link ?(props=[]) msg route content =
   let open Tea.Html in
-  a [href (location_of_route route);
-    Tea.Html2.Events.preventDefaultOn
-      "click"
-      (Tea_json.Decoder.succeed (msg route))]
-    [content]
+  a (props @
+      [
+        href (location_of_route route);
+        Tea.Html2.Events.preventDefaultOn
+          "click"
+          (Tea_json.Decoder.succeed (msg route))
+      ])
+    content

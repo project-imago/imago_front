@@ -98,11 +98,11 @@ let room_list_view route model =
     (* let () = Js.log !(model.matrix_client) in *)
     li [] [
       Router.link goTo (Chat room##roomId)
-      (div
+      [div
       [classList
         [("chat_link", true);
          ("active", equal_to_room room route)]]
-      [text room##name])
+      [text room##name]]
       ]
   in
   let group_view (group, chats) =
@@ -114,9 +114,11 @@ let room_list_view route model =
             [("group_link", true);
              ("active", equal_to_room g route)]]
           [ Router.link goTo (Group g##roomId)
-              (span [] [text g##name]);
-            Router.link goTo (CreateChat (Some g##roomId))
-              (span [class' "create_chat_link"] [text "+"])
+              [span [] [text g##name]];
+            Router.link
+              ~props:[class' "create_chat_link"; Icons.aria_label "New chat"]
+              goTo (CreateChat (Some g##roomId))
+              [Icons.icon "plus"]
           ];
           ul []
           (Belt.List.map chats chat_view)
@@ -125,8 +127,10 @@ let room_list_view route model =
         li [] [
           div [class' "group_link"] [
             span [] [text "Outside groups"];
-            Router.link goTo (CreateChat None)
-            (span [class' "create_chat_link"] [text "+"])
+            Router.link
+              ~props:[class' "create_chat_link"; Icons.aria_label "New chat"]
+              goTo (CreateChat None)
+              [Icons.icon "plus"]
           ];
           ul []
           (Belt.List.map chats chat_view)
@@ -144,7 +148,7 @@ let room_list_view route model =
 let view route model =
   let open Tea.Html in
   div [ id "sidebar" ] [
-    Router.link goTo Router.CreateGroup (div [class' "button"] [text "Create Group"]);
+    Router.link goTo Router.CreateGroup [div [class' "button"] [text "Create Group"]];
     room_list_view route model;
   ];
 

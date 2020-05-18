@@ -13,7 +13,7 @@ let _ = if isHotEnabled then hotAccept ();
 
 Js.Global.setTimeout
   (fun _ -> 
-  App.main (Js.Nullable.return (Web.Document.body ())) () 
+  App.main (Web.Document.getElementById "main") () 
   |. ignore
   )
 0

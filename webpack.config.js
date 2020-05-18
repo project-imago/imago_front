@@ -1,6 +1,9 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const SvgSpriteHtmlWebpackPlugin = require('svg-sprite-html-webpack');
+// const SpriteLoaderPlugin = require('svg-sprite-loader/plugin');
+// const CopyPlugin = require('copy-webpack-plugin');
+// const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 module.exports = {
     mode: "development",
@@ -21,7 +24,17 @@ module.exports = {
             filename: './index.html',
             template: './src/index.ejs',
             title: 'Imago'
+        }),
+        new SvgSpriteHtmlWebpackPlugin({
+            includeFiles: ['node_modules/bytesize-icons/dist/icons/*.svg']
+            // generateSymbolId: function(svgFilePath, svgHash, svgContent) {
+            //     return svgContent.id;
+            // }
         })
+        // new SpriteLoaderPlugin()
+        // new CopyPlugin({
+        //     patterns: [{from: 'bytesize-symbols.svg', context: 'node_modules/bytesize-icons/dist'}]
+        // })
         // new MiniCssExtractPlugin()
     ],
     module: {
@@ -29,10 +42,14 @@ module.exports = {
             {
                 test:/\.(s*)css$/,
                 use:['style-loader', 'css-loader', 'sass-loader']
+            },
+            {
+                test: /\.svg$/,
+                use: SvgSpriteHtmlWebpackPlugin.getLoader()
             }
         ]
     },
-    devtool: "source-map",
+    devtool: "eval-source-map",
     devServer: {
         //allowedHosts: ['imago-dev.img', 'localhost'],
         contentBase: './dist',
