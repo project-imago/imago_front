@@ -1,16 +1,10 @@
 type model =
-  {
-    matrix_client : Matrix.client ref;
-    username : string;
-    password : string;
+  { matrix_client : Matrix.client ref
+  ; username : string
+  ; password : string
   }
 
-let init matrix_client =
-  {
-      matrix_client;
-      username = "";
-      password = "";
-  }
+let init matrix_client = { matrix_client; username = ""; password = "" }
 
 type msg =
   | GoTo of Router.route
@@ -19,15 +13,22 @@ type msg =
   | Register
   | Registered of (Matrix.login_response, string) Tea.Result.t
   | ListInfo of (unit list, string) Tea.Result.t
-  [@@bs.deriving {accessors}]
+[@@bs.deriving { accessors }]
 
 let msg_to_string = function
-  | SaveUserName _msg -> "save username"
-  | SavePassword _msg -> "save password"
-  | Register -> "register"
-  | Registered _msg -> "registered" (*CreateGroup.msg_to_string msg*)
-  | GoTo _msg -> "goto"
-  | ListInfo _msg -> "list info"
+  | SaveUserName _msg ->
+      "save username"
+  | SavePassword _msg ->
+      "save password"
+  | Register ->
+      "register"
+  | Registered _msg ->
+      "registered" (*CreateGroup.msg_to_string msg*)
+  | GoTo _msg ->
+      "goto"
+  | ListInfo _msg ->
+      "list info"
+
 
 (* let result promise msg = *)
 (*   let open Vdom in *)
@@ -53,80 +54,81 @@ let msg_to_string = function
 exception RegisterError
 
 let register_cmd model =
-  (Matrix.register !(model.matrix_client) model.username model.password None
-  None)
+  Matrix.register !(model.matrix_client) model.username model.password None None
   |> Js.Promise.catch (function _err ->
-      Js.log [%raw {|_err|}];
-      match [%raw {|_err.httpStatus|}] with
-      | 401 ->
-          let auth = [%bs.obj {session = [%raw {|_err.data.session|}]; _type = "m.login.dummy"}]
-          in
-          (Matrix.register !(model.matrix_client) model.username model.password None (Some auth))
-      | _ ->
-          Js.Promise.reject RegisterError
-      (* |> *)
-      (* Js.Promise.resolve *)
-      )
-  |.
-  Tea_promise.result registered
+         Js.log [%raw {|_err|}] ;
+         ( match [%raw {|_err.httpStatus|}] with
+         | 401 ->
+             let auth =
+               [%bs.obj
+                 { session = [%raw {|_err.data.session|}]
+                 ; _type = "m.login.dummy"
+                 }]
+             in
+             Matrix.register
+               !(model.matrix_client)
+               model.username
+               model.password
+               None
+               (Some auth)
+         | _ ->
+             Js.Promise.reject RegisterError )
+         (* |> *)
+         (* Js.Promise.resolve *))
+  |. Tea_promise.result registered
+
 
 let save_cmd client =
-  [ Tea.Ex.LocalStorage.setItem "access_token" (client##getAccessToken ());
-    Tea.Ex.LocalStorage.setItem "matrix_id" client##credentials##userId; ]
+  [ Tea.Ex.LocalStorage.setItem "access_token" (client##getAccessToken ())
+  ; Tea.Ex.LocalStorage.setItem "matrix_id" client##credentials##userId
+  ]
   |> Tea_task.sequence
   |> Tea_task.attempt listInfo
 
+
 let update model = function
   | SaveUserName username ->
-      {model with username = username},
-      Tea.Cmd.none
+      ({ model with username }, Tea.Cmd.none)
   | SavePassword password ->
-      {model with password = password},
-      Tea.Cmd.none
+      ({ model with password }, Tea.Cmd.none)
   | Register ->
-      model, register_cmd model
-  | Registered (Tea.Result.Ok res) -> 
+      (model, register_cmd model)
+  | Registered (Tea.Result.Ok res) ->
       let () = Js.log res in
-      (model.matrix_client) :=
-        Matrix.new_client_params res##user_id res##access_token;
+      model.matrix_client :=
+        Matrix.new_client_params res##user_id res##access_token ;
       let () = Matrix.start_client !(model.matrix_client) in
-      model, Tea.Cmd.msg (GoTo Index) (*save_cmd !(model.matrix_client)*)
-  | Registered (Tea.Result.Error err) -> 
+      (model, Tea.Cmd.msg (GoTo Index))
+      (*save_cmd !(model.matrix_client)*)
+  | Registered (Tea.Result.Error err) ->
       let () = Js.log ("register failed: " ^ err) in
-      model, Tea.Cmd.none
+      (model, Tea.Cmd.none)
   | ListInfo (Tea.Result.Ok res) ->
       let () = Js.log res in
-      model, Tea.Cmd.none
+      (model, Tea.Cmd.none)
   | ListInfo (Tea.Result.Error err) ->
       let () = Js.log err in
-      model, Tea.Cmd.none
-  | GoTo _ -> (* this should never match *)
-      model, Tea.Cmd.none
+      (model, Tea.Cmd.none)
+  | GoTo _ ->
+      (* this should never match *)
+      (model, Tea.Cmd.none)
+
 
 let view model =
   let open Tea.Html in
-  form ~unique:"signup" [Tea.Html2.Events.onSubmit register]
-  [
-    fieldset []
-    [
-      label
-        [for' "username-field"]
-        [text "Username"];
-      input'
-        [type' "text";
-         id "username-field";
-         onInput saveUserName]
-        [text model.username];
-      label
-        [for' "password-field"]
-        [text "Password"];
-      input'
-        [type' "password";
-         id "password-field";
-         onInput savePassword]
-        [text model.password];
-      button
-        [type' "submit"]
-        [text "Register"]
+  form
+    ~unique:"signup"
+    [ Tea.Html2.Events.onSubmit register ]
+    [ fieldset
+        []
+        [ label [ for' "username-field" ] [ text "Username" ]
+        ; input'
+            [ type' "text"; id "username-field"; onInput saveUserName ]
+            [ text model.username ]
+        ; label [ for' "password-field" ] [ text "Password" ]
+        ; input'
+            [ type' "password"; id "password-field"; onInput savePassword ]
+            [ text model.password ]
+        ; button [ type' "submit" ] [ text "Register" ]
+        ]
     ]
-  ]
