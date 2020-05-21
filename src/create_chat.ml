@@ -22,16 +22,8 @@ let create_group_cmd model maybe_group =
   (* Tea.Cmd.msg (GoTo group) *)
   (* Tea.Cmd.msg (GoTo Index) *)
   Js.log (Belt.Option.getWithDefault maybe_group "no parent group") ;
-  let options : Matrix.create_room_options =
-    [%bs.obj
-      { invite = [||]
-      ; name = model.name
-      ; room_alias_name = None
-      ; topic = model.topic
-      ; visibility = "public"
-      }]
-  in
-  !(model.matrix_client)##createRoom options
+  Matrix.Client.create_room !(model.matrix_client) model.name
+  ~topic:model.topic
   |. Tea_promise.result (createdChat maybe_group)
 
 

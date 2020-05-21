@@ -56,7 +56,7 @@ let update_route model = function
 
 
 let init () location =
-  let matrix_client = ref (Auth.create_client ()) in
+  let matrix_client = ref (Matrix.create_client ()) in
   let auth_model, auth_cmd = Auth.init matrix_client in
   let model =
     { matrix_client

@@ -54,7 +54,7 @@ let msg_to_string = function
 exception RegisterError
 
 let register_cmd model =
-  Matrix.register !(model.matrix_client) model.username model.password None None
+  Matrix.Client.register !(model.matrix_client) model.username model.password None None
   |> Js.Promise.catch (function _err ->
          Js.log [%raw {|_err|}] ;
          ( match [%raw {|_err.httpStatus|}] with
@@ -65,7 +65,7 @@ let register_cmd model =
                  ; _type = "m.login.dummy"
                  }]
              in
-             Matrix.register
+             Matrix.Client.register
                !(model.matrix_client)
                model.username
                model.password
@@ -97,7 +97,7 @@ let update model = function
       let () = Js.log res in
       model.matrix_client :=
         Matrix.new_client_params res##user_id res##access_token ;
-      let () = Matrix.start_client !(model.matrix_client) in
+      let () = Matrix.Client.start_client !(model.matrix_client) in
       (model, Tea.Cmd.msg (GoTo Index))
       (*save_cmd !(model.matrix_client)*)
   | Registered (Tea.Result.Error err) ->

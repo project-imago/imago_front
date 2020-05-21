@@ -104,16 +104,9 @@ let create_group_cmd model =
   (* let group = Group.create_group model.statements in *)
   (* Tea.Cmd.msg (GoTo group) *)
   (* Tea.Cmd.msg (GoTo Index) *)
-  let options : Matrix.create_room_options =
-    [%bs.obj
-      { invite = [||]
-      ; name = model.name
-      ; room_alias_name = None
-      ; topic = model.topic
-      ; visibility = "public"
-      }]
-  in
-  !(model.matrix_client)##createRoom options |. Tea_promise.result createdGroup
+  Matrix.Client.create_room !(model.matrix_client) model.name
+  ~topic:model.topic
+  |. Tea_promise.result createdGroup
 
 
 (* |> Js.Promise.then_ (fun result -> *)

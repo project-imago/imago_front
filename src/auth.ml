@@ -1,17 +1,15 @@
-let create_client () = Matrix.create_client "http://matrix.imago.local:8008"
-
 let login_with_password (matrix_client : Matrix.client ref) username password =
-  Matrix.login_with_password !matrix_client username password |> ignore
+  Matrix.Client.login_with_password !matrix_client username password |> ignore
 
 
 let login_with_token (matrix_client : Matrix.client ref) token =
-  Matrix.login_with_password !matrix_client token |> ignore
+  Matrix.Client.login_with_password !matrix_client token |> ignore
 
 
 let logout (matrix_client : Matrix.client ref) =
-  let _ = Matrix.logout !matrix_client in
-  let () = Matrix.stop_client !matrix_client in
-  matrix_client := create_client ()
+  let _ = Matrix.Client.logout !matrix_client in
+  let () = Matrix.Client.stop_client !matrix_client in
+  matrix_client := Matrix.create_client ()
 
 
 let is_logged_in (matrix_client : Matrix.client ref) =
@@ -117,7 +115,7 @@ let update model = function
   | RestoredSession (Tea.Result.Ok (access_token, matrix_id)) ->
       let () = Js.log "restored access token" in
       model.matrix_client := Matrix.new_client_params matrix_id access_token ;
-      let () = Matrix.start_client !(model.matrix_client) in
+      let () = Matrix.Client.start_client !(model.matrix_client) in
       (model, Tea.Cmd.none)
   | RestoredSession (Tea.Result.Error err) ->
       let () = Js.log ("restore failed: " ^ err) in
@@ -147,8 +145,8 @@ let subscriptions model =
   match !(model.matrix_client)##clientRunning with
   | true ->
       Tea.Sub.batch
-        [ Matrix.subscribe !(model.matrix_client) gotMessage
-        ; Matrix.subscribe_once_logged_out !(model.matrix_client) loggedOut
+        [ Matrix.Client.subscribe !(model.matrix_client) gotMessage
+        ; Matrix.Client.subscribe_once_logged_out !(model.matrix_client) loggedOut
           (* ; Matrix.subscribe_once !(model.matrix_client) sync *)
           (* TODO: move so it's really once *)
         ]

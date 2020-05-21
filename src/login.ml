@@ -17,7 +17,7 @@ type msg =
 
 let login_cmd model =
   Tea_promise.result
-    (Matrix.login_with_password
+    (Matrix.Client.login_with_password
        !(model.matrix_client)
        model.username
        model.password)
@@ -41,7 +41,7 @@ let update model = function
       (model, login_cmd model)
   | LoggedIn (Tea.Result.Ok res) ->
       let () = Js.log res in
-      let () = Matrix.start_client !(model.matrix_client) in
+      let () = Matrix.Client.start_client !(model.matrix_client) in
       ( model
       , Tea.Cmd.batch
           [ Tea.Cmd.msg (GoTo Index); save_cmd !(model.matrix_client) ] )
