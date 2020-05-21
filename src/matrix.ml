@@ -25,46 +25,14 @@ let new_client_params user_id access_token =
     access_token
 
 
-type state_type =
-  < getContent : unit -> < _type : string > Js.t [@bs.meth] > Js.t
+module TypeState = Client.MakeStateAccessors (struct
+  type t = < _type : string > Js.t
+end)
 
-external get_state_type :
-  Client.RoomState.t -> (_[@bs.as "pm.imago.type"]) -> state_type array
-  = "getStateEvents"
-  [@@bs.send]
+module IdState = Client.MakeStateAccessors (struct
+  type t = < id : Matrixclient_common.room_id > Js.t
+end)
 
-type state_group =
-  < getContent : unit -> < id : Matrixclient_common.room_id > Js.t [@bs.meth] >
-  Js.t
-
-external get_state_group :
-  Client.RoomState.t -> (_[@bs.as "pm.imago.group"]) -> state_group array
-  = "getStateEvents"
-  [@@bs.send]
-
-external sendStateEventStatement :
-     client
-  -> Matrixclient_common.room_id
-  -> string (* event type *)
-  -> [%bs.obj: < objects : string array > ] (* can be anything *)
-  -> string (* state key *)
-  -> string Js.Promise.t = "sendStateEvent"
-  [@@bs.send]
-
-external sendStateEventType :
-     client
-  -> Matrixclient_common.room_id
-  -> string (* event type *)
-  -> [%bs.obj: < _type : string > ] (* can be anything *)
-  -> string (* state key *)
-  -> string Js.Promise.t = "sendStateEvent"
-  [@@bs.send]
-
-external sendStateEventId :
-     client
-  -> Matrixclient_common.room_id
-  -> string (* event type *)
-  -> [%bs.obj: < id : string > ] (* can be anything *)
-  -> string (* state key *)
-  -> string Js.Promise.t = "sendStateEvent"
-  [@@bs.send]
+module StatementState = Client.MakeStateAccessors (struct
+  type t = < objects : string array > Js.t
+end)

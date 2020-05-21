@@ -42,8 +42,6 @@ type create_room_options =
 type create_room_response =
   < room_id : Matrixclient_common.room_id ; room_alias : string option > Js.t
 
-
-
 type client =
   < credentials : < userId : user_id > Js.t
   ; clientRunning : bool
@@ -247,3 +245,24 @@ let create_room
     [%bs.obj { invite; name; room_alias_name = alias; topic; visibility }]
   in
   client##createRoom options
+
+
+module type CustomStateEvent = sig
+  type t
+end
+
+module MakeStateAccessors (S : CustomStateEvent) = struct
+  type event = < getContent : unit -> S.t [@bs.meth] > Js.t
+
+  external get : RoomState.t -> string -> event array = "getStateEvents"
+    [@@bs.send]
+
+  external send :
+       client
+    -> Matrixclient_common.room_id
+    -> string (* event type *)
+    -> S.t (* can be anything *)
+    -> string (* state key *)
+    -> string Js.Promise.t = "sendStateEvent"
+    [@@bs.send]
+end

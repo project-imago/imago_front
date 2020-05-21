@@ -43,7 +43,7 @@ type room_type =
 let get_room_type room matrix_client =
   let room_type =
     let room_state = room##currentState in
-    let state_type = Matrix.get_state_type room_state in
+    let state_type = Matrix.TypeState.get room_state "pm.imago.type" in
     match state_type with
     | [| state_event |] ->
       ( match (state_event##getContent ())##_type with
@@ -56,7 +56,7 @@ let get_room_type room matrix_client =
   in
   let room_group =
     let room_state = room##currentState in
-    let state_type = Matrix.get_state_group room_state in
+    let state_type = Matrix.IdState.get room_state "pm.imago.group" in
     match state_type with
     | [| state_event |] ->
         Some (state_event##getContent ())##id

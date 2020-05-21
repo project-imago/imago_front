@@ -119,14 +119,14 @@ let send_group_events_cmd model room_id =
   |> Belt.Map.toArray
   |. Belt.Array.map (fun (property, obj_array) ->
          let obj_items = Belt.Array.map obj_array (fun o -> o.item) in
-         Matrix.sendStateEventStatement
+         Matrix.StatementState.send
            !(model.matrix_client)
            room_id
            "pm.imago.groups.statement"
            [%bs.obj { objects = obj_items }]
            property)
   |. Belt.Array.concat
-       [| Matrix.sendStateEventType
+       [| Matrix.TypeState.send
             !(model.matrix_client)
             room_id
             "pm.imago.type"

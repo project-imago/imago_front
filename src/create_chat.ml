@@ -31,7 +31,7 @@ let send_group_events_cmd model room_id maybe_group =
   let maybe_have_group =
     match maybe_group with
     | Some group ->
-        [| Matrix.sendStateEventId
+        [| Matrix.IdState.send
              !(model.matrix_client)
              room_id
              "pm.imago.group"
@@ -43,7 +43,7 @@ let send_group_events_cmd model room_id maybe_group =
   in
   maybe_have_group
   |. Belt.Array.concat
-       [| Matrix.sendStateEventType
+       [| Matrix.TypeState.send
             !(model.matrix_client)
             room_id
             "pm.imago.type"
