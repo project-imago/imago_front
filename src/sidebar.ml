@@ -77,7 +77,9 @@ let room_list_view route model =
   (* let () = Js.log !(model.matrix_client) in *)
   (* TODO: fix trouver si connecté (et username si oui) *)
   let rooms = Js.Dict.values !(model.matrix_client)##store##rooms in
-  let rooms_t_empty = Belt.Map.make ~id:(module RoomCmp) in
+  let rooms_t_empty =
+    Belt.Map.make ~id:(module RoomCmp) |. Belt.Map.set None []
+  in
   let rooms_t : room_tree =
     Belt.Array.reduce rooms rooms_t_empty (fun acc room ->
         match get_room_type room !(model.matrix_client) with
