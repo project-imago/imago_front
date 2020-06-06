@@ -252,9 +252,13 @@ module type CustomStateEvent = sig
 end
 
 module MakeStateAccessors (S : CustomStateEvent) = struct
-  type event = < getContent : unit -> S.t [@bs.meth] > Js.t
+  type event = < state_key : string ; getContent : unit -> S.t [@bs.meth] > Js.t
 
   external get : RoomState.t -> string -> event array = "getStateEvents"
+    [@@bs.send]
+
+  external get_one : RoomState.t -> string -> string -> event array
+    = "getStateEvents"
     [@@bs.send]
 
   external send :

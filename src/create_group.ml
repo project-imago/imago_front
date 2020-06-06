@@ -176,16 +176,10 @@ let update model = function
       in
       (model, Tea.Cmd.none)
   | AddStatement ->
-      Js.log model.property_selected ;
-      Js.log model.obj_selected ;
       let new_statements =
         match (model.property_selected, model.obj_selected) with
         | Some property, Some obj ->
-            Belt.Map.update model.statements property (function
-                | None ->
-                    Some (Belt.Array.make 1 obj)
-                | Some objs ->
-                    Some (Belt.Array.concat objs [| obj |]))
+            Statements.add_statements model.statements property obj
         | _ ->
             model.statements
       in
@@ -198,11 +192,7 @@ let update model = function
       , Tea.Cmd.none )
   | RemoveObj (property, obj) ->
       let new_statements =
-        Belt.Map.update model.statements property (function
-            | None ->
-                None
-            | Some objs ->
-                Some (Belt.Array.keep objs (fun x -> x <> obj)))
+        Statements.remove_obj model.statements property obj
       in
       ({ model with statements = new_statements }, Tea.Cmd.none)
   | CreateGroup ->
