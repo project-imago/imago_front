@@ -132,14 +132,15 @@ let room_list_view route model =
     | Some g ->
         li ~unique:g##roomId
           []
-          [ div
+          [ Router.link
+                  goTo
+                  (Group (Id g##roomId))
+                  (* XXX *) 
+           [ div
               [ classList
                   [ ("group_link", true); ("active", equal_to_room g route) ]
               ]
-              [ Router.link
-                  goTo
-                  (Group (Id g##roomId))
-                  (* XXX *) [ span [] [ text g##name ] ]
+              [ text g##name
               ; Router.link
                   ~props:
                     [ class' "create_chat_link"; Icons.aria_label "New chat" ]
@@ -147,6 +148,7 @@ let room_list_view route model =
                   (CreateChat (Some g##roomId))
                   [ Icons.icon "plus" ]
               ]
+           ]
           ; ul [] (Belt.List.map chats chat_view)
           ]
     | None ->
@@ -178,7 +180,7 @@ let view route model =
   div
     [ id "sidebar" ]
     [ Router.link
-        ~props:[ class' "button" ]
+        ~props:[ class' "button pill" ]
         goTo
         Router.CreateGroup
         [ text "Create Group" ]

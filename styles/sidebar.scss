@@ -1,18 +1,29 @@
 
 #sidebar {
   // padding: 0;
-  background-color: #d6dfe8;
+  // background-color: #d6dfe8;
+  background-color: rgb(35, 38, 41);
   overflow-y: auto;
-  min-width: 220px;
+  min-width: 250px;
   padding: 0;
+  border-right: 1px solid rgb(112, 111, 110);
 
   > .button {
     margin: 10px 25px;
   }
 
   > ul > li {
-    border-bottom: 1px solid black;
+    // border-bottom: 1px solid black;
     padding: 0 10px;
+  }
+
+  a {
+    font-weight: normal;
+    color: rgb(239, 240, 241);
+
+    &:hover {
+      opacity: 1;
+    }
   }
 
   ul {
@@ -23,14 +34,14 @@
 
       .chat_link, .group_link {
         padding: 10px;
-        margin: 0 -15px;
+        margin: 0 -10px;
 
         &:hover {
-          background-color: #b8bfc6;
+          background-color: rgba(61, 174, 233, 0.25);
         }
 
         &.active {
-          background-color: #979ca2;
+          background-color: rgb(61, 174, 233);
         }
       }
 

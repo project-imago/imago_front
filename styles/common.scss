@@ -1,3 +1,13 @@
+a {
+  color: rgb(41, 128, 185);
+  font-weight: bold;
+  text-decoration: none;
+
+  &:hover {
+    opacity: 0.7;
+    color: rgb(41, 128, 185);
+  }
+}
 
 svg[class^="icon"] {
   stroke: currentcolor;
@@ -27,13 +37,20 @@ button,
 [type="button"],
 [type="reset"],
 [type="submit"] {
-  border: 0.1rem solid #595959;
-  background-color: beige;
-  color: #595959;
+  background-color: rgb(49, 54, 59);
+  border: 1px solid rgb(112, 111, 110);
+
+  &:hover {
+    border-color: rgb(61, 174, 233);
+  }
 
   &.icon {
     padding: 0;
     line-height: 50%;
+  }
+
+  &.pill {
+    border-radius: 100px;
   }
 }
 

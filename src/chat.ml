@@ -97,8 +97,9 @@ let view model room_id =
       in
       div
         ~unique:"chat"
-        [ id "room-view" ]
-        [ div ~unique:room_id [ id "message-list" ] message_list
+        [ id "chat-view" ]
+        [ h3 [] [text room##name]
+        ; div ~unique:room_id [ id "message-list" ] message_list
         ; div ~unique:room_id [ id "input-area" ] [ input_area model room_id ]
         ]
   | None ->

@@ -1,11 +1,15 @@
+body {
+  color: rgb(239, 240, 241);
+  overflow: hidden;
+}
 
 #body {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  padding: 15px;
+  color: rgb(239, 240, 241);
 
-  background-color: aliceblue;
+  background-color: rgb(49, 54, 59);
 }
 
 main {
@@ -22,22 +26,28 @@ main {
   border: none;
 }
 
-#content,
-#sidebar,
-header,
-footer {
-  border-radius: 0.4rem;
-  border: 1px gray solid;
-  padding: 15px;
-  background-color: white;
-}
-
-#content, #room-view {
-  margin-left: 15px;
+#content {
+  padding: 0 20px;
 }
 
 footer {
-  margin-top: 15px;
   font-size: 0.8em;
   text-align: right;
+  padding: 15px;
+  background-color: rgb(35, 38, 41);
+  border-top: 1px solid rgb(112, 111, 110);
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+  background-color: rgb(35, 38, 41);
+} 
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(61, 174, 233, 0.25);
+  border-radius: 2.5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(61, 174, 233);
 }
