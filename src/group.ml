@@ -65,6 +65,7 @@ let iri_to_alias iri =
   |> Js.String.concat ":matrix.imago.local"
 
 let view_room _model room =
+  let room_id = room##roomId in
   let statements = statements room in
   let open Tea.Html in
   let obj_view _property (obj : Statements.obj) =
@@ -84,12 +85,12 @@ let view_room _model room =
   in
   let statements_list =
     Js.log "statements"; Js.log statements; Js.log room;
-    div
+    div ~unique:room_id
       [ id "statements-list" ]
       (Belt.Map.toList statements |. Belt.List.map statement_view)
   in
-  let events_list = div [ id "events-list" ] [] in
-  div ~unique:"group" ~key:room##roomId [] [ statements_list; events_list ]
+  let events_list = div ~unique:room_id [ id "events-list" ] [] in
+  div ~unique:"group" ~key:room##roomId [id "group-view"] [  h3 [] [text room##name]; statements_list; events_list ]
 
 let view model =
   let open Tea.Html in
