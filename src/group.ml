@@ -19,12 +19,9 @@ let peek_room_cmd model room_id =
   Tea_promise.result (!(model.matrix_client)##peekInRoom room_id)
   peeked
 
-let set_group_room model room_id =
-  Js.log "setting group room";
-  match Js.String.charAt 0 room_id with
-    | "!" -> Tea.Cmd.msg (SetCurrentRoom room_id)
-    | "#" -> resolve_alias_cmd model room_id
-    | _ -> Tea.Cmd.none
+let set_group_room model = function
+  | Matrix.Id room_id -> Tea.Cmd.msg (SetCurrentRoom room_id)
+  | Alias room_alias -> resolve_alias_cmd model room_alias
 
 let update model = function
   | SetCurrentRoom room_id ->
@@ -62,7 +59,7 @@ let statements room =
   | Some statement_state ->
     Statements.build_from_state statement_state
 
-let iri_to_label iri =
+let iri_to_alias iri =
   iri
   |> Js.String.replace "http://www.wikidata.org/entity/" "#_stm_wd_"
   |> Js.String.concat ":matrix.imago.local"
@@ -73,7 +70,7 @@ let view_room _model room =
   let obj_view _property (obj : Statements.obj) =
     div
       [ id "object-item" ]
-      [ Router.link goTo (Group (iri_to_label obj##iri)) [ text
+      [ Router.link goTo (Group (Alias (iri_to_alias obj##iri))) [ text
       obj##label ] ]
   in
   let statement_view (property, objs) =
@@ -94,7 +91,7 @@ let view_room _model room =
   let events_list = div [ id "events-list" ] [] in
   div ~unique:"group" ~key:room##roomId [] [ statements_list; events_list ]
 
-let view model _room_id =
+let view model =
   let open Tea.Html in
   match model.current_room with
   | Some room ->

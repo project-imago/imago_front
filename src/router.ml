@@ -5,8 +5,8 @@ type route =
   | Logout
   | CreateGroup
   | CreateChat of Matrix.room_id option
-  | Chat of Matrix.room_id
-  | Group of Matrix.room_id
+  | Chat of Matrix.room_address
+  | Group of Matrix.room_address
 
 module StringCmp = Belt.Id.MakeComparable (struct
   type t = string
@@ -52,15 +52,21 @@ let route_of_location location =
         parse_params location.Web.Location.search |. Belt.Map.get "group"
       in
       CreateChat group
-  | [| ""; "chat"; room_id |] ->
-      Chat room_id
+  | [| ""; "chat"; room_address |] ->
+      (match Js.String.charAt 0 (Js.Global.decodeURIComponent room_address) with
+      | "!" -> Chat (Id room_address)
+      | "#" -> Chat (Alias room_address)
+      | _ -> Index)
   | [| ""; "group"; "new" |] ->
       CreateGroup
-  | [| ""; "group"; room_id |] ->
+  | [| ""; "group"; room_address |] ->
       (* match Js.String.charAt 0 room_id with *)
       (* "#" -> *)
       (* "!" -> *)
-      Group (Js.Global.decodeURIComponent room_id)
+      (match Js.String.charAt 0 (Js.Global.decodeURIComponent room_address) with
+      | "!" -> Group (Id room_address)
+      | "#" -> Group (Alias room_address)
+      | _ -> Index)
   | _ ->
       Index
 
@@ -82,15 +88,19 @@ let location_of_route = function
       "/room/new"
   | CreateChat (Some group_id) ->
       "/chat/new?group=" ^ group_id
-  | Chat room_id ->
+  | Chat (Id room_id) ->
       Printf.sprintf "/chat/%s" room_id
-  | Group room_id ->
+  | Chat (Alias room_alias) ->
+      Printf.sprintf "/chat/%s" room_alias
+  | Group (Id room_id) ->
       Printf.sprintf "/group/%s" room_id
+  | Group (Alias room_alias) ->
+      Printf.sprintf "/group/%s" room_alias
 
 
-let link ?(props = []) msg route content =
+let link ?(key="") ?(unique="") ?(props = []) msg route content =
   let open Tea.Html in
-  a
+  a ~key ~unique
     ( props
     @ [ href (location_of_route route)
       ; Tea.Html2.Events.preventDefaultOn

@@ -44,9 +44,9 @@ let update_route model = function
   (* | AuthRoute auth_route -> *)
   (*     let auth, route = Auth.update_route model.auth auth_route in *)
   (*     {auth; route}, location_of_route route |> Tea.Navigation.newUrl *)
-  | Group room_id as route ->
+  | Group room_address as route ->
       Js.log "updating route group";
-      let group_cmd = Group.set_group_room model.content.group room_id in
+      let group_cmd = Group.set_group_room model.content.group room_address in
       ({ model with route }
       , Tea.Cmd.batch
           [ Tea.Cmd.map (fun m -> contentMsg (Content.groupMsg m)) group_cmd
@@ -114,7 +114,7 @@ let view model =
         [ Sidebar.view model.route model.sidebar |> Vdom.map sidebarMsg
         ; Content.view model.route model.content |> Vdom.map contentMsg
         ]
-    ; footer [] [ text "Imago 2020" ]
+    ; footer ~key:"footer" [] [ text "Imago 2020" ]
     ]
 
 

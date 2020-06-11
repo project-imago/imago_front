@@ -8,12 +8,22 @@ let init matrix_client = { matrix_client }
 
 let equal_to_option value = function None -> false | Some v -> v = value
 
+let room_aliases room =
+  match (room##getCanonicalAlias ()) |> Js.Nullable.toOption with
+  | None -> room##getAltAliases ()
+  | Some alias ->
+      Tablecloth.Array.append (room##getAltAliases ()) [|alias|]
+
 let equal_to_room room (route : Router.route) =
   match route with
-  | Chat room_id ->
+  | Chat (Id room_id) ->
       room_id = room##roomId
-  | Group room_id ->
+  | Chat (Alias room_alias) ->
+      Tablecloth.Array.any (room_aliases room) ~f:(fun a -> a = room_alias)
+  | Group (Id room_id) ->
       room_id = room##roomId
+  | Group (Alias room_alias) ->
+      Tablecloth.Array.any (room_aliases room) ~f:(fun a -> a = room_alias)
   | _ ->
       false
 
@@ -67,8 +77,10 @@ let get_room_type room matrix_client =
   | Group, _ ->
       Group
   | _, Some group ->
-      SubChat (matrix_client##getRoom group |> Js.Nullable.toOption |>
-      Tablecloth.Option.get_exn)
+      SubChat
+        ( matrix_client##getRoom group
+        |> Js.Nullable.toOption
+        |> Tablecloth.Option.get_exn )
   | _, None ->
       Chat
 
@@ -102,11 +114,11 @@ let room_list_view route model =
   let chat_view room =
     (* let () = Js.log room in *)
     (* let () = Js.log !(model.matrix_client) in *)
-    li
+    li ~unique:room##roomId
       []
       [ Router.link
           goTo
-          (Chat room##roomId)
+          (Chat (Id room##roomId)) (* XXX *)
           [ div
               [ classList
                   [ ("chat_link", true); ("active", equal_to_room room route) ]
@@ -118,13 +130,16 @@ let room_list_view route model =
   let group_view (group, chats) =
     match group with
     | Some g ->
-        li
+        li ~unique:g##roomId
           []
           [ div
               [ classList
                   [ ("group_link", true); ("active", equal_to_room g route) ]
               ]
-              [ Router.link goTo (Group g##roomId) [ span [] [ text g##name ] ]
+              [ Router.link
+                  goTo
+                  (Group (Id g##roomId))
+                  (* XXX *) [ span [] [ text g##name ] ]
               ; Router.link
                   ~props:
                     [ class' "create_chat_link"; Icons.aria_label "New chat" ]
@@ -135,7 +150,7 @@ let room_list_view route model =
           ; ul [] (Belt.List.map chats chat_view)
           ]
     | None ->
-        li
+        li ~unique:"no group"
           []
           [ div
               [ class' "group_link" ]

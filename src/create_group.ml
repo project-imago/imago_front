@@ -208,7 +208,7 @@ let update model = function
       , (* TODO: add room_id in state to use for edit group *)
         Tea.Cmd.batch
           [ send_group_events_cmd model res##room_id
-          ; Tea.Cmd.msg (goTo (Group res##room_id))
+          ; Tea.Cmd.msg (goTo (Group (Id res##room_id)))
           ] )
   | CreatedGroup (Tea.Result.Error err) ->
       Js.Exn.raiseError "erreur" |> ignore ;

@@ -23,5 +23,8 @@ type t =
   ; summary : room_summary
   ; tags : tag Js.Dict.t
   ; timeline : timeline
-  ; getLiveTimeline : unit -> event_timeline [@bs.meth] >
+  ; getLiveTimeline : unit -> event_timeline [@bs.meth]
+  ; getCanonicalAlias : unit -> Matrixclient_common.room_alias Js.Nullable.t [@bs.meth]
+  ; getAltAliases : unit -> Matrixclient_common.room_alias array [@bs.meth]
+  >
   Js.t

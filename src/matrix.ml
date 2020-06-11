@@ -2,6 +2,8 @@ module Client = Matrixclient
 
 type room_id = Matrixclient.Common.room_id
 
+type room_alias = Matrixclient.Common.room_alias
+
 type client = Matrixclient.client
 
 type room = Matrixclient.Room.t
@@ -13,6 +15,8 @@ type event_content = Matrixclient.Event.event_content
 type create_room_response = Matrixclient.create_room_response
 
 type login_response = Matrixclient.login_response
+
+type room_address = Id of room_id | Alias of room_alias
 
 let create_client () =
   Matrixclient.create_client "http://matrix.imago.local:8008"

@@ -71,7 +71,7 @@ let update model = function
       ( model
       , Tea.Cmd.batch
           [ send_group_events_cmd model res##room_id maybe_group
-          ; Tea.Cmd.msg (goTo (Chat res##room_id))
+          ; Tea.Cmd.msg (goTo (Chat (Id res##room_id)))
           ] )
   | CreatedChat (_maybe_group, Tea.Result.Error err) ->
       Js.Exn.raiseError "erreur" |> ignore ;
