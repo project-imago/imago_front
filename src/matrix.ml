@@ -32,7 +32,3 @@ end)
 module IdState = Client.MakeStateAccessors (struct
   type t = < id : Matrixclient_common.room_id > Js.t
 end)
-
-module StatementState = Client.MakeStateAccessors (struct
-  type t = < objects : string array > Js.t
-end)

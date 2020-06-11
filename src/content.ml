@@ -50,6 +50,8 @@ let update model = function
   | ChatMsg chat_msg ->
       let chat, chat_cmd = Chat.update model.chat chat_msg in
       ({ model with chat }, Tea.Cmd.map chatMsg chat_cmd)
+  | GroupMsg (GoTo route) ->
+      (model, Tea.Cmd.msg (GoTo route))
   | GroupMsg group_msg ->
       let group, group_cmd = Group.update model.group group_msg in
       ({ model with group }, Tea.Cmd.map groupMsg group_cmd)

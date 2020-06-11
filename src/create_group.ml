@@ -7,7 +7,7 @@ type model =
     statements : Statements.t
   ; property_search : string
   ; property_suggestions : Statements.property array
-  ; property_selected : string option
+  ; property_selected : Statements.property option
   ; obj_search : string
   ; obj_suggestions : Statements.obj array
   ; obj_selected : Statements.obj option
@@ -19,7 +19,11 @@ let init matrix_client =
   ; topic = ""
   ; statements = Statements.empty
   ; property_search = "img:location"
-  ; property_suggestions = [| "img:location"; "img:subgroup"; "img:about" |]
+  ; property_suggestions = [|
+    [%bs.obj {iri = "img:location"; label = "location"; description = ""}];
+    [%bs.obj {iri = "img:subgroup"; label = "subgroup"; description = ""}];
+    [%bs.obj {iri = "img:about"; label = "about"; description = ""}]
+    |]
   ; property_selected = None
   ; obj_search = ""
   ; obj_suggestions = [||]
@@ -38,7 +42,7 @@ type msg =
   | ReceivedObjResults of
       (string * Statements.obj array, string Tea.Http.error) Tea.Result.t
   | AddStatement
-  | RemoveObj of string * Statements.obj
+  | RemoveObj of Statements.property * Statements.obj
   | CreateGroup
   | CreatedGroup of (Matrix.create_room_response, string) Tea.Result.t
   | SentGroupEvents of (string array, string) Tea.Result.t
@@ -52,10 +56,11 @@ let obj_search_cmd property obj =
   let url =
     "http://api.imago.local:4000/obj/search"
     ^ "?property="
-    ^ property
+    ^ property##iri
     ^ "&term="
     ^ obj
   in
+  Js.log url;
   let decode_response =
     let open Tea.Json.Decoder in
     (* decodeString (list string) json *)
@@ -68,7 +73,7 @@ let obj_search_cmd property obj =
          (array
             (map3
                (fun a b c ->
-                 ({ item = a; label = b; description = c } : Statements.obj))
+                 ([%bs.obj { iri = a; label = b; description = c }] : Statements.obj))
                (field "item" string)
                (field "label" string)
                (field "description" string))))
@@ -115,25 +120,21 @@ let create_group_cmd model =
 (*     ) *)
 
 let send_group_events_cmd model room_id =
-  model.statements
-  |> Belt.Map.toArray
-  |. Belt.Array.map (fun (property, obj_array) ->
-         let obj_items = Belt.Array.map obj_array (fun o -> o.item) in
-         Matrix.StatementState.send
-           !(model.matrix_client)
-           room_id
-           "pm.imago.groups.statement"
-           [%bs.obj { objects = obj_items }]
-           property)
-  |. Belt.Array.concat
-       [| Matrix.TypeState.send
-            !(model.matrix_client)
-            room_id
-            "pm.imago.type"
-            [%bs.obj { _type = "group" }]
-            ""
-       |]
-  |> Js.Promise.all
+  [|
+    Statements.StatementState.send
+       !(model.matrix_client)
+       room_id
+       "pm.imago.group.statements"
+       [%bs.obj { statements = Statements.to_state model.statements }]
+       ""
+     ;  Matrix.TypeState.send
+        !(model.matrix_client)
+        room_id
+        "pm.imago.type"
+        [%bs.obj { _type = "group" }]
+        ""
+        |]
+      |> Js.Promise.all
   |. Tea_promise.result sentGroupEvents
 
 
@@ -149,8 +150,13 @@ let update model = function
       ({ model with topic }, Tea.Cmd.none)
   | SavePropertySearch property ->
       ({ model with property_search = property }, Tea.Cmd.none)
-  | SelectProperty property ->
-      ({ model with property_selected = Some property }, Tea.Cmd.none)
+  | SelectProperty property_item ->
+      let property =
+        Belt.Array.getBy model.property_suggestions (fun x -> x##label == property_item)
+      in
+      Js.log property_item;
+      Js.log property;
+      ({ model with property_selected = property }, Tea.Cmd.none)
   | SaveObjSearch obj ->
       let cmd =
         match model.property_selected with
@@ -162,7 +168,7 @@ let update model = function
       ({ model with obj_search = obj }, cmd)
   | SelectObj obj_item ->
       let obj =
-        Belt.Array.getBy model.obj_suggestions (fun x -> x.item == obj_item)
+        Belt.Array.getBy model.obj_suggestions (fun x -> x##iri == obj_item)
       in
       ({ model with obj_selected = obj }, Tea.Cmd.none)
   | ReceivedObjResults (Error err) ->
@@ -221,7 +227,7 @@ let statement_list_view model =
   let obj_view property (obj : Statements.obj) =
     div
       [ id "object-item" ]
-      [ span [] [ text (obj.label ^ " (" ^ obj.description ^ ")") ]
+      [ span [] [ text (obj##label ^ " (" ^ obj##description ^ ")") ]
       ; button
           [ onClick (removeObj property obj)
           ; class' "icon"
@@ -233,7 +239,7 @@ let statement_list_view model =
   let statement_view (property, objs) =
     div
       [ id "statement-item" ]
-      [ div [ id "property-item" ] [ text property ]
+      [ div [ id "property-item" ] [ text property##label ]
       ; div
           [ id "objects-list" ]
           (Belt.Array.map objs (obj_view property) |> Belt.List.fromArray)
@@ -250,7 +256,7 @@ let statement_list_view model =
 
 let statement_form_view model =
   let open Tea.Html in
-  let property_option property = option' [] [ text property ] in
+  let property_option property = option' [] [ text property##label ] in
   (* TODO: add selected for what is really selected *)
   let is_obj_selected model obj =
     match model.obj_selected with
@@ -265,8 +271,8 @@ let statement_form_view model =
   (* in *)
   let obj_option (obj : Statements.obj) =
     option'
-      [ value obj.item; Attributes.selected (is_obj_selected model obj) ]
-      [ text (obj.label ^ " (" ^ obj.description ^ ")") ]
+      [ value obj##iri; Attributes.selected (is_obj_selected model obj) ]
+      [ text (obj##label ^ " (" ^ obj##description ^ ")") ]
   in
   (* TODO: add selected for what is really selected *)
   form

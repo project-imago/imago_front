@@ -34,17 +34,11 @@ let route_of_location location =
     |. Belt.List.map (fun kv -> Js.String.split "=" kv |> Array.to_list)
     |> Belt.List.flatten
     |> list_to_map (Belt.Map.make ~id:(module StringCmp))
-    (* |. Belt.Array.reduce (Belt.Map.make ~id:(module StringCmp))  (fun acc param -> *)
-    (*     Js.log (Js.String.split "=" param); *)
-    (*     match Js.String.split param "=" with *)
-    (*     | [|key; value|] -> *)
-    (*       Belt.Map.set acc key value *)
-    (*     | _ -> acc *)
-    (*     ) *)
   in
-  (* Js.log location.Web.Location.search; *)
+  (* Js.log location; *)
   (* Js.log (parse_params location.Web.Location.search); *)
-  let route = Js.String.split "/" location.Web.Location.pathname in
+  let route = Js.String.split "/" (location.Web.Location.pathname ^
+  location.Web.Location.hash) in
   (* let () = Js.log (Js.String.split "/" location.Web.Location.pathname) in *)
   match route with
   | [| ""; "login" |] ->
@@ -63,7 +57,10 @@ let route_of_location location =
   | [| ""; "group"; "new" |] ->
       CreateGroup
   | [| ""; "group"; room_id |] ->
-      Group room_id
+      (* match Js.String.charAt 0 room_id with *)
+      (* "#" -> *)
+      (* "!" -> *)
+      Group (Js.Global.decodeURIComponent room_id)
   | _ ->
       Index
 

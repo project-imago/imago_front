@@ -67,7 +67,8 @@ let get_room_type room matrix_client =
   | Group, _ ->
       Group
   | _, Some group ->
-      SubChat (matrix_client##getRoom group)
+      SubChat (matrix_client##getRoom group |> Js.Nullable.toOption |>
+      Tablecloth.Option.get_exn)
   | _, None ->
       Chat
 

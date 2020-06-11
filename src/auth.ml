@@ -1,23 +1,3 @@
-let login_with_password (matrix_client : Matrix.client ref) username password =
-  Matrix.Client.login_with_password !matrix_client username password |> ignore
-
-
-let login_with_token (matrix_client : Matrix.client ref) token =
-  Matrix.Client.login_with_password !matrix_client token |> ignore
-
-
-let logout (matrix_client : Matrix.client ref) =
-  let _ = Matrix.Client.logout !matrix_client in
-  let () = Matrix.Client.stop_client !matrix_client in
-  matrix_client := Matrix.create_client ()
-
-
-let is_logged_in (matrix_client : Matrix.client ref) =
-  !matrix_client##isLoggedIn ()
-
-
-let user_id (matrix_client : Matrix.client ref) =
-  !matrix_client##credentials##userId
 
 
 type msg =
@@ -97,6 +77,41 @@ let remove_storage_cmd : msg Tea.Cmd.t =
     ; Tea.Ex.LocalStorage.removeItemCmd "matrix_id"
     ]
 
+let subscriptions model =
+  (* let () = Js.log "chat subs" in *)
+  match !(model.matrix_client)##clientRunning with
+  | true ->
+      Tea.Sub.batch
+        [ Matrix.Client.subscribe !(model.matrix_client) gotMessage
+        ; Matrix.Client.subscribe_once_logged_out !(model.matrix_client) loggedOut
+          (* ; Matrix.subscribe_once !(model.matrix_client) sync *)
+          (* TODO: move so it's really once *)
+        ]
+  | false ->
+      Tea.Sub.none
+
+let login_with_password (matrix_client : Matrix.client ref) username password =
+  Matrix.Client.login_with_password !matrix_client username password |> ignore
+
+
+let login_with_token (matrix_client : Matrix.client ref) token =
+  Matrix.Client.login_with_password !matrix_client token |> ignore
+
+
+let logout (matrix_client : Matrix.client ref) =
+  let _ = Matrix.Client.logout !matrix_client in
+  let () = Matrix.Client.stop_client !matrix_client in
+  matrix_client := Matrix.create_client ();
+  remove_storage_cmd
+
+
+let is_logged_in (matrix_client : Matrix.client ref) =
+  !matrix_client##isLoggedIn ()
+
+
+let user_id (matrix_client : Matrix.client ref) =
+  !matrix_client##credentials##userId
+
 
 (* let init_cmd = restore_cmd *)
 
@@ -136,19 +151,6 @@ let update model = function
       (model, Tea.Cmd.none)
   | LoggedOut state ->
       let () = Js.log state in
-      let () = logout model.matrix_client in
-      (model, Tea.Cmd.none)
+      let cmd = logout model.matrix_client in
+      (model, cmd)
 
-
-let subscriptions model =
-  (* let () = Js.log "chat subs" in *)
-  match !(model.matrix_client)##clientRunning with
-  | true ->
-      Tea.Sub.batch
-        [ Matrix.Client.subscribe !(model.matrix_client) gotMessage
-        ; Matrix.Client.subscribe_once_logged_out !(model.matrix_client) loggedOut
-          (* ; Matrix.subscribe_once !(model.matrix_client) sync *)
-          (* TODO: move so it's really once *)
-        ]
-  | false ->
-      Tea.Sub.none

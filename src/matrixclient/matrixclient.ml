@@ -68,39 +68,44 @@ type client =
       -> Matrixclient_event.event_content
       -> string Js.Promise.t [@bs.meth]
   ; store : Matrixclient_store.t
-  ; getRoom : Matrixclient_common.room_id -> Matrixclient_room.t [@bs.meth] >
+  ; getRoom : Matrixclient_common.room_id -> Matrixclient_room.t Js.Nullable.t [@bs.meth]
+  ; resolveRoomAlias : Matrixclient_common.room_id -> <room_id : string> Js.t Js.Promise.t
+  [@bs.meth]
+  ; peekInRoom : Matrixclient_common.room_id -> Matrixclient_room.t Js.Promise.t
+  [@bs.meth]
+ >
   Js.t
 
 external start_client : client -> unit = "startClient" [@@bs.send]
 
 external stop_client : client -> unit = "stopClient" [@@bs.send]
 
-external sendStateEventStatement :
-     client
-  -> Matrixclient_common.room_id
-  -> string (* event type *)
-  -> [%bs.obj: < objects : string array > ] (* can be anything *)
-  -> string (* state key *)
-  -> string Js.Promise.t = "sendStateEvent"
-  [@@bs.send]
+(* external sendStateEventStatement : *)
+(*      client *)
+(*   -> Matrixclient_common.room_id *)
+(*   -> string (1* event type *1) *)
+(*   -> [%bs.obj: < objects : string array > ] (1* can be anything *1) *)
+(*   -> string (1* state key *1) *)
+(*   -> string Js.Promise.t = "sendStateEvent" *)
+(*   [@@bs.send] *)
 
-external sendStateEventType :
-     client
-  -> Matrixclient_common.room_id
-  -> string (* event type *)
-  -> [%bs.obj: < _type : string > ] (* can be anything *)
-  -> string (* state key *)
-  -> string Js.Promise.t = "sendStateEvent"
-  [@@bs.send]
+(* external sendStateEventType : *)
+(*      client *)
+(*   -> Matrixclient_common.room_id *)
+(*   -> string (1* event type *1) *)
+(*   -> [%bs.obj: < _type : string > ] (1* can be anything *1) *)
+(*   -> string (1* state key *1) *)
+(*   -> string Js.Promise.t = "sendStateEvent" *)
+(*   [@@bs.send] *)
 
-external sendStateEventId :
-     client
-  -> Matrixclient_common.room_id
-  -> string (* event type *)
-  -> [%bs.obj: < id : string > ] (* can be anything *)
-  -> string (* state key *)
-  -> string Js.Promise.t = "sendStateEvent"
-  [@@bs.send]
+(* external sendStateEventId : *)
+(*      client *)
+(*   -> Matrixclient_common.room_id *)
+(*   -> string (1* event type *1) *)
+(*   -> [%bs.obj: < id : string > ] (1* can be anything *1) *)
+(*   -> string (1* state key *1) *)
+(*   -> string Js.Promise.t = "sendStateEvent" *)
+(*   [@@bs.send] *)
 
 external on :
      client
@@ -257,7 +262,7 @@ module MakeStateAccessors (S : CustomStateEvent) = struct
   external get : RoomState.t -> string -> event array = "getStateEvents"
     [@@bs.send]
 
-  external get_one : RoomState.t -> string -> string -> event array
+  external get_one : RoomState.t -> string -> string -> event Js.Nullable.t
     = "getStateEvents"
     [@@bs.send]
 

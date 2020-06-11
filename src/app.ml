@@ -44,12 +44,20 @@ let update_route model = function
   (* | AuthRoute auth_route -> *)
   (*     let auth, route = Auth.update_route model.auth auth_route in *)
   (*     {auth; route}, location_of_route route |> Tea.Navigation.newUrl *)
-  | Logout as route ->
-      let () = Auth.logout model.auth.matrix_client in
-      ( { model with route }
+  | Group room_id as route ->
+      Js.log "updating route group";
+      let group_cmd = Group.set_group_room model.content.group room_id in
+      ({ model with route }
       , Tea.Cmd.batch
-          [ Tea.Cmd.map authMsg Auth.remove_storage_cmd
-          ; location_of_route Index |> Tea.Navigation.newUrl
+          [ Tea.Cmd.map (fun m -> contentMsg (Content.groupMsg m)) group_cmd
+          ; location_of_route route |> Tea.Navigation.newUrl
+          ] )
+  | Logout ->
+      let auth_cmd = Auth.logout model.auth.matrix_client in
+      ( model
+      , Tea.Cmd.batch
+          [ Tea.Cmd.map authMsg auth_cmd
+          ; Tea.Cmd.msg (GoTo Index)
           ] )
   | route ->
       ({ model with route }, location_of_route route |> Tea.Navigation.newUrl)
@@ -66,6 +74,7 @@ let init () location =
     ; route = Index
     }
   in
+  Js.log (route_of_location location);
   let model, location_cmd = route_of_location location |> update_route model in
   (* let auth_cmd = Auth.init_cmd in *)
   let cmd = Tea.Cmd.batch [ Tea.Cmd.map authMsg auth_cmd; location_cmd ] in
