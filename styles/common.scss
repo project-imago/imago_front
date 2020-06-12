@@ -50,6 +50,12 @@ button,
   margin: 0;
   // position: relative;
 
+  &:focus {
+    color: var(--color-main-text);
+    background-color: var(--color-background-blur);
+    border: 1px solid rgb(112, 111, 110);
+  }
+
   &:hover {
     color: var(--color-main-text);
     background-color: var(--color-background-blur);

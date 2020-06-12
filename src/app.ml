@@ -35,6 +35,7 @@ type model =
   ; auth : Auth.model
   ; content : Content.model
   ; sidebar : Sidebar.model
+  ; header : Header.model
   ; route : Router.route
   }
 
@@ -45,9 +46,9 @@ let update_route model = function
   (*     let auth, route = Auth.update_route model.auth auth_route in *)
   (*     {auth; route}, location_of_route route |> Tea.Navigation.newUrl *)
   | Group room_address as route ->
-      Js.log "updating route group";
+      Js.log "updating route group" ;
       let group_cmd = Group.set_group_room model.content.group room_address in
-      ({ model with route }
+      ( { model with route }
       , Tea.Cmd.batch
           [ Tea.Cmd.map (fun m -> contentMsg (Content.groupMsg m)) group_cmd
           ; location_of_route route |> Tea.Navigation.newUrl
@@ -55,10 +56,8 @@ let update_route model = function
   | Logout ->
       let auth_cmd = Auth.logout model.auth.matrix_client in
       ( model
-      , Tea.Cmd.batch
-          [ Tea.Cmd.map authMsg auth_cmd
-          ; Tea.Cmd.msg (GoTo Index)
-          ] )
+      , Tea.Cmd.batch [ Tea.Cmd.map authMsg auth_cmd; Tea.Cmd.msg (GoTo Index) ]
+      )
   | route ->
       ({ model with route }, location_of_route route |> Tea.Navigation.newUrl)
 
@@ -71,10 +70,11 @@ let init () location =
     ; auth = auth_model
     ; content = Content.init matrix_client
     ; sidebar = Sidebar.init matrix_client
+    ; header = Header.init matrix_client
     ; route = Index
     }
   in
-  Js.log (route_of_location location);
+  Js.log (route_of_location location) ;
   let model, location_cmd = route_of_location location |> update_route model in
   (* let auth_cmd = Auth.init_cmd in *)
   let cmd = Tea.Cmd.batch [ Tea.Cmd.map authMsg auth_cmd; location_cmd ] in
@@ -91,10 +91,13 @@ let update model = function
       update_route model route
   | AuthMsg (GoTo route) ->
       update_route model route
-  | HeaderMsg (GoTo route) ->
-      update_route model route
   | SidebarMsg (GoTo route) ->
       update_route model route
+  | HeaderMsg (GoTo route) ->
+      update_route model route
+  | HeaderMsg header_msg ->
+      let header, header_cmd = Header.update model.header header_msg in
+      ({ model with header }, Tea.Cmd.map headerMsg header_cmd)
   | ContentMsg (GoTo route) ->
       update_route model route
   | ContentMsg content_msg ->
@@ -107,8 +110,13 @@ let update model = function
 
 let view model =
   div
-    [ id "body" ]
-    [ Header.view model.matrix_client |> Vdom.map headerMsg
+    [ id "body"
+    ; classList
+        [ ("dark", model.header.current_color_theme == Dark)
+        ; ("light", model.header.current_color_theme == Light)
+        ]
+    ]
+    [ Header.view model.header |> Vdom.map headerMsg
     ; main
         []
         [ Sidebar.view model.route model.sidebar |> Vdom.map sidebarMsg
