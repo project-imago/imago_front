@@ -3,25 +3,32 @@ header {
   padding: 10px;
   background-color: rgb(35, 38, 41);
   border-bottom: 1px solid rgb(112, 111, 110);
+  display: flex;
+  flex-direction: row;
+  height: 60px;
 
-  #logo h1 {
-    text-transform: uppercase;
-    margin: 0.3em;
-    font-family: "Verdana";
+  #logo {
+    flex-grow: 1;
+
+    h1 {
+      text-transform: uppercase;
+      margin: 0;
+      font-family: "Verdana";
+    }
   }
 
-  #auth-status {
-    float: right;
+  p {
+    line-height: 225%;
+  }
 
-    p {
-      margin-top: 0;
-      margin-bottom: 0.5em;
-    }
-
-    button {
-      float: right;
-      width: auto;
-      margin-bottom: 0;
-    }
+  .button,
+  button,
+  [type="button"],
+  [type="reset"],
+  [type="submit"] {
+    // float: right;
+    // width: auto;
+    // margin-bottom: 0;
+    margin: 0 10px;
   }
 }

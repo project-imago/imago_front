@@ -15,9 +15,16 @@ svg[class^="icon"] {
   stroke-linecap: round;
   stroke-linejoin: round;
   fill: none;
-  width: 2rem;
-  height: 2rem;
-  margin: 0.4em;
+  width: 1em;
+  height: 1em;
+  // margin: 0.4em;
+
+  // height: 50%;
+  // width: 50%;
+  // left: 50%;
+  // top: 50%;
+  // position: absolute;
+  // transform: translate(-50%, -50%);
 }
 
 select {
@@ -37,23 +44,73 @@ button,
 [type="button"],
 [type="reset"],
 [type="submit"] {
+  color: rgb(239, 240, 241);
   background-color: rgb(49, 54, 59);
   border: 1px solid rgb(112, 111, 110);
+  margin: 0;
+  // position: relative;
 
   &:hover {
+    color: rgb(239, 240, 241);
+    background-color: rgb(49, 54, 59);
     border-color: rgb(61, 174, 233);
   }
 
   &.icon {
-    padding: 0;
-    line-height: 50%;
+    padding: 0 10px;
+    // line-height: 50%;
+
+    svg[class^="icon"] {
+      margin-right: 5px;
+    }
   }
 
   &.pill {
     border-radius: 100px;
+    font-size: 1.5rem;
+
+    svg[class^="icon"] {
+      top: .125em;
+      position: relative;
+    }
+  }
+
+  &.round {
+    border-radius: 50%;
+    text-align: center;
+    // line-height: 100px;
+    vertical-align: middle;
+    // padding: 30px;
+    height: 3.5em;
+    width: 3.5em;
+    display: inline-flex;
+    align-self: center;
+
+    svg[class^="icon"] {
+      display: block;
+      margin: auto;
+      height: 2em;
+      width: 2em;
+      // height: 50%;
+      // width: 50%;
+      // left: 50%;
+      // top: 50%;
+      // position: absolute;
+      // transform: translate(-50%, -50%);
+    }
   }
 }
 
 li {
   list-style-type: none;
+}
+
+[type='email'], [type='number'], [type='password'], [type='search'], [type='tel'], [type='text'], [type='url'], textarea, select {
+  background-color: rgb(35, 38, 41);
+  color: rgb(239, 240, 241);
+  border: 1px solid rgb(112, 111, 110);
+
+  &:focus {
+    border-color: rgb(61, 174, 233);
+  }
 }
