@@ -13,8 +13,8 @@
 #message-list {
   flex-grow: 1;
   overflow-y: scroll;
-  background-color: rgb(35, 38, 41);
-  border: 1px solid rgb(112, 111, 110);
+  background-color: var(--color-background-darker);
+  border: 1px solid var(--color-border);
   margin: 20px 0;
 }
 
@@ -23,12 +23,12 @@
 
   textarea {
     height: 150px;
-    background-color: rgb(35, 38, 41);
-    border: 1px solid rgb(112, 111, 110);
-    color: rgb(239, 240, 241);
+    background-color: var(--color-background-darker);
+    border: 1px solid var(--color-border);
+    color: var(--color-main-text);
 
     &:focus {
-      border-color: rgb(61, 174, 233);
+      border-color: var(--color-border-active);
     }
   }
 }

@@ -2,11 +2,11 @@
 #sidebar {
   // padding: 0;
   // background-color: #d6dfe8;
-  background-color: rgb(35, 38, 41);
+  background-color: var(--color-background-darker);
   overflow-y: auto;
   min-width: 250px;
   padding: 0;
-  border-right: 1px solid rgb(112, 111, 110);
+  border-right: 1px solid var(--color-border);
 
   > .button {
     margin: 10px 25px;
@@ -19,7 +19,7 @@
 
   a {
     font-weight: normal;
-    color: rgb(239, 240, 241);
+    color: var(--color-main-text);
 
     &:hover {
       opacity: 1;
@@ -37,11 +37,11 @@
         margin: 0 -10px;
 
         &:hover {
-          background-color: rgba(61, 174, 233, 0.25);
+          background-color: var(--color-background-hover);
         }
 
         &.active {
-          background-color: rgb(61, 174, 233);
+          background-color: var(--color-primary-element);
         }
       }
 
