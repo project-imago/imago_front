@@ -44,13 +44,18 @@ let view model =
           "Dark mode"
     in
     button
-      [ onClick msg; Icons.aria_label label; class' "icon theme-button round" ]
-      [ Icons.icon "moon"]
+      [ onClick msg
+      ; Icons.aria_label label
+      ; title label
+      ; class' "icon theme-button round"
+      ]
+      [ Icons.icon "moon" ]
   in
-  let signout_button =
+  let logout_button =
     button
       [ onClick (GoTo Logout)
       ; Icons.aria_label "Logout"
+      ; title "Logout"
       ; class' "icon logout-button round"
       ]
       [ Icons.icon "sign-out" ]
@@ -77,7 +82,7 @@ let view model =
     then
       [ logo
       ; p [] [ text (Auth.user_id model.matrix_client) ]
-      ; signout_button
+      ; logout_button
       ; change_theme_button
       ]
-    else [ logo; login_button; signup_button; change_theme_button  ] )
+    else [ logo; login_button; signup_button; change_theme_button ] )
