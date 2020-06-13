@@ -86,16 +86,13 @@ let logged_out_index_view _model =
   let open Tea.Html in
   div
     [ id "logged-out-index" ]
-    [ p [ id "welcome" ] [ text "Welcome, please sign in" ]
-    ; Router.link goTo Login [ div [ class' "button" ] [ text "Login" ] ]
-    ; br' [] []
-    ; Router.link goTo Signup [ div [ class' "button" ] [ text "Signup" ] ]
+    [ h3 [ id "welcome" ] [ text "Bienvenue sur Imago !" ]
     ]
 
 
 let logged_in_index_view _model =
   let open Tea.Html in
-  div [] [ text "Welcome" ]
+  div [] []
 
 
 let index_view model =

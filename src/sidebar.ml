@@ -192,10 +192,14 @@ let view route model =
   let open Tea.Html in
   div
     [ id "sidebar" ]
-    [ Router.link
-        ~props:[ class' "button pill" ]
-        goTo
-        Router.CreateGroup
-        [ text "Create Group" ]
-    ; room_list_view route model
-    ]
+    ( if Auth.is_logged_in model.matrix_client
+    then
+      [ Router.link
+          ~props:[ class' "button pill" ]
+          goTo
+          Router.CreateGroup
+          [ text "Create Group" ]
+      ; room_list_view route model
+      ]
+    else
+      [] )

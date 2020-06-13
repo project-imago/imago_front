@@ -85,7 +85,7 @@ let location_of_route = function
   | CreateGroup ->
       "/group/new"
   | CreateChat None ->
-      "/room/new"
+      "/chat/new"
   | CreateChat (Some group_id) ->
       "/chat/new?group=" ^ group_id
   | Chat (Id room_id) ->
