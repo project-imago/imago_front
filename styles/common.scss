@@ -48,6 +48,7 @@ button,
   background-color: var(--color-background-blur);
   border: 1px solid rgb(112, 111, 110);
   margin: 0;
+  font-weight: 400;
   // position: relative;
 
   &:focus {
@@ -71,13 +72,18 @@ button,
     }
   }
 
-  &.pill {
+  &.pill, &.rpill {
     border-radius: 100px;
     font-size: 1.5rem;
 
     svg[class^="icon"] {
-      top: .125em;
-      position: relative;
+      vertical-align: middle;
+      display: inline-block;
+    }
+
+    span {
+      vertical-align: middle;
+      display: inline-block;
     }
   }
 
@@ -119,4 +125,31 @@ li {
   &:focus {
     border-color: var(--color-border-active);
   }
+}
+
+@include media("<=small") {
+  .button,
+  button,
+  [type="button"],
+  [type="reset"],
+  [type="submit"] {
+
+    &.rpill {
+      line-height: 37px;
+
+      svg[class^="icon"] {
+        // display: block;
+        margin: auto;
+        height: 1em;
+        width: 1em;
+      }
+      span {
+        display: none;
+      }
+    }
+  }
+
+}
+
+@include media(">small") {
 }

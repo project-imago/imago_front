@@ -43,45 +43,30 @@ let view model =
       | Light ->
           "Dark mode"
     in
-    button
-      [ onClick msg
-      ; Icons.aria_label label
-      ; title label
-      ; class' "icon theme-button round"
-      ]
-      [ Icons.icon "moon" ]
+    Components.rpill_button msg "moon" label
   in
   let logout_button =
-    button
-      [ onClick (GoTo Logout)
-      ; Icons.aria_label "Logout"
-      ; title "Logout"
-      ; class' "icon logout-button round"
-      ]
-      [ Icons.icon "sign-out" ]
+    Components.rpill_button (GoTo Logout) "sign-out" "Logout"
   in
   let login_button =
-    button
-      [ onClick (GoTo Login)
-      ; Icons.aria_label "Login"
-      ; class' "icon login-button pill"
-      ]
-      [ Icons.icon "sign-in"; text "Log in" ]
+    Components.rpill_button (GoTo Login) "sign-in" "Login"
   in
   let signup_button =
-    button
-      [ onClick (GoTo Signup)
-      ; Icons.aria_label "Register"
-      ; class' "icon signup-button pill"
-      ]
-      [ Icons.icon "sign-in"; text "Register" ]
+    Components.rpill_button (GoTo Signup) "sign-in" "Register"
+  in
+  let profile_button =
+    Components.rpill_link goTo Index "user" "Profile"
+  in
+  let settings_button =
+    Components.rpill_link goTo Index "settings" "Settings"
   in
   header
     []
     ( if Auth.is_logged_in model.matrix_client
     then
       [ logo
-      ; p [] [ text (Auth.user_id model.matrix_client) ]
+      ; profile_button
+      ; settings_button
       ; logout_button
       ; change_theme_button
       ]
