@@ -1,3 +1,4 @@
+const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const SvgSpriteHtmlWebpackPlugin = require('svg-sprite-html-webpack');
@@ -30,12 +31,17 @@ module.exports = {
             // generateSymbolId: function(svgFilePath, svgHash, svgContent) {
             //     return svgContent.id;
             // }
-        })
+        }),
         // new SpriteLoaderPlugin()
         // new CopyPlugin({
         //     patterns: [{from: 'bytesize-symbols.svg', context: 'node_modules/bytesize-icons/dist'}]
         // })
         // new MiniCssExtractPlugin()
+        new webpack.EnvironmentPlugin({
+            NODE_ENV: 'development',
+            MATRIX_URL: 'http://matrix.imago.local:8008',
+            API_URL: 'http://api.imago.local:4000'
+        })
     ],
     module: {
         rules: [

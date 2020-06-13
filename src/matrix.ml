@@ -18,13 +18,16 @@ type login_response = Matrixclient.login_response
 
 type room_address = Id of room_id | Alias of room_alias
 
+let default_server = Config.matrix_url
+
 let create_client () =
-  Matrixclient.create_client "http://matrix.imago.local:8008"
+  let _ = Js.log default_server in
+  Matrixclient.create_client default_server
 
 
 let new_client_params user_id access_token =
   Matrixclient.new_client_params
-    "http://matrix.imago.local:8008"
+    default_server
     user_id
     access_token
 
