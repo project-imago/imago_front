@@ -72,7 +72,7 @@ let message_view matrix_event =
       matrix_event##sender##rawDisplayName
       matrix_event##event##content##body
   in
-  div [ style "white-space" "pre" ] [ text message_display ]
+  div [] [ text message_display ]
 
 
 let input_area model room_id =
