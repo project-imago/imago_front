@@ -4,6 +4,7 @@
 stages:
   - docker_build
   - docker_push
+  - deploy
 
 Build container:
   stage: docker_build
@@ -76,3 +77,17 @@ Push tags:
     - docker pull $IMAGE_TAG
     - docker tag $IMAGE_TAG $IMAGE_NEW_TAG
     - docker push $IMAGE_NEW_TAG
+
+pages:
+  stage: deploy
+  image: $CI_REGISTRY_IMAGE:latest
+  script:
+  - npm install --ignore-optional
+  - ./node_modules/.bin/bsb -make-world
+  - ./node_modules/.bin/webpack --config webpack.production.js --output-path $PWD/public
+  - cp public/index.html public/404.html
+  artifacts:
+    paths:
+    - public
+  only:
+  - master
