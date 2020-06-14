@@ -3,7 +3,7 @@
 type msg =
   | GoTo of Router.route
   | Info of (string, string) Tea.Result.t
-  | RestoredSession of (string * string, string) Tea.Result.t
+  | RestoredSession of (string * string * string, string) Tea.Result.t
   | GotMessage of Matrix.event
   | Sync of string
   | LoggedOut of string
@@ -46,28 +46,32 @@ let promiseToTask promise =
 let restore_cmd _matrix_client =
   [ Tea.Ex.LocalStorage.getItem "access_token"
   ; Tea.Ex.LocalStorage.getItem "matrix_id"
+  ; Tea.Ex.LocalStorage.getItem "home_server"
   ]
   |> Tea_task.sequence
   |> Tea_task.andThen (function
-         | [ nullable_access_token; nullable_matrix_id ] ->
+    | [ access_token; matrix_id; home_server ] ->
              let access_token =
-               nullable_access_token
+               access_token
                |> Js.Nullable.return
                |> Js.Nullable.toOption
              in
              let matrix_id =
-               nullable_matrix_id |> Js.Nullable.return |> Js.Nullable.toOption
+               matrix_id |> Js.Nullable.return |> Js.Nullable.toOption
              in
-             ( match (access_token, matrix_id) with
-             | Some a, Some b ->
-                 Tea_task.succeed (a, b)
-             | _, _ ->
+             let home_server =
+               home_server |> Js.Nullable.return |> Js.Nullable.toOption
+             in
+             ( match (access_token, matrix_id, home_server) with
+             | Some a, Some b, Some c ->
+                 Tea_task.succeed (a, b, c)
+             | _, _, _ ->
                  Tea_task.fail "Not in LocalStorage" )
          | _ ->
              Tea_task.fail "Not in LocalStorage")
-  |> Tea_task.andThen (fun (access_token, matrix_id) ->
+  |> Tea_task.andThen (fun (access_token, matrix_id, home_server) ->
          (* let client = Matrix.new_client_params matrix_id access_token in *)
-         Tea_task.succeed (access_token, matrix_id))
+         Tea_task.succeed (access_token, matrix_id, home_server))
   |> Tea_task.attempt restoredSession
 
 
@@ -127,9 +131,10 @@ let init matrix_client = ({ matrix_client }, restore_cmd matrix_client)
 (*           { model with current_room = None }, Router.Index *)
 
 let update model = function
-  | RestoredSession (Tea.Result.Ok (access_token, matrix_id)) ->
+  | RestoredSession (Tea.Result.Ok (access_token, matrix_id, home_server)) ->
       let () = Js.log "restored access token" in
-      model.matrix_client := Matrix.new_client_params matrix_id access_token ;
+      let home_server = "https://" ^ home_server in
+      model.matrix_client := Matrix.new_client_params ~server:home_server matrix_id access_token ;
       let () = Matrix.Client.start_client !(model.matrix_client) in
       (model, Tea.Cmd.none)
   | RestoredSession (Tea.Result.Error err) ->

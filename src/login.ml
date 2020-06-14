@@ -23,10 +23,22 @@ let login_cmd model =
        model.password)
     loggedIn
 
+let login_to_server_cmd model localpart domain =
+  model.matrix_client := Matrix.create_client_to_server domain;
+  Tea_promise.result
+    (Matrix.Client.login_with_password
+       !(model.matrix_client)
+       localpart
+       model.password)
+    loggedIn
 
-let save_cmd client =
-  [ Tea.Ex.LocalStorage.setItem "access_token" (client##getAccessToken ())
-  ; Tea.Ex.LocalStorage.setItem "matrix_id" client##credentials##userId
+
+
+
+let save_cmd login_response =
+  [ Tea.Ex.LocalStorage.setItem "access_token" (login_response##access_token)
+  ; Tea.Ex.LocalStorage.setItem "matrix_id" login_response##user_id
+  ; Tea.Ex.LocalStorage.setItem "home_server" login_response##home_server
   ]
   |> Tea_task.sequence
   |> Tea_task.attempt listInfo
@@ -38,13 +50,24 @@ let update model = function
   | SavePassword password ->
       ({ model with password }, Tea.Cmd.none)
   | Login ->
-      (model, login_cmd model)
+      let regex = [%re "/@([a-z0-9\.\_\=\-\/]+)\:([a-z0-9\.\-]+)/"] in
+      Js.log (Js.String.match_ regex model.username);
+      let cmd = 
+        match Js.String.match_ regex model.username with
+        | Some [| _; localpart; domain |] ->
+            let domain = "https://" ^ domain in
+            (* FIXME we sould get the real server from .well-known route *)
+            login_to_server_cmd model localpart domain
+        | _ -> (* FIXME also test for invalid chararacters *)
+            login_cmd model
+      in
+      (model, cmd)
   | LoggedIn (Tea.Result.Ok res) ->
       let () = Js.log res in
       let () = Matrix.Client.start_client !(model.matrix_client) in
       ( model
       , Tea.Cmd.batch
-          [ Tea.Cmd.msg (GoTo Index); save_cmd !(model.matrix_client) ] )
+          [ Tea.Cmd.msg (GoTo Index); save_cmd res ] )
   | LoggedIn (Tea.Result.Error err) ->
       let () = Js.log ("login failed: " ^ err) in
       (model, Tea.Cmd.none)

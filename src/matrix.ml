@@ -24,10 +24,13 @@ let create_client () =
   let _ = Js.log default_server in
   Matrixclient.create_client default_server
 
+let create_client_to_server server =
+  let _ = Js.log server in
+  Matrixclient.create_client server
 
-let new_client_params user_id access_token =
+let new_client_params ?(server=default_server) user_id access_token =
   Matrixclient.new_client_params
-    default_server
+    server
     user_id
     access_token
 
