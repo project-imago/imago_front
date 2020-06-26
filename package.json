@@ -7,10 +7,11 @@
     "bsb-clean": "bsb -clean-world",
     "bsb-build": "bsb -make-world",
     "bsb-watch": "bsb -make-world -w -ws _",
-    "webpack-server": "webpack-dev-server",
-    "webpack-server-tls": "webpack-dev-server --https --public imago-dev.img --key imago-dev.img.tls.key --cert imago-dev.img.tls.crt",
+    "webpack-server": "webpack-dev-server --config webpack.dev.js",
+    "webpack-build": "webpack --config webpack.prod.js",
     "server": "concurrently -k \"npm:bsb-watch\" \"npm:webpack-server\"",
-    "server-tls": "concurrently -k \"npm:bsb-watch\" \"npm:webpack-server-tls\""
+    "build": "npm run bsb-build && npm run webpack-build",
+    "clean": "npm run bsb-clean"
   },
   "keywords": [
     "BuckleScript"
