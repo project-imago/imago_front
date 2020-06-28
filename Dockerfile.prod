@@ -1,6 +1,5 @@
 FROM node:13 as build-stage
 
-USER node
 
 RUN mkdir /home/node/app
 

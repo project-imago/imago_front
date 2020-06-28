@@ -54,7 +54,8 @@ type msg =
 let obj_search_cmd property obj =
   let open Tea.Http in
   let url =
-    "http://api.imago.local:4000/obj/search"
+    Config.api_url
+    ^ "/api/obj/search"
     ^ "?property="
     ^ property##iri
     ^ "&term="
