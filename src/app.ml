@@ -95,6 +95,9 @@ let update model = function
       update_route model route
   | HeaderMsg (GoTo route) ->
       update_route model route
+  | HeaderMsg ToggleMenu ->
+      let model = { model with sidebar = { model.sidebar with show_menu = not model.sidebar.show_menu } } in
+      (model, Tea.Cmd.none)
   | HeaderMsg header_msg ->
       let header, header_cmd = Header.update model.header header_msg in
       ({ model with header }, Tea.Cmd.map headerMsg header_cmd)

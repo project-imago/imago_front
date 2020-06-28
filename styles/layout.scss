@@ -58,27 +58,33 @@ $breakpoints: (small: 684px, large: 1024px);
 @include media("<=small") {
   html,
   body {
-    margin:0;
-    overflow-x:hidden;
+    // margin:0;
+    // overflow-x:hidden;
   }
 
   main {
-    height: 100vh;
+    // height: 100vh;
+    display: flex;
+    flex-direction: row;
   }
   
   #sidebar {
-    position: absolute;
-    left: 0;
-    width: $sidebar_width;
-    height: 100%;
-    top: 60px; //FIXME
+    // position: absolute;
+    // left: 0;
+    // width: $sidebar_width;
+    // height: 100%;
+    // top: 60px; //FIXME
     // margin-top: 60px;
   }
 
+  #sidebar.visible + #content {
+    min-width: 500px;
+  }
+
   #content {
-    margin-left: $sidebar_width;
-    margin-right: -$sidebar_width;
-    height: 100%;
+    // margin-left: $sidebar_width;
+    // margin-right: -$sidebar_width;
+    // height: 100%;
   }
 }
 

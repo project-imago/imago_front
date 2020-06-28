@@ -1,10 +1,10 @@
-type model = { matrix_client : Matrix.client ref }
+type model = { matrix_client : Matrix.client ref; show_menu : bool }
 
 type msg = GoTo of Router.route [@@bs.deriving { accessors }]
 
 let msg_to_string _msg = "content msg"
 
-let init matrix_client = { matrix_client }
+let init matrix_client = { show_menu = true; matrix_client }
 
 let equal_to_option value = function None -> false | Some v -> v = value
 
@@ -191,7 +191,11 @@ let room_list_view route model =
 let view route model =
   let open Tea.Html in
   div
-    [ id "sidebar" ]
+    [ id "sidebar"
+    ; classList
+        [ ("visible", model.show_menu)
+        ]
+    ]
     ( if Auth.is_logged_in model.matrix_client
     then
       [ Router.link

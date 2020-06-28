@@ -12,6 +12,7 @@ let init matrix_client = { current_color_theme = Dark; matrix_client }
 type msg =
   | GoTo of Router.route
   | ChangeColorTheme of color_theme
+  | ToggleMenu
 [@@bs.deriving { accessors }]
 
 let update model = function
@@ -20,6 +21,8 @@ let update model = function
   | ChangeColorTheme Dark ->
       ({ model with current_color_theme = Dark }, Tea.Cmd.none)
   | GoTo _route ->
+      (model, Tea.Cmd.none)
+  | ToggleMenu -> (* should not happen *)
       (model, Tea.Cmd.none)
 
 
@@ -60,14 +63,24 @@ let view model =
   let settings_button =
     Components.rpill_link goTo Index "settings" "Settings"
   in
+  let hamburger_button =
+    button
+      [ onClick ToggleMenu
+      ; Icons.aria_label "Toggle menu"
+      ; title "Toggle menu"
+      ; class' "icon rpill"
+      ]
+      [ Icons.icon "menu" ]
+  in
   header
     []
     ( if Auth.is_logged_in model.matrix_client
     then
-      [ logo
+      [ hamburger_button
+      ; logo
       ; profile_button
       ; settings_button
       ; logout_button
       ; change_theme_button
       ]
-    else [ logo; login_button; signup_button; change_theme_button ] )
+    else [ hamburger_button; logo; login_button; signup_button; change_theme_button ] )

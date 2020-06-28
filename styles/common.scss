@@ -68,7 +68,6 @@ button,
     // line-height: 50%;
 
     svg[class^="icon"] {
-      margin-right: 5px;
     }
   }
 
@@ -76,14 +75,20 @@ button,
     border-radius: 100px;
     font-size: 1.5rem;
 
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
     svg[class^="icon"] {
       vertical-align: middle;
       display: inline-block;
+      margin: 0;
     }
 
     span {
       vertical-align: middle;
       display: inline-block;
+      margin-left: 5px;
     }
   }
 
