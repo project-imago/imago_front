@@ -1,5 +1,14 @@
 FROM node:13 as build-stage
 
+ARG API_URL
+
+ARG MATRIX_URL
+
+ENV API_URL=$API_URL
+
+ENV MATRIX_URL=$MATRIX_URL
+
+ENV NODE_ENV=production
 
 RUN mkdir /home/node/app
 
