@@ -9,11 +9,12 @@ module.exports = merge(common, {
     output: {
 	publicPath: '/'
     },
+    devtool: 'source-map',
     optimization: {
-	minimizer: [
-	    new ClosurePlugin({mode: 'STANDARD', childCompilations: true}, {
-	    })
-	],
+	// minimizer: [
+	//     new ClosurePlugin({mode: 'STANDARD', childCompilations: true}, {
+	//     })
+	// ],
 	splitChunks: { chunks: "all" }
     },
     plugins: [
