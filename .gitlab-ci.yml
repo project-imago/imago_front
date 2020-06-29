@@ -83,8 +83,7 @@ pages:
   image: $CI_REGISTRY_IMAGE:latest
   script:
   - npm install --ignore-optional
-  - ./node_modules/.bin/bsb -make-world
-  - ./node_modules/.bin/webpack --config webpack.prod.js --output-path $PWD/public
+  - npm run build-pages
   - cp public/index.html public/404.html
   artifacts:
     paths:
