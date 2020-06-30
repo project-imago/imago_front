@@ -4,6 +4,9 @@ const common = require('./webpack.common.js');
 
 module.exports = merge(common, {
     mode: 			'development',
+    output: {
+	publicPath: '/dist'
+    },
     devtool: 			'inline-source-map',
     devServer: {
         contentBase: 		'./dist',

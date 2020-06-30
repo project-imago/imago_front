@@ -11,63 +11,80 @@ type msg =
   | SaveUserName of string
   | SavePassword of string
   | Login
-  | LoggedIn of (Matrix.login_response, string) Tea.Result.t
+  | LoggedIn of (Matrix.login_response * string, string) Tea.Result.t
   | ListInfo of (unit list, string) Tea.Result.t
+  | GotClientConfig of (Matrix.client_config * string, string) Tea.Result.t
 [@@bs.deriving { accessors }]
 
 let login_cmd model =
-  Tea_promise.result
-    (Matrix.Client.login_with_password
-       !(model.matrix_client)
-       model.username
-       model.password)
+  (Matrix.Client.login_with_password
+    !(model.matrix_client)
+    model.username
+    model.password)
+  |> Js.Promise.then_ (fun res -> Js.Promise.resolve (res, Config.matrix_url))
+  |. Tea_promise.result
     loggedIn
 
-let login_to_server_cmd model localpart domain =
+let login_to_remote_server_cmd model localpart domain =
   model.matrix_client := Matrix.create_client_to_server domain;
-  Tea_promise.result
-    (Matrix.Client.login_with_password
-       !(model.matrix_client)
-       localpart
-       model.password)
+  (Matrix.Client.login_with_password
+    !(model.matrix_client)
+    localpart
+    model.password)
+  |> Js.Promise.then_ (fun res -> Js.Promise.resolve (res, domain))
+  |. Tea_promise.result
     loggedIn
 
 
 
 
-let save_cmd login_response =
+let save_cmd login_response homeserver =
   [ Tea.Ex.LocalStorage.setItem "access_token" (login_response##access_token)
   ; Tea.Ex.LocalStorage.setItem "matrix_id" login_response##user_id
-  ; Tea.Ex.LocalStorage.setItem "home_server" login_response##home_server
+  ; Tea.Ex.LocalStorage.setItem "home_server" homeserver (* login_response##home_server *)
+  (* can't do that because synapse strips the port from the homeserver url *)
   ]
   |> Tea_task.sequence
   |> Tea_task.attempt listInfo
 
+type username =
+  | Local of string
+  | Remote of string * string
 
+let parse_username username =
+  let regex = [%re "/@([a-z0-9\.\_\=\-\/]+)\:([a-z0-9\.\-]+)/"] in
+  (* Js.log (Js.String.match_ regex model.username); *)
+  match Js.String.match_ regex username with
+  | Some [| _; localpart; domain |] ->
+      Remote (localpart, domain)
+  | _ -> (* FIXME also test for invalid chararacters *)
+      Local username
+
+let find_remote_config_cmd model localpart domain =
+  Matrixclient.matrixcs##_AutoDiscovery##findClientConfig domain
+  |> Js.Promise.then_ (fun res -> Js.Promise.resolve (res, localpart))
+  |. Tea_promise.result gotClientConfig
+ 
 let update model = function
   | SaveUserName username ->
       ({ model with username }, Tea.Cmd.none)
   | SavePassword password ->
       ({ model with password }, Tea.Cmd.none)
   | Login ->
-      let regex = [%re "/@([a-z0-9\.\_\=\-\/]+)\:([a-z0-9\.\-]+)/"] in
-      Js.log (Js.String.match_ regex model.username);
       let cmd = 
-        match Js.String.match_ regex model.username with
-        | Some [| _; localpart; domain |] ->
-            let domain = "https://" ^ domain in
-            (* FIXME we sould get the real server from .well-known route *)
-            login_to_server_cmd model localpart domain
-        | _ -> (* FIXME also test for invalid chararacters *)
+        match parse_username model.username with
+        | Remote (localpart, domain) ->
+            find_remote_config_cmd model localpart domain
+        | Local _ ->
             login_cmd model
       in
       (model, cmd)
-  | LoggedIn (Tea.Result.Ok res) ->
+  | LoggedIn (Tea.Result.Ok (res, homeserver)) ->
       let () = Js.log res in
       let () = Matrix.Client.start_client !(model.matrix_client) in
       ( model
       , Tea.Cmd.batch
-          [ Tea.Cmd.msg (GoTo Index); save_cmd res ] )
+          [ Tea.Cmd.msg (GoTo Index); save_cmd res homeserver ] )
   | LoggedIn (Tea.Result.Error err) ->
       let () = Js.log ("login failed: " ^ err) in
       (model, Tea.Cmd.none)
@@ -75,6 +92,23 @@ let update model = function
       let () = Js.log res in
       (model, Tea.Cmd.none)
   | ListInfo (Tea.Result.Error err) ->
+      let () = Js.log err in
+      (model, Tea.Cmd.none)
+  | GotClientConfig (Tea.Result.Ok (client_config, localpart)) ->
+      let open Tablecloth.Option in
+      let () = Js.log client_config in
+      let homeserver_url =
+        Js.Dict.get client_config "m.homeserver"
+        |> map ~f:(fun config_part -> config_part##base_url)
+        |> andThen ~f:Js.Nullable.toOption
+      in
+      let cmd = match homeserver_url with
+      | Some url -> login_to_remote_server_cmd model localpart url
+      | None -> Tea.Cmd.none
+      in
+        (* |> Tablecloth.Option.get_exn *)
+      (model, cmd)
+  | GotClientConfig (Tea.Result.Error err) ->
       let () = Js.log err in
       (model, Tea.Cmd.none)
   | GoTo _ ->

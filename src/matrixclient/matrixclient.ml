@@ -41,6 +41,18 @@ type create_room_options =
 
 type create_room_response =
   < room_id : Matrixclient_common.room_id ; room_alias : string option > Js.t
+ 
+type client_config_part =
+  < base_url : string Js.Nullable.t
+  ; error : string Js.Nullable.t
+  ; state : string
+  > Js.t
+
+type client_config = client_config_part Js.Dict.t
+
+type auto_discovery =
+  < findClientConfig : string -> client_config Js.Promise.t [@bs.meth]
+  > Js.t
 
 type client =
   < credentials : < userId : user_id > Js.t
@@ -73,8 +85,13 @@ type client =
   [@bs.meth]
   ; peekInRoom : Matrixclient_common.room_id -> Matrixclient_room.t Js.Promise.t
   [@bs.meth]
+  ; _AutoDiscovery : auto_discovery
  >
   Js.t
+
+external matrixcs : client = "matrixcs" [@@bs.val]
+
+external start_client : client -> unit = "startClient" [@@bs.send]
 
 external start_client : client -> unit = "startClient" [@@bs.send]
 

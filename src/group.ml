@@ -3,13 +3,26 @@ type msg =
   | SetCurrentRoom of Matrix.room_id
   | GotRoomId of (<room_id : string> Js.t, string) Tea.Result.t
   | Peeked of (Matrix.room, string) Tea.Result.t
+  | ToggleShowStatements
+  | ToggleShowChats
+  | ToggleShowEvents
   [@@bs.deriving { accessors }]
 
-type model = { matrix_client : Matrix.client ref ;
-  current_room : Matrix.room option
-}
+type model =
+  { matrix_client : Matrix.client ref
+  ; current_room : Matrix.room option
+  ; show_statements : bool
+  ; show_chats : bool
+  ; show_events : bool
+  }
 
-let init matrix_client = { current_room = None; matrix_client }
+let init matrix_client =
+  { current_room = None
+  ; matrix_client
+  ; show_statements = true
+  ; show_chats = false
+  ; show_events = true
+  }
 
 let resolve_alias_cmd model room_alias =
   Tea_promise.result (!(model.matrix_client)##resolveRoomAlias room_alias)
@@ -46,6 +59,12 @@ let update model = function
       let () = Js.log err in
       (model, Tea.Cmd.none)
   | GoTo _ -> (model, Tea.Cmd.none)
+  | ToggleShowStatements ->
+      ({ model with show_statements = not model.show_statements }, Tea.Cmd.none)
+  | ToggleShowChats ->
+      ({ model with show_chats = not model.show_chats }, Tea.Cmd.none)
+  | ToggleShowEvents ->
+      ({ model with show_events = not model.show_events }, Tea.Cmd.none)
 
 let statements room =
   (* let room_state = room##currentState in *)
@@ -64,7 +83,7 @@ let iri_to_alias iri =
   |> Js.String.replace "http://www.wikidata.org/entity/" "#_stm_wd_"
   |> Js.String.concat ":matrix.imago.local"
 
-let view_room _model room =
+let view_statements model room =
   let room_id = room##roomId in
   let statements = statements room in
   let open Tea.Html in
@@ -84,13 +103,63 @@ let view_room _model room =
       ]
   in
   let statements_list =
-    Js.log "statements"; Js.log statements; Js.log room;
+    (*Js.log "statements"; Js.log statements; Js.log room;*)
     div ~unique:room_id
       [ id "statements-list" ]
       (Belt.Map.toList statements |. Belt.List.map statement_view)
   in
-  let events_list = div ~unique:room_id [ id "events-list" ] [] in
-  div ~unique:"group" ~key:room##roomId [id "group-view"] [  h3 [] [text room##name]; statements_list; events_list ]
+  div ~unique:"group" ~key:room##roomId
+  [ id "statements"
+  ; classList
+      [ ("visible", model.show_chats)
+      ]
+  ]
+  [statements_list]
+
+let view_chats model _room =
+  let open Tea.Html in
+  div
+    [ id "chats"
+    ; classList
+        [ ("visible", model.show_chats)
+        ]
+    ]
+    []
+
+let view_events model _room =
+  let open Tea.Html in
+  div
+    [ id "events"
+    ; classList
+        [ ("visible", model.show_events)
+        ]
+    ]
+    []
+
+let toggle_button title' active msg =
+        Js.log title';
+        Js.log active;
+  let open Tea.Html in
+  match active with
+  | true ->
+    button ~key:"true" [ onClick msg ]
+    [h3 [] [ Icons.icon "chevron-bottom"; text title']]
+  | false ->
+    button ~key:"false" [ onClick msg ]
+    [h3 [] [ Icons.icon "chevron-right"; text title']]
+
+let view_room model room =
+  let open Tea.Html in
+  div ~unique:"group" ~key:room##roomId
+  [id "group-view"]
+  [ h3 [] [text room##name]
+  ; toggle_button "Links" model.show_statements ToggleShowStatements
+  ; view_statements model room
+  ; toggle_button "Chats" model.show_chats ToggleShowChats
+  ; view_chats model room
+  ; toggle_button "Events" model.show_events ToggleShowEvents
+  ; view_events model room
+  ]
 
 let view model =
   let open Tea.Html in

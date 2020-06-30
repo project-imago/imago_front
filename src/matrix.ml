@@ -16,6 +16,10 @@ type create_room_response = Matrixclient.create_room_response
 
 type login_response = Matrixclient.login_response
 
+type client_config = Matrixclient.client_config
+
+let matrixcs = Matrixclient.matrixcs
+
 type room_address = Id of room_id | Alias of room_alias
 
 let default_server = Config.matrix_url

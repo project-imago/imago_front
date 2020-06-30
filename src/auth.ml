@@ -133,7 +133,6 @@ let init matrix_client = ({ matrix_client }, restore_cmd matrix_client)
 let update model = function
   | RestoredSession (Tea.Result.Ok (access_token, matrix_id, home_server)) ->
       let () = Js.log "restored access token" in
-      let home_server = "https://" ^ home_server in
       model.matrix_client := Matrix.new_client_params ~server:home_server matrix_id access_token ;
       let () = Matrix.Client.start_client !(model.matrix_client) in
       (model, Tea.Cmd.none)
