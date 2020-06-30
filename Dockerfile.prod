@@ -1,5 +1,13 @@
 FROM node:13 as build-stage
 
+RUN mkdir /home/node/app
+
+WORKDIR /home/node/app
+
+COPY ./ /home/node/app/
+
+RUN npm install --ignore-optional
+
 ARG API_URL
 
 ARG MATRIX_URL
@@ -10,17 +18,7 @@ ENV MATRIX_URL=$MATRIX_URL
 
 ENV NODE_ENV=production
 
-RUN mkdir /home/node/app
-
-WORKDIR /home/node/app
-
-COPY ./package-lock.json ./package.json /home/node/app/
-
-RUN npm install --ignore-optional
-
 ENV PATH=./node_modules/.bin:$PATH
-
-COPY ./ /home/node/app/
 
 RUN npm run build
 
