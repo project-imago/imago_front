@@ -9,7 +9,7 @@
     "bsb-watch": "bsb -make-world -w -ws _",
     "webpack-server": "webpack-dev-server --config webpack.dev.js",
     "webpack-build": "webpack --config webpack.prod.js",
-    "webpack-build-pages": "webpack --config webpack.prod.js --output-path $PWD/public",
+    "webpack-build-pages": "webpack --config webpack.prod.js --output-path $PWD/public --output-public-path /imago_front",
     "server": "concurrently -k \"npm:bsb-watch\" \"npm:webpack-server\"",
     "build": "npm run bsb-build && npm run webpack-build",
     "build-pages": "npm run bsb-build && npm run webpack-build-pages",
