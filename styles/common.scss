@@ -135,6 +135,24 @@ li {
   }
 }
 
+label.icon-label {
+  position: relative;
+  margin-bottom: 1.5rem;
+  font-weight: inherit;
+
+  svg.icon {
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    transform: translateY(-50%);
+  }
+
+  input {
+    margin-bottom: 0;
+    padding-left: 2em;
+  }
+}
+
 @include media("<=small") {
   .button,
   button,

@@ -296,12 +296,15 @@ let statement_form_view model =
         [ div
             [ id "property-fields" ]
             [ label [ for' "property-search-field" ] [ text "Property" ]
-            ; input'
-                [ type' "text"
-                ; id "property-search-field"
-                ; onInput savePropertySearch
+            ; label [ class' "icon-label" ]
+                [ Icons.icon "search"
+                ; input'
+                    [ type' "text"
+                    ; id "property-search-field"
+                    ; onInput savePropertySearch
+                    ]
+                    [ text model.property_search ]
                 ]
-                [ text model.property_search ]
             ; select
                 [ onChange selectProperty; Tea.Html2.Attributes.size 5 ]
                 ( Belt.Array.map model.property_suggestions property_option
@@ -310,12 +313,15 @@ let statement_form_view model =
         ; div
             [ id "object-fields" ]
             [ label [ for' "object-search-field" ] [ text "Object" ]
-            ; input'
-                [ type' "text"
-                ; id "object-search-field"
-                ; onInput saveObjSearch
+            ; label [ class' "icon-label" ]
+                [ Icons.icon "search"
+                ; input'
+                    [ type' "text"
+                    ; id "object-search-field"
+                    ; onInput saveObjSearch
+                    ]
+                    [ text model.obj_search ]
                 ]
-                [ text model.obj_search ]
             ; select
                 [ onChange selectObj; Tea.Html2.Attributes.size 5 ]
                 ( Belt.Array.map model.obj_suggestions obj_option
