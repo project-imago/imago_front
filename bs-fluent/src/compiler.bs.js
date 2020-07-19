@@ -355,9 +355,9 @@ function build_switch_case(param) {
 }
 
 function build_switch(selector, pattern_array, default_pattern) {
-  return "match " + (selector + (" with\n" + (Belt_Array.map(pattern_array, build_switch_case).join("\n") + ("\n" + (
-                  default_pattern !== undefined ? build_switch_case(default_pattern) : ""
-                )))));
+  return "(match " + (selector + (" with\n" + (Belt_Array.map(pattern_array, build_switch_case).join("\n") + ((
+                  default_pattern !== undefined ? "\n" + build_switch_case(default_pattern) : ""
+                ) + ")\n"))));
 }
 
 function type_params(param) {
@@ -376,18 +376,42 @@ function build_function_head(fn) {
   return "let " + (fn.name + (params + " lc =\n"));
 }
 
-function build_function(fn) {
+function build_function(default_lc, fn) {
   var type_params$1 = Belt_MapString.isEmpty(fn.params) ? "" : type_params(fn);
   var head = build_function_head(fn);
   var match = fn.bodies.length;
-  var body = match !== 0 ? (
-      match !== 1 ? build_switch("lc", fn.bodies, undefined) : build_pattern(Belt_Array.getExn(fn.bodies, 0)[1])
-    ) : "";
+  var body;
+  if (match !== 0) {
+    if (match !== 1) {
+      var patterns = Belt_Array.keep(fn.bodies, (function (param) {
+              var lc = param[0];
+              console.log(lc);
+              console.log(default_lc);
+              return lc !== default_lc;
+            }));
+      var default_pattern = Belt_Option.map(Belt_Array.get(Belt_Array.keep(fn.bodies, (function (param) {
+                      return param[0] === default_lc;
+                    })), 0), (function (param) {
+              return /* tuple */[
+                      "_",
+                      param[1]
+                    ];
+            }));
+      body = build_switch("lc", patterns, default_pattern);
+    } else {
+      body = build_pattern(Belt_Array.getExn(fn.bodies, 0)[1]);
+    }
+  } else {
+    body = "";
+  }
   return type_params$1 + (head + body);
 }
 
-function build(fn_array) {
-  return Belt_Array.map(fn_array, build_function).join("\n\n");
+function build(fn_array, default_lc) {
+  var partial_arg = "\"" + (default_lc + "\"");
+  return Belt_Array.map(Belt_MapString.valuesToArray(fn_array), (function (param) {
+                  return build_function(partial_arg, param);
+                })).join("\n\n");
 }
 
 function make_fn_name(namespace, name, $$public) {
@@ -409,7 +433,7 @@ function simplify_identifier(param) {
             Caml_builtin_exceptions.match_failure,
             /* tuple */[
               "compiler.ml",
-              380,
+              394,
               26
             ]
           ];
@@ -427,7 +451,7 @@ function simplify_literal(param) {
             Caml_builtin_exceptions.match_failure,
             /* tuple */[
               "compiler.ml",
-              384,
+              398,
               23
             ]
           ];
@@ -442,7 +466,7 @@ function get_named_argument(param) {
         Caml_builtin_exceptions.match_failure,
         /* tuple */[
           "compiler.ml",
-          388,
+          402,
           25
         ]
       ];
@@ -461,7 +485,7 @@ function simplify_named_arguments(args) {
                       Caml_builtin_exceptions.match_failure,
                       /* tuple */[
                         "compiler.ml",
-                        393,
+                        407,
                         2
                       ]
                     ];
@@ -538,7 +562,7 @@ function simplify_expression(node, params, in_builtinOpt) {
                 Caml_builtin_exceptions.match_failure,
                 /* tuple */[
                   "compiler.ml",
-                  451,
+                  465,
                   8
                 ]
               ];
@@ -564,7 +588,7 @@ function simplify_expression(node, params, in_builtinOpt) {
                           Caml_builtin_exceptions.match_failure,
                           /* tuple */[
                             "compiler.ml",
-                            468,
+                            482,
                             13
                           ]
                         ];
@@ -579,7 +603,7 @@ function simplify_expression(node, params, in_builtinOpt) {
                       Caml_builtin_exceptions.match_failure,
                       /* tuple */[
                         "compiler.ml",
-                        465,
+                        479,
                         9
                       ]
                     ];
@@ -593,7 +617,7 @@ function simplify_expression(node, params, in_builtinOpt) {
             Caml_builtin_exceptions.match_failure,
             /* tuple */[
               "compiler.ml",
-              398,
+              412,
               2
             ]
           ];
@@ -612,7 +636,7 @@ function simplify_pattern(element_array, params) {
                           Caml_builtin_exceptions.match_failure,
                           /* tuple */[
                             "compiler.ml",
-                            482,
+                            496,
                             4
                           ]
                         ];
@@ -658,7 +682,7 @@ function get_first_argument(param) {
         Caml_builtin_exceptions.match_failure,
         /* tuple */[
           "compiler.ml",
-          496,
+          510,
           25
         ]
       ];
@@ -733,7 +757,7 @@ function get_pattern_params(pattern_elements) {
               ], reduce_pattern_for_params)[1];
 }
 
-function make_fn(param, $$public, namespace) {
+function make_fn(param, $$public, namespace, lc) {
   var value = param.value;
   var name = make_fn_name(namespace, simplify_identifier(param.id), $$public);
   var pattern_elements;
@@ -746,7 +770,7 @@ function make_fn(param, $$public, namespace) {
           Caml_builtin_exceptions.match_failure,
           /* tuple */[
             "compiler.ml",
-            557,
+            571,
             8
           ]
         ];
@@ -756,7 +780,7 @@ function make_fn(param, $$public, namespace) {
   return {
           name: name,
           bodies: [/* tuple */[
-              "en",
+              "\"" + (lc + "\""),
               simplified_pattern
             ]],
           params: params,
@@ -764,27 +788,27 @@ function make_fn(param, $$public, namespace) {
         };
 }
 
-function make_entry(entry, $$public) {
+function make_entry(entry, $$public, lc) {
   var name = simplify_identifier(entry.id);
   return Belt_List.concat(/* :: */Caml_chrome_debugger.simpleVariant("::", [
-                make_fn(entry, $$public, ""),
+                make_fn(entry, $$public, "", lc),
                 /* [] */0
               ]), Belt_List.map(Belt_List.fromArray(entry.attributes), (function (attribute) {
                     if (attribute.tag === /* Attribute */14) {
-                      return make_fn(attribute[0], $$public, name);
+                      return make_fn(attribute[0], $$public, name, lc);
                     }
                     throw [
                           Caml_builtin_exceptions.match_failure,
                           /* tuple */[
                             "compiler.ml",
-                            575,
+                            589,
                             6
                           ]
                         ];
                   })));
 }
 
-function simplify_ast(node) {
+function simplify_ast(lc, node) {
   if (!node.tag) {
     return Belt_List.toArray(Belt_List.flatten(Belt_List.fromArray(Belt_Array.map(Belt_Array.keep(node[0].body, (function (param) {
                                   switch (param.tag | 0) {
@@ -797,15 +821,15 @@ function simplify_ast(node) {
                                 })), (function (entry) {
                               switch (entry.tag | 0) {
                                 case /* Message */1 :
-                                    return make_entry(entry[0], true);
+                                    return make_entry(entry[0], true, lc);
                                 case /* Term */2 :
-                                    return make_entry(entry[0], false);
+                                    return make_entry(entry[0], false, lc);
                                 default:
                                   throw [
                                         Caml_builtin_exceptions.match_failure,
                                         /* tuple */[
                                           "compiler.ml",
-                                          592,
+                                          606,
                                           8
                                         ]
                                       ];
@@ -816,15 +840,37 @@ function simplify_ast(node) {
         Caml_builtin_exceptions.match_failure,
         /* tuple */[
           "compiler.ml",
-          582,
+          596,
           2
         ]
       ];
 }
 
-function compile(lc, resource) {
+function precompile(resource, lc) {
   var ast = build_ast(resource);
-  return build(simplify_ast(ast));
+  return simplify_ast(lc, ast);
+}
+
+function reduce_fn_arrays(acc, fn_array) {
+  return Belt_Array.reduce(fn_array, acc, (function (acc2, fn_array) {
+                return Belt_MapString.update(acc2, fn_array.name, (function (f) {
+                              if (f !== undefined) {
+                                return {
+                                        name: f.name,
+                                        bodies: Belt_Array.concat(f.bodies, fn_array.bodies),
+                                        params: f.params,
+                                        public: f.public
+                                      };
+                              } else {
+                                return fn_array;
+                              }
+                            }));
+              }));
+}
+
+function compile(fn_array_array, default_lc) {
+  var merged_array = Belt_Array.reduce(fn_array_array, undefined, reduce_fn_arrays);
+  return build(merged_array, default_lc);
 }
 
 exports.build_ast = build_ast;
@@ -865,5 +911,7 @@ exports.get_pattern_params = get_pattern_params;
 exports.make_fn = make_fn;
 exports.make_entry = make_entry;
 exports.simplify_ast = simplify_ast;
+exports.precompile = precompile;
+exports.reduce_fn_arrays = reduce_fn_arrays;
 exports.compile = compile;
 /* No side effect */

@@ -6,6 +6,7 @@ module.exports = class BsFluentPlugin {
   constructor(options = {}) {
     this.fileList = []
     this.destFile = options.destFile
+    this.defaultLocale = options.defaultLocale
     if (options.includeFiles) {
       this.importFiles(options.includeFiles);
     }
@@ -42,6 +43,6 @@ module.exports = class BsFluentPlugin {
   }
 
   apply(compiler) {
-    plugin.process_files(this.fileList, this.destFile)
+    plugin.process_files(this.fileList, this.destFile, this.defaultLocale)
   }
 }

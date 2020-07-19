@@ -30,15 +30,34 @@ external new_parser : unit -> parser = "FluentParser"
 (* external new_compiler : unit -> compiler = "Compiler" *)
 (*   [@@bs.new] [@@bs.module "./compiler"] *)
 
-let process_files source dest =
-  let file_path = Js.Array.unsafe_get source 0 in
+let get_lc path =
+  Js.String.splitByRe [%re "/[\.\/]/"] path
+  |. Belt.Array.reverse
+  |. Belt.Array.keepMap (function
+    | Some part -> Js.log part; Some part
+    | None -> None)
+  |> Js.Array.find (fun part ->
+    (match Js.String.match_ [%re "/^[a-z]{2}(-[A-Z]{2})?$/"] part with
+    | Some _substr -> true
+    | None -> false
+    )
+  )
+  |. Belt.Option.getExn
+
+
+let process_files sources dest default_lc =
+  (* let file_path = Js.Array.unsafe_get source 0 in *)
   let parser = new_parser () in
   (* let compiler = new_compiler () in *)
-  let absolute_path = resolve_path file_path in
-  let content = read_file absolute_path in
-  let ast = parser##parse content in
+  let asts = Belt.Array.map sources (fun source ->
+    let lc = get_lc source in
+    let absolute_path = resolve_path source in
+    let content = read_file absolute_path in
+    let ast = parser##parse content in
+    Compiler.precompile ast lc
+    ) in
   (* let () = Js.log ast in *)
-  let output = Compiler.compile "en" ast in
+  let output = Compiler.compile asts default_lc in
   let () = write_file dest output in
   ()
 

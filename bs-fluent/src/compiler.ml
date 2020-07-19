@@ -305,13 +305,14 @@ and build_switch_case (name, pattern) =
 
 
 and build_switch selector pattern_array default_pattern =
-  "match " ^ selector ^ " with\n" ^
+  "(match " ^ selector ^ " with\n" ^
   (Belt.Array.map pattern_array build_switch_case
   |> Js.Array.joinWith "\n"
-  ) ^ "\n"
+  )
   ^ (match default_pattern with
     | None -> ""
-    | Some pattern -> build_switch_case pattern)
+    | Some pattern -> "\n" ^ build_switch_case pattern)
+  ^ ")\n"
 
 (* | Select of simplified_expression * simplified_variant array *)
 (* | BuiltInRef of string * simplified_expression * simplified_param array *)
@@ -338,7 +339,7 @@ let build_function_head fn =
   ^ " lc"
   ^ " =\n"
 
-let build_function fn =
+let build_function default_lc fn =
   let type_params =
     if function_has_params fn then type_params fn else "" in
   let head = build_function_head fn in
@@ -347,14 +348,27 @@ let build_function fn =
     | 0 -> ""
     | 1 -> build_pattern (snd (Belt.Array.getExn fn.bodies 0))
     | _ ->
-        let default_lc = "en" in
-        build_switch "lc" (*[||]*) fn.bodies None
+        let patterns =
+          Belt.Array.keep fn.bodies
+              (function (lc, _pattern) ->
+                Js.log lc; Js.log default_lc;
+                not (lc = default_lc))
+        in
+        let default_pattern =
+          Belt.Array.keep fn.bodies
+              (function (lc, _pattern) -> (lc = default_lc))
+          |. Belt.Array.get 0
+          |. Belt.Option.map
+              (function (_lc, pattern) -> ("_", pattern))
+        in
+        build_switch "lc" (*[||]*) patterns default_pattern
   in
   type_params ^ head ^ body
 
-let build fn_array =
+let build fn_array default_lc =
   fn_array
-    |. Belt.Array.map build_function
+    |. Belt.Map.String.valuesToArray
+    |. Belt.Array.map (build_function ("\"" ^ default_lc ^ "\""))
     |> Js.Array.joinWith "\n\n"
 
 
@@ -546,7 +560,7 @@ let get_pattern_params pattern_elements =
   in
   acc
 
-let make_fn ({id; value} : entry) public namespace =
+let make_fn ({id; value} : entry) public namespace lc =
   let name =
     make_fn_name namespace (simplify_identifier id) public
   in
@@ -560,25 +574,25 @@ let make_fn ({id; value} : entry) public namespace =
   let params = get_pattern_params pattern_elements in
   let simplified_pattern = simplify_pattern pattern_elements params in
   { name
-  ; bodies = [|("en", simplified_pattern)|]
+  ; bodies = [|("\"" ^ lc ^ "\"", simplified_pattern)|]
   ; params = params
   ; public = true
   }
 
-let make_entry (entry : entry) public =
+let make_entry (entry : entry) public lc =
   let name = simplify_identifier entry.id in
   Belt.List.concat
-    [ make_fn entry public "" ]
+    [ make_fn entry public "" lc ]
     (entry.attributes
     |. Belt.List.fromArray
     |. Belt.List.map
       (function
         Attribute attribute ->
-          make_fn attribute public name
+          make_fn attribute public name lc
         )
       )
 
-let simplify_ast node : fn array =
+let simplify_ast lc node : fn array =
   match node with
   Resource { body } ->
     body
@@ -591,9 +605,9 @@ let simplify_ast node : fn array =
       |. Belt.Array.map
         (function
           | Message entry ->
-              make_entry entry true
+              make_entry entry true lc
           | Term entry ->
-              make_entry entry false
+              make_entry entry false lc
       )
       |. Belt.List.fromArray
       |. Belt.List.flatten
@@ -602,16 +616,32 @@ let simplify_ast node : fn array =
 
 
 
+  (* { name *)
+  (* ; bodies = [|("en", simplified_pattern)|] *)
+  (* ; params = params *)
+  (* ; public = true *)
+  (* } *)
 
 
-
-
-let compile lc resource =
+let precompile resource lc =
   (* let () = Js.log resource in *)
   let ast = build_ast resource in
   (* let () = Js.log ast in *)
-  let fn_array = simplify_ast ast in
+  let fn_array = simplify_ast lc ast in
   (* let () = Js.log output in *)
-  let output = build fn_array in
+  fn_array
+
+let reduce_fn_arrays acc fn_array =
+  Belt.Array.reduce fn_array acc (fun acc2 fn_array ->
+    Belt.Map.String.update acc2 fn_array.name (function
+      | None -> Some fn_array
+      | Some f ->
+          Some {f with bodies = Belt.Array.concat f.bodies fn_array.bodies}
+    )
+  )
+
+let compile fn_array_array default_lc =
+  let merged_array = Belt.Array.reduce fn_array_array Belt.Map.String.empty reduce_fn_arrays in
+  let output = build merged_array default_lc in
   (* let () = Js.log output in *)
   output

@@ -39,7 +39,8 @@ module.exports = {
         // new MiniCssExtractPlugin()
         new BsFluentPlugin({
             includeFiles: ['locales/*.ftl'],
-            destFile: 'src/t.ml'
+            destFile: 'src/t.ml',
+            defaultLocale: 'en'
         })
     ],
     module: {
