@@ -42,6 +42,7 @@
     "webpack-merge": "^4.2.2"
   },
   "dependencies": {
+    "bs-fluent": "file:bs-fluent",
     "bucklescript-tea": "^0.14.0",
     "bytesize-icons": "^1.4.0",
     "matrix-js-sdk": "^5.1.0",
