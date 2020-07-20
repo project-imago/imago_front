@@ -45,7 +45,7 @@ let get_lc path =
   |. Belt.Option.getExn
 
 
-let process_files sources dest default_lc =
+let process_files sources dest default_lc locale_getter =
   (* let file_path = Js.Array.unsafe_get source 0 in *)
   let parser = new_parser () in
   (* let compiler = new_compiler () in *)
@@ -57,7 +57,7 @@ let process_files sources dest default_lc =
     Compiler.precompile ast lc
     ) in
   (* let () = Js.log ast in *)
-  let output = Compiler.compile asts default_lc in
+  let output = Compiler.compile asts default_lc locale_getter in
   let () = write_file dest output in
   ()
 

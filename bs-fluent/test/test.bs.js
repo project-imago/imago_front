@@ -5,8 +5,8 @@ var $$Plugin = require("../src/plugin.bs.js");
 
 var partial_arg = ["./test/en.ftl"];
 
-function test(param) {
-  return $$Plugin.process_files(partial_arg, "./test_output.ml", param);
+function test(param, param$1) {
+  return $$Plugin.process_files(partial_arg, "./test_output.ml", param, param$1);
 }
 
 exports.test = test;

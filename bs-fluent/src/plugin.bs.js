@@ -22,7 +22,7 @@ function get_lc(path) {
                       }))));
 }
 
-function process_files(sources, dest, default_lc) {
+function process_files(sources, dest, default_lc, locale_getter) {
   var parser = new FluentSyntax.FluentParser();
   var asts = Belt_Array.map(sources, (function (source) {
           var lc = get_lc(source);
@@ -31,7 +31,7 @@ function process_files(sources, dest, default_lc) {
           var ast = parser.parse(content);
           return Compiler.precompile(ast, lc);
         }));
-  var output = Compiler.compile(asts, default_lc);
+  var output = Compiler.compile(asts, default_lc, locale_getter);
   Fs.writeFileSync(dest, output);
   
 }

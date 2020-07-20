@@ -40,7 +40,8 @@ module.exports = {
         new BsFluentPlugin({
             includeFiles: ['locales/*.ftl'],
             destFile: 'src/t.ml',
-            defaultLocale: 'en'
+            defaultLocale: 'en',
+            useLocaleModule: true
         })
     ],
     module: {

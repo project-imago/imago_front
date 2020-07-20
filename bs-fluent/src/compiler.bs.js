@@ -258,6 +258,22 @@ function extract_type_param(other) {
         ];
 }
 
+function build_locale_getter(locale_getter) {
+  if (locale_getter == null) {
+    return "lc";
+  } else {
+    return locale_getter;
+  }
+}
+
+function build_locale_argument(locale_getter) {
+  if (locale_getter == null) {
+    return "lc";
+  } else {
+    return "";
+  }
+}
+
 function remove_builtin(other) {
   if (other.tag === /* BuiltInRef */4) {
     return other[1];
@@ -266,45 +282,45 @@ function remove_builtin(other) {
   }
 }
 
-function build_expression(l) {
+function build_expression(locale_getter, l) {
   switch (l.tag | 0) {
     case /* Literal */0 :
         return string_of_literal(l[0]);
     case /* Select */1 :
-        return build_select(l[0], l[1]);
+        return build_select(locale_getter, l[0], l[1]);
     case /* VariableRef */2 :
         return "params." + l[0];
     case /* FunctionRef */3 :
-        return "(" + (l[0] + (build_params(l[1]) + " lc)"));
+        return "(" + (l[0] + (build_params(l[1]) + (" " + (build_locale_argument(locale_getter) + ")"))));
     case /* BuiltInRef */4 :
         var name = l[0];
-        return "(" + (builtin_name(name) + (" " + (build_expression(l[1]) + (" " + (build_builtin_params(name, l[2]) + " lc)")))));
+        return "(" + (builtin_name(name) + (" " + (build_expression(locale_getter, l[1]) + (" " + (build_builtin_params(name, l[2]) + (" " + (build_locale_getter(locale_getter) + ")")))))));
     
   }
 }
 
-function build_pattern_element(text) {
+function build_pattern_element(locale_getter, text) {
   if (text.tag) {
-    return build_expression(text[0]);
+    return build_expression(locale_getter, text[0]);
   } else {
     return "{js|" + (text[0] + "|js}");
   }
 }
 
-function build_select(selector, pattern_array_with_default) {
+function build_select(locale_getter, selector, pattern_array_with_default) {
   if (selector.tag === /* BuiltInRef */4 && selector[0] === "NUMBER") {
-    return build_select_number(selector, pattern_array_with_default);
+    return build_select_number(locale_getter, selector, pattern_array_with_default);
   } else {
-    return build_select_other(selector, pattern_array_with_default);
+    return build_select_other(locale_getter, selector, pattern_array_with_default);
   }
 }
 
-function build_select_number(selector, pattern_array_with_default) {
+function build_select_number(locale_getter, selector, pattern_array_with_default) {
   var match = extract_type_param(selector);
   var selector$1 = match[1];
   var selector_without_builtin = remove_builtin(selector$1);
-  var built_selector = build_expression(selector$1);
-  var selector$2 = "(" + (built_selector + (", Fluent.plural_rule " + (build_expression(selector_without_builtin) + (" lc" + (match[0] + ")")))));
+  var built_selector = build_expression(locale_getter, selector$1);
+  var selector$2 = "(" + (built_selector + (", Fluent.plural_rule " + (build_expression(locale_getter, selector_without_builtin) + (" lc" + (match[0] + ")")))));
   var patterns = Belt_Array.map(Belt_Array.keep(pattern_array_with_default, (function (param) {
               return !param[2];
             })), (function (param) {
@@ -322,11 +338,11 @@ function build_select_number(selector, pattern_array_with_default) {
                   param[1]
                 ];
         }));
-  return build_switch(selector$2, patterns, default_pattern);
+  return build_switch(locale_getter, selector$2, patterns, default_pattern);
 }
 
-function build_select_other(selector, pattern_array_with_default) {
-  var selector$1 = build_expression(selector);
+function build_select_other(locale_getter, selector, pattern_array_with_default) {
+  var selector$1 = build_expression(locale_getter, selector);
   var patterns = Belt_Array.map(Belt_Array.keep(pattern_array_with_default, (function (param) {
               return !param[2];
             })), (function (param) {
@@ -343,20 +359,24 @@ function build_select_other(selector, pattern_array_with_default) {
                   param[1]
                 ];
         }));
-  return build_switch(selector$1, patterns, default_pattern);
+  return build_switch(locale_getter, selector$1, patterns, default_pattern);
 }
 
-function build_pattern(pattern) {
-  return Belt_Array.map(pattern, build_pattern_element).join(" ^ ");
+function build_pattern(locale_getter, pattern) {
+  return Belt_Array.map(pattern, (function (param) {
+                  return build_pattern_element(locale_getter, param);
+                })).join(" ^ ");
 }
 
-function build_switch_case(param) {
-  return "| " + (param[0] + (" ->\n" + build_pattern(param[1])));
+function build_switch_case(locale_getter, param) {
+  return "| " + (param[0] + (" ->\n" + build_pattern(locale_getter, param[1])));
 }
 
-function build_switch(selector, pattern_array, default_pattern) {
-  return "(match " + (selector + (" with\n" + (Belt_Array.map(pattern_array, build_switch_case).join("\n") + ((
-                  default_pattern !== undefined ? "\n" + build_switch_case(default_pattern) : ""
+function build_switch(locale_getter, selector, pattern_array, default_pattern) {
+  return "(match " + (selector + (" with\n" + (Belt_Array.map(pattern_array, (function (param) {
+                        return build_switch_case(locale_getter, param);
+                      })).join("\n") + ((
+                  default_pattern !== undefined ? "\n" + build_switch_case(locale_getter, default_pattern) : ""
                 ) + ")\n"))));
 }
 
@@ -371,14 +391,16 @@ function function_has_params(fn) {
   return !Belt_MapString.isEmpty(fn.params);
 }
 
-function build_function_head(fn) {
+function build_function_head(fn, locale_getter) {
   var params = Belt_MapString.isEmpty(fn.params) ? "" : " (params : " + (fn.name + "_params)");
-  return "let " + (fn.name + (params + " lc =\n"));
+  var locale_argument = build_locale_argument(locale_getter);
+  var added_unit = params === "" && locale_argument === "" ? "()" : "";
+  return "let " + (fn.name + (params + (" " + (locale_argument + (added_unit + " =\n")))));
 }
 
-function build_function(default_lc, fn) {
+function build_function(default_lc, locale_getter, fn) {
   var type_params$1 = Belt_MapString.isEmpty(fn.params) ? "" : type_params(fn);
-  var head = build_function_head(fn);
+  var head = build_function_head(fn, locale_getter);
   var match = fn.bodies.length;
   var body;
   if (match !== 0) {
@@ -397,9 +419,9 @@ function build_function(default_lc, fn) {
                       param[1]
                     ];
             }));
-      body = build_switch("lc", patterns, default_pattern);
+      body = build_switch(locale_getter, build_locale_getter(locale_getter), patterns, default_pattern);
     } else {
-      body = build_pattern(Belt_Array.getExn(fn.bodies, 0)[1]);
+      body = build_pattern(locale_getter, Belt_Array.getExn(fn.bodies, 0)[1]);
     }
   } else {
     body = "";
@@ -407,10 +429,10 @@ function build_function(default_lc, fn) {
   return type_params$1 + (head + body);
 }
 
-function build(fn_array, default_lc) {
+function build(fn_array, default_lc, locale_getter) {
   var partial_arg = "\"" + (default_lc + "\"");
   return Belt_Array.map(Belt_MapString.valuesToArray(fn_array), (function (param) {
-                  return build_function(partial_arg, param);
+                  return build_function(partial_arg, locale_getter, param);
                 })).join("\n\n");
 }
 
@@ -433,7 +455,7 @@ function simplify_identifier(param) {
             Caml_builtin_exceptions.match_failure,
             /* tuple */[
               "compiler.ml",
-              394,
+              410,
               26
             ]
           ];
@@ -451,7 +473,7 @@ function simplify_literal(param) {
             Caml_builtin_exceptions.match_failure,
             /* tuple */[
               "compiler.ml",
-              398,
+              414,
               23
             ]
           ];
@@ -466,7 +488,7 @@ function get_named_argument(param) {
         Caml_builtin_exceptions.match_failure,
         /* tuple */[
           "compiler.ml",
-          402,
+          418,
           25
         ]
       ];
@@ -485,7 +507,7 @@ function simplify_named_arguments(args) {
                       Caml_builtin_exceptions.match_failure,
                       /* tuple */[
                         "compiler.ml",
-                        407,
+                        423,
                         2
                       ]
                     ];
@@ -562,7 +584,7 @@ function simplify_expression(node, params, in_builtinOpt) {
                 Caml_builtin_exceptions.match_failure,
                 /* tuple */[
                   "compiler.ml",
-                  465,
+                  481,
                   8
                 ]
               ];
@@ -588,7 +610,7 @@ function simplify_expression(node, params, in_builtinOpt) {
                           Caml_builtin_exceptions.match_failure,
                           /* tuple */[
                             "compiler.ml",
-                            482,
+                            498,
                             13
                           ]
                         ];
@@ -603,7 +625,7 @@ function simplify_expression(node, params, in_builtinOpt) {
                       Caml_builtin_exceptions.match_failure,
                       /* tuple */[
                         "compiler.ml",
-                        479,
+                        495,
                         9
                       ]
                     ];
@@ -617,7 +639,7 @@ function simplify_expression(node, params, in_builtinOpt) {
             Caml_builtin_exceptions.match_failure,
             /* tuple */[
               "compiler.ml",
-              412,
+              428,
               2
             ]
           ];
@@ -636,7 +658,7 @@ function simplify_pattern(element_array, params) {
                           Caml_builtin_exceptions.match_failure,
                           /* tuple */[
                             "compiler.ml",
-                            496,
+                            512,
                             4
                           ]
                         ];
@@ -682,7 +704,7 @@ function get_first_argument(param) {
         Caml_builtin_exceptions.match_failure,
         /* tuple */[
           "compiler.ml",
-          510,
+          526,
           25
         ]
       ];
@@ -770,7 +792,7 @@ function make_fn(param, $$public, namespace, lc) {
           Caml_builtin_exceptions.match_failure,
           /* tuple */[
             "compiler.ml",
-            571,
+            587,
             8
           ]
         ];
@@ -803,7 +825,7 @@ function make_entry(entry, $$public, lc) {
                           Caml_builtin_exceptions.match_failure,
                           /* tuple */[
                             "compiler.ml",
-                            595,
+                            611,
                             6
                           ]
                         ];
@@ -831,7 +853,7 @@ function simplify_ast(lc, node) {
                                         Caml_builtin_exceptions.match_failure,
                                         /* tuple */[
                                           "compiler.ml",
-                                          612,
+                                          628,
                                           8
                                         ]
                                       ];
@@ -842,7 +864,7 @@ function simplify_ast(lc, node) {
         Caml_builtin_exceptions.match_failure,
         /* tuple */[
           "compiler.ml",
-          602,
+          618,
           2
         ]
       ];
@@ -870,9 +892,9 @@ function reduce_fn_arrays(acc, fn_array) {
               }));
 }
 
-function compile(fn_array_array, default_lc) {
+function compile(fn_array_array, default_lc, locale_getter) {
   var merged_array = Belt_Array.reduce(fn_array_array, undefined, reduce_fn_arrays);
-  return build(merged_array, default_lc);
+  return build(merged_array, default_lc, locale_getter);
 }
 
 exports.build_ast = build_ast;
@@ -885,6 +907,8 @@ exports.build_builtin_param = build_builtin_param;
 exports.build_params = build_params;
 exports.build_builtin_params = build_builtin_params;
 exports.extract_type_param = extract_type_param;
+exports.build_locale_getter = build_locale_getter;
+exports.build_locale_argument = build_locale_argument;
 exports.remove_builtin = remove_builtin;
 exports.build_expression = build_expression;
 exports.build_pattern_element = build_pattern_element;
