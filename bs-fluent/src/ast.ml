@@ -21,10 +21,8 @@
  * *)
 type js_node =
   { _type : string [@bs.as "type"]
-  ; annotations : js_node array
-  (* ; arguments : js_node *)
-  ; arguments : js_node Js.Nullable.t
-  (* ; arguments : string array *)
+  ; annotations : js_node array (* ; arguments : js_node *)
+  ; arguments : js_node Js.Nullable.t (* ; arguments : string array *)
   ; attribute : js_node Js.Nullable.t
   ; attributes : js_node array
   ; body : js_node array
@@ -35,19 +33,15 @@ type js_node =
   ; elements : js_node array
   ; _end : int
   ; expression : js_node
-  ; id : js_node
-  (* ; id : js_node *)
+  ; id : js_node (* ; id : js_node *)
   ; key : js_node
   ; message : string
   ; named : js_node array
-  ; name : js_node
-  (* ; name : string *)
+  ; name : js_node (* ; name : string *)
   ; positional : js_node array
   ; selector : js_node
-  ; start : int
-  (* ; value : js_node *)
-  ; value : js_node Js.Nullable.t
-  (* ; value : string *)
+  ; start : int (* ; value : js_node *)
+  ; value : js_node Js.Nullable.t (* ; value : string *)
   ; variants : js_node array
   }
 
@@ -133,7 +127,6 @@ and call_arguments =
 (*   { id : node *)
 (*   ; value : node *)
 (*   } *)
-
 and variant =
   { key : node
   ; value : node
