@@ -287,7 +287,7 @@ function build_pattern_element(text) {
   if (text.tag) {
     return build_expression(text[0]);
   } else {
-    return "\"" + (text[0] + "\"");
+    return "{js|" + (text[0] + "|js}");
   }
 }
 
@@ -789,11 +789,13 @@ function make_fn(param, $$public, namespace, lc) {
 }
 
 function make_entry(entry, $$public, lc) {
+  var match = entry.value;
+  var main_function = !(match == null) ? /* :: */Caml_chrome_debugger.simpleVariant("::", [
+        make_fn(entry, $$public, "", lc),
+        /* [] */0
+      ]) : /* [] */0;
   var name = simplify_identifier(entry.id);
-  return Belt_List.concat(/* :: */Caml_chrome_debugger.simpleVariant("::", [
-                make_fn(entry, $$public, "", lc),
-                /* [] */0
-              ]), Belt_List.map(Belt_List.fromArray(entry.attributes), (function (attribute) {
+  return Belt_List.concat(main_function, Belt_List.map(Belt_List.fromArray(entry.attributes), (function (attribute) {
                     if (attribute.tag === /* Attribute */14) {
                       return make_fn(attribute[0], $$public, name, lc);
                     }
@@ -801,7 +803,7 @@ function make_entry(entry, $$public, lc) {
                           Caml_builtin_exceptions.match_failure,
                           /* tuple */[
                             "compiler.ml",
-                            589,
+                            595,
                             6
                           ]
                         ];
@@ -829,7 +831,7 @@ function simplify_ast(lc, node) {
                                         Caml_builtin_exceptions.match_failure,
                                         /* tuple */[
                                           "compiler.ml",
-                                          606,
+                                          612,
                                           8
                                         ]
                                       ];
@@ -840,7 +842,7 @@ function simplify_ast(lc, node) {
         Caml_builtin_exceptions.match_failure,
         /* tuple */[
           "compiler.ml",
-          596,
+          602,
           2
         ]
       ];

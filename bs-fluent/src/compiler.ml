@@ -238,7 +238,7 @@ let rec build_expression = function
       (build_builtin_params name params) ^ " lc)"
 
     and build_pattern_element = (function
-  | TextElement text -> "\"" ^ text ^ "\""
+  | TextElement text -> "{js|" ^ text ^ "|js}"
   | Expression expr -> build_expression expr)
 
 and build_select selector pattern_array_with_default =
@@ -580,9 +580,15 @@ let make_fn ({id; value} : entry) public namespace lc =
   }
 
 let make_entry (entry : entry) public lc =
+  let main_function = 
+    match (Js.Nullable.toOption entry.value) with
+    | None -> []
+    | Some _ ->
+    [ make_fn entry public "" lc ]
+  in
   let name = simplify_identifier entry.id in
   Belt.List.concat
-    [ make_fn entry public "" lc ]
+    main_function
     (entry.attributes
     |. Belt.List.fromArray
     |. Belt.List.map
