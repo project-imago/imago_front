@@ -52,29 +52,34 @@ let view model =
     let label =
       match model.current_color_theme with
       | Dark ->
-          "Light mode"
+          T.header_light_mode !Locale.get
       | Light ->
-          "Dark mode"
+          T.header_dark_mode !Locale.get
     in
     li [] [ Components.header_link_simple msg "moon" label ]
   in
   let logout_button =
-    li [] [ Components.header_link_simple (GoTo Logout) "sign-out" "Logout" ]
+    li [] [ Components.header_link_simple (GoTo Logout) "sign-out"
+    (T.header_logout !Locale.get) ]
   in
   let login_button =
-    li [] [ Components.header_link goTo Login "sign-in" "Login" ]
+    li [] [ Components.header_link goTo Login "sign-in" (T.header_login
+    !Locale.get) ]
   in
   (* let signup_button = *)
   (*   li [] [ Components.rpill_button (GoTo Signup) "sign-in" "Register" ] *)
   (* in *)
   let profile_button =
-    li [] [ Components.header_link goTo Index "user" "Profile" ]
+    li [] [ Components.header_link goTo Index "user" (T.header_profile
+    !Locale.get) ]
   in
   let settings_button =
-    li [] [ Components.header_link goTo Index "settings" "Settings" ]
+    li [] [ Components.header_link goTo Index "settings" (T.header_settings
+    !Locale.get)]
   in
   let hamburger_button =
-    li [] [ Components.header_link_simple ~icon_only:true ToggleMenu "menu" "Toggle menu"]
+    li [] [ Components.header_link_simple ~icon_only:true ToggleMenu "menu"
+    (T.header_toggle_menu !Locale.get)]
   in
   let locale_dropdown =
     li
@@ -90,7 +95,7 @@ let view model =
   let profile_dropdown inside_links =
     let button_text = match (Matrix.current_user_name model.matrix_client) with
     | Some name -> name
-    | None -> "Profile"
+    | None -> (T.header_profile !Locale.get)
     in
     li
       []
@@ -102,10 +107,11 @@ let view model =
       ]
   in
   let settings_dropdown inside_links =
+    let () = Js.log (T.header_settings !Locale.get) in
     li
       []
       (* [ a [ href "#" ] [ text "settings" ] *)
-      [ Components.header_fake_link "options" "Settings"
+      [ Components.header_fake_link "options" (T.header_settings !Locale.get)
       ; ul
           [ class' "dropdown" ]
           inside_links

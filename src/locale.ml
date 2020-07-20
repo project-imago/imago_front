@@ -2,4 +2,4 @@
 
 let init = ref "en"
 
-let current_locale = init
+let get = init
