@@ -34,7 +34,7 @@ let get_lc path =
   Js.String.splitByRe [%re "/[\.\/]/"] path
   |. Belt.Array.reverse
   |. Belt.Array.keepMap (function
-    | Some part -> Js.log part; Some part
+    | Some part -> Some part
     | None -> None)
   |> Js.Array.find (fun part ->
     (match Js.String.match_ [%re "/^[a-z]{2}(-[A-Z]{2})?$/"] part with

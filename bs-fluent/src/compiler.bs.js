@@ -9,7 +9,6 @@ var Caml_chrome_debugger = require("bs-platform/lib/js/caml_chrome_debugger.js")
 var Caml_builtin_exceptions = require("bs-platform/lib/js/caml_builtin_exceptions.js");
 
 function build_ast(node) {
-  console.log(node.type);
   var match = node.type;
   switch (match) {
     case "Annotation" :
@@ -406,10 +405,7 @@ function build_function(default_lc, locale_getter, fn) {
   if (match !== 0) {
     if (match !== 1) {
       var patterns = Belt_Array.keep(fn.bodies, (function (param) {
-              var lc = param[0];
-              console.log(lc);
-              console.log(default_lc);
-              return lc !== default_lc;
+              return param[0] !== default_lc;
             }));
       var default_pattern = Belt_Option.map(Belt_Array.get(Belt_Array.keep(fn.bodies, (function (param) {
                       return param[0] === default_lc;
@@ -600,8 +596,6 @@ function simplify_expression(node, params, in_builtinOpt) {
                 if (param.tag === /* Variant */15) {
                   var match = param[0];
                   var value = match.value;
-                  var key = match.key;
-                  console.log(key);
                   var elements;
                   if (value.tag === /* Pattern */3) {
                     elements = value[0].elements;
@@ -616,7 +610,7 @@ function simplify_expression(node, params, in_builtinOpt) {
                         ];
                   }
                   return /* tuple */[
-                          simplify_identifier(key),
+                          simplify_identifier(match.key),
                           simplify_pattern(elements, params),
                           match.default
                         ];
@@ -715,31 +709,23 @@ function reduce_pattern_for_params(curr_type_and_acc, pattern_element) {
   var curr_type = curr_type_and_acc[0];
   switch (pattern_element.tag | 0) {
     case /* Pattern */3 :
-        console.log("pattern");
         var match = Belt_Array.reduce(pattern_element[0].elements, curr_type_and_acc, reduce_pattern_for_params);
         return /* tuple */[
                 curr_type,
                 Belt_MapString.merge(match[1], curr_acc, merge_params)
               ];
     case /* Placeable */5 :
-        console.log("placeable");
         var match$1 = reduce_pattern_for_params(curr_type_and_acc, pattern_element[0].expression);
-        var acc = match$1[1];
-        console.log(acc);
         return /* tuple */[
                 curr_type,
-                Belt_MapString.merge(acc, curr_acc, merge_params)
+                Belt_MapString.merge(match$1[1], curr_acc, merge_params)
               ];
     case /* VariableReference */10 :
-        var id = pattern_element[0].id;
-        console.log("variable");
-        console.log("adding " + (simplify_identifier(id) + (" as " + curr_type)));
         return /* tuple */[
                 curr_type,
-                Belt_MapString.set(curr_acc, simplify_identifier(id), curr_type)
+                Belt_MapString.set(curr_acc, simplify_identifier(pattern_element[0].id), curr_type)
               ];
     case /* FunctionReference */11 :
-        console.log("function");
         var match$2 = reduce_pattern_for_params(/* tuple */[
               "int",
               curr_acc
@@ -750,7 +736,6 @@ function reduce_pattern_for_params(curr_type_and_acc, pattern_element) {
               ];
     case /* SelectExpression */12 :
         var match$3 = pattern_element[0];
-        console.log("select");
         var match$4 = reduce_pattern_for_params(curr_type_and_acc, match$3.selector);
         var match$5 = Belt_Array.reduce(match$3.variants, curr_type_and_acc, reduce_pattern_for_params);
         return /* tuple */[
@@ -758,7 +743,6 @@ function reduce_pattern_for_params(curr_type_and_acc, pattern_element) {
                 Belt_MapString.merge(match$4[1], match$5[1], merge_params)
               ];
     case /* Variant */15 :
-        console.log("variant");
         var match$6 = reduce_pattern_for_params(curr_type_and_acc, pattern_element[0].value);
         return /* tuple */[
                 curr_type,

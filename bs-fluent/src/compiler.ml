@@ -3,7 +3,7 @@ open Ast
 type build_ast = js_node -> node [@bs]
 let rec build_ast node : node =
   (* Js.log (Js.Json.stringify [%bs.raw {|node|}]); *)
-  Js.log node._type;
+  (* Js.log node._type; *)
   (match node._type with
   (* | "BaseNode" -> *)
   (*     BaseNode *)
@@ -367,7 +367,7 @@ let build_function default_lc locale_getter fn =
         let patterns =
           Belt.Array.keep fn.bodies
               (function (lc, _pattern) ->
-                Js.log lc; Js.log default_lc;
+                (* Js.log lc; Js.log default_lc; *)
                 not (lc = default_lc))
         in
         let default_pattern =
@@ -493,7 +493,7 @@ let rec simplify_expression node params ?(in_builtin=false) =
        let pattern_array_with_default =
          Belt.Array.map variants
          (function Variant {key; value; default} ->
-           Js.log key;
+           (* Js.log key; *)
            let elements =
              (match value with | Pattern {elements} -> elements)
            in
@@ -535,16 +535,16 @@ let rec reduce_pattern_for_params curr_type_and_acc pattern_element =
   let curr_type, curr_acc = curr_type_and_acc in
   match pattern_element with
   | Pattern { elements } ->
-      Js.log "pattern";
+      (* Js.log "pattern"; *)
       let _, acc = Belt.Array.reduce elements curr_type_and_acc
       reduce_pattern_for_params in
       curr_type, Belt.Map.String.merge acc curr_acc merge_params
   | VariableReference { id } ->
-      Js.log "variable";
-      Js.log ("adding " ^ (simplify_identifier id) ^ " as " ^ curr_type);
+      (* Js.log "variable"; *)
+      (* Js.log ("adding " ^ (simplify_identifier id) ^ " as " ^ curr_type); *)
       curr_type, Belt.Map.String.set curr_acc (simplify_identifier id) curr_type
   | FunctionReference { id; arguments } ->
-      Js.log "function";
+      (* Js.log "function"; *)
       (* Js.log ("function ref with " ^ (simplify_identifier id)); *)
       let _, acc = reduce_pattern_for_params ("int", curr_acc) (get_first_argument
       arguments) in
@@ -552,7 +552,7 @@ let rec reduce_pattern_for_params curr_type_and_acc pattern_element =
       curr_type, Belt.Map.String.merge acc curr_acc merge_params
 
   | SelectExpression { selector; variants} ->
-      Js.log "select";
+      (* Js.log "select"; *)
       let _, params_selector = reduce_pattern_for_params curr_type_and_acc selector in
       (* Js.log params_selector; *)
       let _, params_variants = 
@@ -560,13 +560,13 @@ let rec reduce_pattern_for_params curr_type_and_acc pattern_element =
       (* Js.log params_variants; *)
       curr_type, Belt.Map.String.merge params_selector params_variants merge_params
   | Variant { value } ->
-      Js.log "variant";
+      (* Js.log "variant"; *)
       let _, acc = reduce_pattern_for_params curr_type_and_acc value in
       curr_type, Belt.Map.String.merge acc curr_acc merge_params
   | Placeable { expression } ->
-      Js.log "placeable";
+      (* Js.log "placeable"; *)
       let _, acc = reduce_pattern_for_params curr_type_and_acc expression in
-      Js.log acc;
+      (* Js.log acc; *)
       curr_type, Belt.Map.String.merge acc curr_acc merge_params
   | _ ->
       curr_type, curr_acc

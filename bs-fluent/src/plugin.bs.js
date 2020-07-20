@@ -12,7 +12,6 @@ var FluentSyntax = require("fluent-syntax");
 function get_lc(path) {
   return Belt_Option.getExn(Caml_option.undefined_to_opt(Belt_Array.keepMap(Belt_Array.reverse(path.split(/[\.\/]/)), (function (part) {
                           if (part !== undefined) {
-                            console.log(part);
                             return part;
                           }
                           

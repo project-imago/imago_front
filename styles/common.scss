@@ -52,6 +52,7 @@ button,
   display: flex;
   flex-direction: row;
   align-items: center;
+  width: fit-content;
   // position: relative;
 
   &:focus {
