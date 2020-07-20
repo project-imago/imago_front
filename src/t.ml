@@ -1,3 +1,21 @@
+let chat_room_not_found () =
+{js|Room not found|js}
+
+let content_welcome () =
+{js|Welcome on Imago!|js}
+
+let group_chats_title () =
+{js|Chats|js}
+
+let group_events_title () =
+{js|Events|js}
+
+let group_links_title () =
+{js|Links|js}
+
+let group_room_not_found () =
+{js|Room not found|js}
+
 let header_dark_mode () =
 (match !Locale.get with
 | "fr" ->
@@ -52,3 +70,37 @@ let header_toggle_menu () =
 {js|Afficher le menu|js}
 | _ ->
 {js|Toggle menu|js})
+
+
+let login_no_account_yet () =
+{js|No account yet?|js}
+
+let login_password_label () =
+{js|Password|js}
+
+let login_register_button () =
+{js|Register|js}
+
+let login_submit () =
+{js|Login|js}
+
+let login_username_label () =
+{js|Username|js}
+
+let sidebar_create_group () =
+{js|Create group|js}
+
+let sidebar_new_chat () =
+{js|New chat|js}
+
+let sidebar_outside_groups () =
+{js|Outside groups|js}
+
+let signup_password_label () =
+{js|Password|js}
+
+let signup_submit () =
+{js|Register|js}
+
+let signup_username_label () =
+{js|Username|js}

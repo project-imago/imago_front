@@ -86,7 +86,7 @@ let logged_out_index_view _model =
   let open Tea.Html in
   div
     [ id "logged-out-index" ]
-    [ h3 [ id "welcome" ] [ text "Bienvenue sur Imago !" ]
+    [ h3 [ id "welcome" ] [ text (T.content_welcome ())]
     ]
 
 

@@ -54,7 +54,12 @@ let msg_to_string = function
 exception RegisterError
 
 let register_cmd model =
-  Matrix.Client.register !(model.matrix_client) model.username model.password None None
+  Matrix.Client.register
+    !(model.matrix_client)
+    model.username
+    model.password
+    None
+    None
   |> Js.Promise.catch (function _err ->
          Js.log [%raw {|_err|}] ;
          ( match [%raw {|_err.httpStatus|}] with
@@ -121,14 +126,14 @@ let view model =
     [ Tea.Html2.Events.onSubmit register ]
     [ fieldset
         []
-        [ label [ for' "username-field" ] [ text "Username" ]
+        [ label [ for' "username-field" ] [ text (T.signup_username_label ()) ]
         ; input'
             [ type' "text"; id "username-field"; onInput saveUserName ]
             [ text model.username ]
-        ; label [ for' "password-field" ] [ text "Password" ]
+        ; label [ for' "password-field" ] [ text (T.signup_password_label ()) ]
         ; input'
             [ type' "password"; id "password-field"; onInput savePassword ]
             [ text model.password ]
-        ; button [ type' "submit" ] [ text "Register" ]
+        ; button [ type' "submit" ] [ text (T.signup_submit ()) ]
         ]
     ]

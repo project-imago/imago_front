@@ -103,7 +103,7 @@ let view model room_id =
         ; div ~unique:room_id [ id "input-area" ] [ input_area model room_id ]
         ]
   | None ->
-      div [ id "room-view" ] [ text "room not found" ]
+      div [ id "room-view" ] [ text (T.chat_room_not_found ()) ]
 
 (* let view model = function *)
 (*   | Router.Room _ -> *)
