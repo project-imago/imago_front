@@ -87,6 +87,27 @@ let login_submit () =
 let login_username_label () =
 {js|Username|js}
 
+type router_title_params = { page : string }
+let router_title (params : router_title_params)  =
+(match params.page with
+| "login" ->
+{js|Login – Imago|js}
+| "signup" ->
+{js|Register – Imago|js}
+| "logout" ->
+{js|Logout – Imago|js}
+| "create-group" ->
+{js|New group – Imago|js}
+| "create-chat" ->
+{js|New chat – Imago|js}
+| "chat" ->
+{js|Chat – Imago|js}
+| "group" ->
+{js|Group – Imago|js}
+| _ ->
+{js|Imago|js})
+
+
 let sidebar_create_group () =
 {js|Create group|js}
 

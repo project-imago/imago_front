@@ -70,8 +70,36 @@ let route_of_location location =
   | _ ->
       Index
 
+type dom
+external dom : dom = "document" [@@bs.val]
+external set_dom_title : dom -> string -> unit = "title" [@@bs.set]
 
-(* default route *)
+let set_title title =
+  set_dom_title dom title
+
+let set_title_for_route = function
+  | Index ->
+      set_title (T.router_title {page = "index"})
+  | Login ->
+      set_title (T.router_title {page = "login"})
+  | Signup ->
+      set_title (T.router_title {page = "signup"})
+  | Logout ->
+      set_title (T.router_title {page = "logout"})
+  | CreateGroup ->
+      set_title (T.router_title {page = "create-group"})
+  | CreateChat None ->
+      set_title (T.router_title {page = "create-chat"})
+  | CreateChat (Some group_id) ->
+      set_title (T.router_title {page = "create-chat"})
+  | Chat (Id room_id) ->
+      set_title (T.router_title {page = "chat"})
+  | Chat (Alias room_alias) ->
+      set_title (T.router_title {page = "chat"})
+  | Group (Id room_id) ->
+      set_title (T.router_title {page = "group"})
+  | Group (Alias room_alias) ->
+      set_title (T.router_title {page = "group"})
 
 let location_of_route = function
   | Index ->
