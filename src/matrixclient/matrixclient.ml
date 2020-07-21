@@ -41,18 +41,17 @@ type create_room_options =
 
 type create_room_response =
   < room_id : Matrixclient_common.room_id ; room_alias : string option > Js.t
- 
+
 type client_config_part =
   < base_url : string Js.Nullable.t
   ; error : string Js.Nullable.t
-  ; state : string
-  > Js.t
+  ; state : string >
+  Js.t
 
 type client_config = client_config_part Js.Dict.t
 
 type auto_discovery =
-  < findClientConfig : string -> client_config Js.Promise.t [@bs.meth]
-  > Js.t
+  < findClientConfig : string -> client_config Js.Promise.t [@bs.meth] > Js.t
 
 type client =
   < credentials : < userId : user_id > Js.t
@@ -71,6 +70,8 @@ type client =
   ; isLoggedIn : unit -> bool [@bs.meth]
   ; createRoom : create_room_options -> create_room_response Js.Promise.t [@bs.meth
                                                                             ]
+  ; getUserId : unit -> user_id [@bs.meth]
+  ; getUser : user_id -> Matrixclient_user.t Js.Nullable.t [@bs.meth]
   ; getJoinedRooms :
          unit
       -> < joined_rooms : Matrixclient_common.room_id array > Js.t Js.Promise.t [@bs.meth
@@ -80,13 +81,14 @@ type client =
       -> Matrixclient_event.event_content
       -> string Js.Promise.t [@bs.meth]
   ; store : Matrixclient_store.t
-  ; getRoom : Matrixclient_common.room_id -> Matrixclient_room.t Js.Nullable.t [@bs.meth]
-  ; resolveRoomAlias : Matrixclient_common.room_id -> <room_id : string> Js.t Js.Promise.t
-  [@bs.meth]
-  ; peekInRoom : Matrixclient_common.room_id -> Matrixclient_room.t Js.Promise.t
-  [@bs.meth]
-  ; _AutoDiscovery : auto_discovery
- >
+  ; getRoom : Matrixclient_common.room_id -> Matrixclient_room.t Js.Nullable.t [@bs.meth
+                                                                                ]
+  ; resolveRoomAlias :
+      Matrixclient_common.room_id -> < room_id : string > Js.t Js.Promise.t [@bs.meth
+                                                                              ]
+  ; peekInRoom : Matrixclient_common.room_id -> Matrixclient_room.t Js.Promise.t 
+        [@bs.meth]
+  ; _AutoDiscovery : auto_discovery >
   Js.t
 
 external matrixcs : client = "matrixcs" [@@bs.val]

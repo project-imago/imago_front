@@ -47,6 +47,7 @@ let update_route model = function
   (*     {auth; route}, location_of_route route |> Tea.Navigation.newUrl *)
   | Group room_address as route ->
       Js.log "updating route group" ;
+      Router.set_title_for_route route;
       let group_cmd = Group.set_group_room model.content.group room_address in
       ( { model with route }
       , Tea.Cmd.batch
@@ -59,6 +60,7 @@ let update_route model = function
       , Tea.Cmd.batch [ Tea.Cmd.map authMsg auth_cmd; Tea.Cmd.msg (GoTo Index) ]
       )
   | route ->
+      Router.set_title_for_route route;
       ({ model with route }, location_of_route route |> Tea.Navigation.newUrl)
 
 

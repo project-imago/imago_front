@@ -38,6 +38,13 @@ let new_client_params ?(server=default_server) user_id access_token =
     user_id
     access_token
 
+let current_user_name client =
+  let user_id = !client##getUserId () in
+  let user = !client##getUser user_id in
+  Js.Nullable.toOption user
+  |. Belt.Option.map
+  (function user -> user##displayName)
+
 
 module TypeState = Client.MakeStateAccessors (struct
   type t = < _type : string > Js.t

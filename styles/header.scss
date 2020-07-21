@@ -1,10 +1,10 @@
 
 header {
-  padding: 10px;
+  // padding: 10px;
   background-color: var(--color-background-darker);
   border-bottom: 1px solid var(--color-border);
-  display: flex;
-  flex-direction: row;
+  // display: flex;
+  // flex-direction: row;
   height: 60px;
   align-items: center;
 
@@ -22,6 +22,132 @@ header {
   p {
     line-height: 225%;
   }
+
+  > nav {
+    height: 100%;
+
+    > ul {
+      display: flex;
+      flex-direction: row;
+      height: 100%;
+      align-items: stretch;
+      margin: 0;
+      padding: 0;
+
+      > li {
+        margin: 0;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+
+        > a {
+          height: 100%;
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          color: var(--color-main-text);
+          font-weight: normal;
+          padding: 0 20px;
+          @include media("<=small") {
+            padding: 0 10px;
+          }
+
+          &:hover {
+            background-color: var(--color-background-hover);
+            color: var(--color-main-text);
+            opacity: 1;
+          }
+
+          &.icon-only {
+            > span {
+              display: none;
+            }
+
+            > svg {
+              margin-right: 0;
+            }
+          }
+          @include media("<=small") {
+            > span {
+              display: none;
+            }
+
+            > svg {
+              margin-right: 0 !important;
+            }
+          }
+
+          > svg {
+            margin-right: 20px;
+          }
+        }
+
+        &:last-child {
+          > a {
+            @include media("<=small") {
+              padding-right: 20px;
+            }
+          }
+          > ul {
+            right: 0;
+            left: unset;
+          }
+        }
+
+        > ul {
+          visibility: hidden;
+          opacity: 0;
+          position: absolute;
+          transition: all 0.5s ease;
+          top: 59px;
+          left: 0;
+          display: none;
+          background-color: var(--color-background-darker);
+          border: 1px solid var(--color-border);
+          border-top: none;
+
+          > li {
+            clear: both;
+            width: 100%;
+            margin: 0;
+
+            > a {
+              height: 100%;
+              display: flex;
+              flex-direction: row;
+              align-items: center;
+              color: var(--color-main-text);
+              font-weight: normal;
+              padding: 10px 20px;
+              @include media("<=small") {
+                padding: 10px 10px;
+              }
+
+              > svg {
+                margin-right: 20px;
+              }
+
+              &:hover {
+                background-color: var(--color-background-hover);
+                color: var(--color-main-text);
+                opacity: 1;
+              }
+            }
+          }
+        }
+
+        &:hover > ul,
+        &:focus-within > ul,
+        ul:hover {
+          visibility: visible;
+          opacity: 1;
+          display: block;
+        }
+      }
+    }
+  }
+
 
   .button,
   button,

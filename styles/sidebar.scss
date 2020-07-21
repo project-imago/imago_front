@@ -5,15 +5,19 @@
   background-color: var(--color-background-darker);
   overflow-y: auto;
   // min-width: 250px;
-  width: $sidebar_width;
+  // width: $sidebar_width;
+  width: 0;
   padding: 0;
   border-right: 1px solid var(--color-border);
   flex-shrink: 0;
   overflow-x: hidden;
-  display: none;
+  transition: width 0.5s ease;
+  white-space: nowrap;
+  // display: none;
 
   &.visible {
-    display: block;
+    // display: block;
+    width: $sidebar_width;
   }
 
   > .button {

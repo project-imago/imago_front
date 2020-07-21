@@ -150,8 +150,8 @@ let room_list_view route model =
                   ; Router.link
                       ~props:
                         [ class' "create_chat_link"
-                        ; Icons.aria_label "New chat"
-                        ; title "New chat"
+                        ; Icons.aria_label (T.sidebar_new_chat ())
+                        ; title (T.sidebar_new_chat ())
                         ]
                       goTo
                       (CreateChat (Some g##roomId))
@@ -166,12 +166,12 @@ let room_list_view route model =
           []
           [ div
               [ class' "group_link" ]
-              [ span [] [ text "Outside groups" ]
+              [ span [] [ text (T.sidebar_outside_groups ()) ]
               ; Router.link
                   ~props:
                     [ class' "create_chat_link"
-                    ; Icons.aria_label "New chat"
-                    ; title "New chat"
+                    ; Icons.aria_label (T.sidebar_new_chat ())
+                    ; title (T.sidebar_new_chat ())
                     ]
                   goTo
                   (CreateChat None)
@@ -202,7 +202,7 @@ let view route model =
           ~props:[ class' "button pill" ]
           goTo
           Router.CreateGroup
-          [ text "Create Group" ]
+          [ text (T.sidebar_create_group ()) ]
       ; room_list_view route model
       ]
     else

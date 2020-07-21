@@ -153,11 +153,11 @@ let view_room model room =
   div ~unique:"group" ~key:room##roomId
   [id "group-view"]
   [ h3 [] [text room##name]
-  ; toggle_button "Links" model.show_statements ToggleShowStatements
+  ; toggle_button (T.group_links_title ()) model.show_statements ToggleShowStatements
   ; view_statements model room
-  ; toggle_button "Chats" model.show_chats ToggleShowChats
+  ; toggle_button (T.group_chats_title ()) model.show_chats ToggleShowChats
   ; view_chats model room
-  ; toggle_button "Events" model.show_events ToggleShowEvents
+  ; toggle_button (T.group_events_title ()) model.show_events ToggleShowEvents
   ; view_events model room
   ]
 
@@ -167,4 +167,4 @@ let view model =
   | Some room ->
       view_room model room
   | None ->
-      div [] [text "Room not found"]
+      div [] [text (T.group_room_not_found ())]

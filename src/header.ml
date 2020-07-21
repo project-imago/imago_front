@@ -5,13 +5,17 @@ type color_theme =
 type model =
   { matrix_client : Matrix.client ref
   ; current_color_theme : color_theme
+  ; current_locale : string ref
   }
 
-let init matrix_client = { current_color_theme = Dark; matrix_client }
+let init matrix_client =
+  { current_color_theme = Dark; current_locale = Locale.init; matrix_client }
+
 
 type msg =
   | GoTo of Router.route
   | ChangeColorTheme of color_theme
+  | ChangeLocale of string
   | ToggleMenu
 [@@bs.deriving { accessors }]
 
@@ -20,16 +24,22 @@ let update model = function
       ({ model with current_color_theme = Light }, Tea.Cmd.none)
   | ChangeColorTheme Dark ->
       ({ model with current_color_theme = Dark }, Tea.Cmd.none)
+  | ChangeLocale lc ->
+      model.current_locale := lc ;
+      (model, Tea.Cmd.none)
   | GoTo _route ->
       (model, Tea.Cmd.none)
-  | ToggleMenu -> (* should not happen *)
+  | ToggleMenu ->
+      (* should not happen *)
       (model, Tea.Cmd.none)
 
 
 let view model =
   let open Tea.Html in
   let logo =
-    Router.link ~props:[ id "logo" ] goTo Index [ h1 [] [ text "Imago" ] ]
+    li
+      [id "logo"]
+      [ Router.link goTo Index [ h1 [] [ text "Imago" ] ] ]
   in
   let change_theme_button =
     let msg =
@@ -42,45 +52,93 @@ let view model =
     let label =
       match model.current_color_theme with
       | Dark ->
-          "Light mode"
+          T.header_light_mode ()
       | Light ->
-          "Dark mode"
+          T.header_dark_mode ()
     in
-    Components.rpill_button msg "moon" label
+    li [] [ Components.header_link_simple msg "moon" label ]
   in
   let logout_button =
-    Components.rpill_button (GoTo Logout) "sign-out" "Logout"
+    li [] [ Components.header_link_simple (GoTo Logout) "sign-out"
+    (T.header_logout ()) ]
   in
   let login_button =
-    Components.rpill_button (GoTo Login) "sign-in" "Login"
+    li [] [ Components.header_link goTo Login "sign-in" (T.header_login
+    ()) ]
   in
-  let signup_button =
-    Components.rpill_button (GoTo Signup) "sign-in" "Register"
-  in
+  (* let signup_button = *)
+  (*   li [] [ Components.rpill_button (GoTo Signup) "sign-in" "Register" ] *)
+  (* in *)
   let profile_button =
-    Components.rpill_link goTo Index "user" "Profile"
+    li [] [ Components.header_link goTo Index "user" (T.header_profile
+    ()) ]
   in
   let settings_button =
-    Components.rpill_link goTo Index "settings" "Settings"
+    li [] [ Components.header_link goTo Index "settings" (T.header_settings
+    ())]
   in
   let hamburger_button =
-    button
-      [ onClick ToggleMenu
-      ; Icons.aria_label "Toggle menu"
-      ; title "Toggle menu"
-      ; class' "icon rpill"
-      ]
-      [ Icons.icon "menu" ]
+    li [] [ Components.header_link_simple ~icon_only:true ToggleMenu "menu"
+    (T.header_toggle_menu ())]
   in
-  header
-    []
-    ( if Auth.is_logged_in model.matrix_client
+  let locale_dropdown =
+    li
+      []
+      [ a [ href "#" ] [ text !(model.current_locale) ]
+      ; ul
+          [ class' "dropdown" ]
+          [ li [] [ a [ href "#"; onClick (ChangeLocale "en") ] [ text "en" ] ]
+          ; li [] [ a [ href "#"; onClick (ChangeLocale "fr") ] [ text "fr" ] ]
+          ]
+      ]
+  in
+  let profile_dropdown inside_links =
+    let button_text = match (Matrix.current_user_name model.matrix_client) with
+    | Some name -> name
+    | None -> (T.header_profile ())
+    in
+    li
+      []
+      (* [ a [ href "#" ] [ text button_text ] *)
+      [ Components.header_fake_link "user" button_text
+      ; ul
+          [ class' "dropdown" ]
+          inside_links
+      ]
+  in
+  let settings_dropdown inside_links =
+    let () = Js.log (T.header_settings ()) in
+    li
+      []
+      (* [ a [ href "#" ] [ text "settings" ] *)
+      [ Components.header_fake_link "options" (T.header_settings ())
+      ; ul
+          [ class' "dropdown" ]
+          inside_links
+      ]
+  in
+  let items_list =
+    if Auth.is_logged_in model.matrix_client
     then
+      (* [ hamburger_button *)
+      (* ; logo *)
+      (* ; profile_button *)
+      (* ; settings_button *)
+      (* ; logout_button *)
+      (* ; change_theme_button *)
+      (* ] *)
       [ hamburger_button
       ; logo
-      ; profile_button
-      ; settings_button
-      ; logout_button
+      ; locale_dropdown
+      ; profile_dropdown [profile_button; logout_button]
+      ; settings_dropdown [settings_button; change_theme_button]
+      ]
+    else
+      [ hamburger_button
+      ; logo
+      ; locale_dropdown
+      ; login_button (* ; signup_button *)
       ; change_theme_button
       ]
-    else [ hamburger_button; logo; login_button; signup_button; change_theme_button ] )
+  in
+  header [] [ nav [] [ ul [] items_list ] ]

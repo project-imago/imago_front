@@ -135,6 +135,7 @@ let update model = function
       let () = Js.log "restored access token" in
       model.matrix_client := Matrix.new_client_params ~server:home_server matrix_id access_token ;
       let () = Matrix.Client.start_client !(model.matrix_client) in
+      Js.log !(model.matrix_client);
       (model, Tea.Cmd.none)
   | RestoredSession (Tea.Result.Error err) ->
       let () = Js.log ("restore failed: " ^ err) in
