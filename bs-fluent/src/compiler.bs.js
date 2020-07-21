@@ -2,6 +2,7 @@
 'use strict';
 
 var Parser = require("./parser.bs.js");
+var Belt_List = require("bs-platform/lib/js/belt_List.js");
 var Belt_Array = require("bs-platform/lib/js/belt_Array.js");
 var Simplifier = require("./simplifier.bs.js");
 var Belt_Option = require("bs-platform/lib/js/belt_Option.js");
@@ -285,9 +286,8 @@ function build_function(default_lc, locale_getter, fn) {
 }
 
 function build(fn_array, default_lc, locale_getter) {
-  var partial_arg = "\"" + (default_lc + "\"");
-  return Belt_Array.map(Belt_MapString.valuesToArray(fn_array), (function (param) {
-                  return build_function(partial_arg, locale_getter, param);
+  return Belt_Array.map(Belt_Array.reverse(Belt_List.toArray(fn_array)), (function (param) {
+                  return build_function("\"" + (default_lc + "\""), locale_getter, param[1]);
                 })).join("\n\n");
 }
 
@@ -297,24 +297,33 @@ function precompile(resource, lc) {
 }
 
 function reduce_fn_arrays(acc, fn_array) {
-  return Belt_Array.reduce(fn_array, acc, (function (acc2, fn_array) {
-                return Belt_MapString.update(acc2, fn_array.name, (function (f) {
-                              if (f !== undefined) {
-                                return {
-                                        name: f.name,
-                                        bodies: Belt_Array.concat(f.bodies, fn_array.bodies),
-                                        params: f.params,
-                                        public: f.public
-                                      };
-                              } else {
-                                return fn_array;
-                              }
+  return Belt_Array.reduce(fn_array, acc, (function (acc2, fn) {
+                var f = Belt_List.getAssoc(acc2, fn.name, (function (prim, prim$1) {
+                        return prim === prim$1;
+                      }));
+                if (f === undefined) {
+                  return Belt_List.setAssoc(acc2, fn.name, fn, (function (prim, prim$1) {
+                                return prim === prim$1;
+                              }));
+                }
+                var merged_f_name = f.name;
+                var merged_f_bodies = Belt_Array.concat(f.bodies, fn.bodies);
+                var merged_f_params = f.params;
+                var merged_f_public = f.public;
+                var merged_f = {
+                  name: merged_f_name,
+                  bodies: merged_f_bodies,
+                  params: merged_f_params,
+                  public: merged_f_public
+                };
+                return Belt_List.setAssoc(acc2, fn.name, merged_f, (function (prim, prim$1) {
+                              return prim === prim$1;
                             }));
               }));
 }
 
 function compile(fn_array_array, default_lc, locale_getter) {
-  var merged_array = Belt_Array.reduce(fn_array_array, undefined, reduce_fn_arrays);
+  var merged_array = Belt_Array.reduce(fn_array_array, /* [] */0, reduce_fn_arrays);
   return build(merged_array, default_lc, locale_getter);
 }
 

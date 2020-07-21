@@ -259,8 +259,10 @@ let build_function default_lc locale_getter fn =
 
 let build fn_array default_lc locale_getter =
   fn_array
-  |. Belt.Map.String.valuesToArray
-  |. Belt.Array.map (build_function ("\"" ^ default_lc ^ "\"") locale_getter)
+  |. Belt.List.toArray
+  |. Belt.Array.reverse
+  |. Belt.Array.map (function _name, fn ->
+         build_function ("\"" ^ default_lc ^ "\"") locale_getter fn)
   |> Js.Array.joinWith "\n\n"
 
 
@@ -274,19 +276,26 @@ let precompile resource lc =
 
 
 let reduce_fn_arrays acc fn_array =
-  Belt.Array.reduce fn_array acc (fun acc2 fn_array ->
-      Belt.Map.String.update acc2 fn_array.name (function
-          | None ->
-              Some fn_array
-          | Some f ->
-              Some
-                { f with bodies = Belt.Array.concat f.bodies fn_array.bodies }))
+  Belt.Array.reduce fn_array acc (fun acc2 fn ->
+      match Belt.List.getAssoc acc2 fn.name ( = ) with
+      | None ->
+          Belt.List.setAssoc acc2 fn.name fn ( = )
+      | Some f ->
+          let merged_f =
+            { f with bodies = Belt.Array.concat f.bodies fn.bodies }
+          in
+          Belt.List.setAssoc acc2 fn.name merged_f ( = ))
 
+
+(* Belt.Map.String.update acc2 fn_array.name (function *)
+(*     | None -> *)
+(*         Some fn_array *)
+(*     | Some f -> *)
+(*         Some *)
+(*           { f with bodies = Belt.Array.concat f.bodies fn_array.bodies })) *)
 
 let compile fn_array_array default_lc locale_getter =
-  let merged_array =
-    Belt.Array.reduce fn_array_array Belt.Map.String.empty reduce_fn_arrays
-  in
+  let merged_array = Belt.Array.reduce fn_array_array [] reduce_fn_arrays in
   let output = build merged_array default_lc locale_getter in
   (* let () = Js.log output in *)
   output

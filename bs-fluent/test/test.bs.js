@@ -3,11 +3,6 @@
 
 var $$Plugin = require("../src/plugin.bs.js");
 
-var partial_arg = ["./test/en.ftl"];
+$$Plugin.process_files(["./test/en.ftl"], "./test_output.ml", "en", null);
 
-function test(param, param$1) {
-  return $$Plugin.process_files(partial_arg, "./test_output.ml", param, param$1);
-}
-
-exports.test = test;
-/* Plugin Not a pure module */
+/*  Not a pure module */
