@@ -34,6 +34,28 @@ Build dev image:
       .
     - docker push $IMAGE_TAG
 
+Build prod image:
+  stage: docker_build
+  variables:
+    IMAGE_TAG: $CI_REGISTRY_IMAGE/prod:$CI_COMMIT_SHA
+  image: docker:19.03.1
+  services:
+    - docker:19.03.1-dind
+  before_script:
+    - echo -n $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+  script:
+    - docker pull $CI_REGISTRY_IMAGE:latest || true
+    - >
+      docker build
+      -f Dockerfile.prod
+      --pull
+      --build-arg VCS_REF=$CI_COMMIT_SHA
+      --build-arg VCS_URL=$CI_PROJECT_URL
+      --cache-from $CI_REGISTRY_IMAGE/prod:latest
+      --tag $IMAGE_TAG
+      .
+    - docker push $IMAGE_TAG
+
 # ========== DOCKER TAG
 
 Tag latest dev image:
@@ -74,6 +96,46 @@ Tag tagged dev image:
     GIT_STRATEGY: none
     IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
     IMAGE_NEW_TAG: $CI_REGISTRY_IMAGE:CI_COMMIT_REF_NAME
+  image: docker:19.03.1
+  services:
+    - docker:19.03.1-dind
+  before_script:
+    - echo -n $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+  script:
+    - docker pull $IMAGE_TAG
+    - docker tag $IMAGE_TAG $IMAGE_NEW_TAG
+    - docker push $IMAGE_NEW_TAG
+
+Tag latest prod image:
+  stage: docker_tag
+  needs: ["Build prod image"]
+  only:
+    refs:
+      - master
+  variables:
+    GIT_STRATEGY: none
+    IMAGE_TAG: $CI_REGISTRY_IMAGE/prod:$CI_COMMIT_SHA
+    IMAGE_NEW_TAG: $CI_REGISTRY_IMAGE/prod:latest
+  image: docker:19.03.1
+  services:
+    - docker:19.03.1-dind
+  before_script:
+    - echo -n $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+  script:
+    - docker pull $IMAGE_TAG
+    - docker tag $IMAGE_TAG $IMAGE_NEW_TAG
+    - docker push $IMAGE_NEW_TAG
+
+Tag tagged prod image:
+  stage: docker_tag
+  needs: ["Build prod image"]
+  only:
+    refs:
+      - tags
+  variables:
+    GIT_STRATEGY: none
+    IMAGE_TAG: $CI_REGISTRY_IMAGE/prod:$CI_COMMIT_SHA
+    IMAGE_NEW_TAG: $CI_REGISTRY_IMAGE/prod:CI_COMMIT_REF_NAME
   image: docker:19.03.1
   services:
     - docker:19.03.1-dind
