@@ -3,10 +3,12 @@
 
 stages:
   - docker_build
-  - docker_push
+  - docker_tag
   - deploy
 
-Build container:
+# ========== DOCKER BUILD
+
+Build dev image:
   stage: docker_build
   only:
     changes:
@@ -32,8 +34,11 @@ Build container:
       .
     - docker push $IMAGE_TAG
 
-Push latest:
-  stage: docker_push
+# ========== DOCKER TAG
+
+Tag latest dev image:
+  stage: docker_tag
+  needs: ["Build dev image"]
   only:
     refs:
       - master
@@ -55,8 +60,9 @@ Push latest:
     - docker tag $IMAGE_TAG $IMAGE_NEW_TAG
     - docker push $IMAGE_NEW_TAG
 
-Push tags:
-  stage: docker_push
+Tag tagged dev image:
+  stage: docker_tag
+  needs: ["Build dev image"]
   only:
     refs:
       - tags
@@ -78,8 +84,11 @@ Push tags:
     - docker tag $IMAGE_TAG $IMAGE_NEW_TAG
     - docker push $IMAGE_NEW_TAG
 
+# ========== DEPLOY
+
 pages:
   stage: deploy
+  needs: []
   image: $CI_REGISTRY_IMAGE:latest
   script:
   - npm install --ignore-optional
