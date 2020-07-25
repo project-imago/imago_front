@@ -20,7 +20,9 @@ module.exports = {
         filename: "[name].js"
     },
     plugins: [
-        new CleanWebpackPlugin(),
+        new CleanWebpackPlugin({
+            cleanOnceBeforeBuildPatterns: ['**/*', '!config.js']
+        }),
         new HtmlWebpackPlugin({
             filename: './index.html',
             template: './src/index.ejs',

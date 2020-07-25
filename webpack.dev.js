@@ -1,4 +1,4 @@
-const webpack = require('webpack');
+// const webpack = require('webpack');
 const merge = require('webpack-merge');
 const common = require('./webpack.common.js');
 
@@ -32,10 +32,5 @@ module.exports = merge(common, {
         // useLocalIp: false,
     },
     plugins: [
-        new webpack.EnvironmentPlugin({
-            NODE_ENV: 'development',
-            MATRIX_URL: 'http://matrix.imago.local:8008',
-            API_URL: 'http://api.imago.local:4000'
-        })
     ]
 });
