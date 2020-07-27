@@ -161,3 +161,12 @@ pages:
     - public
   only:
   - master
+
+Deploy to staging:
+  stage: deploy
+  needs: ["Tag latest prod image"]
+  only:
+  - master
+  trigger:
+    project: imago-project/imago_deploy
+    branch: master
