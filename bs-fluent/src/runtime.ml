@@ -90,6 +90,6 @@ external nf : nf -> int -> string = "format" [@@bs.send]
 
 external pr : pr -> int -> string = "select" [@@bs.send]
 
-external dtf : dtf -> int -> string = "format" [@@bs.send]
+external dtf : dtf -> Js.Date.t -> string = "format" [@@bs.send]
 
 type number_params = { _type : string }

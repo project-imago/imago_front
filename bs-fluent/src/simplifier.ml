@@ -148,10 +148,12 @@ and simplify_pattern (element_array : node array) params =
 
 let merge_params _key maybe_a maybe_b =
   match (maybe_a, maybe_b) with
-  | Some "int", _ | _, Some "int" ->
-      Some "int"
+  | Some "Js.Date.t", _ | _, Some "Js.Date.t" ->
+      Some "Js.Date.t"
   | Some "float", _ | _, Some "float" ->
       Some "float"
+  | Some "int", _ | _, Some "int" ->
+      Some "int"
   | Some _, _ | _, Some _ ->
       Some "string"
   | None, None ->
@@ -182,9 +184,13 @@ let rec reduce_pattern_for_params curr_type_and_acc pattern_element =
   | FunctionReference { id; arguments } ->
       (* Js.log "function"; *)
       (* Js.log ("function ref with " ^ (simplify_identifier id)); *)
+      let param_type = match (simplify_identifier id) with
+      | "NUMBER" -> "int"
+      | "DATETIME" -> "Js.Date.t"
+      in
       let _, acc =
         reduce_pattern_for_params
-          ("int", curr_acc)
+          (param_type, curr_acc)
           (get_first_argument arguments)
       in
       (* Js.log acc; *)

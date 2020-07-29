@@ -237,19 +237,34 @@ function simplify_pattern(element_array, params) {
 
 function merge_params(_key, maybe_a, maybe_b) {
   var exit = 0;
+  var exit$1 = 0;
   if (maybe_a !== undefined) {
-    if (maybe_a === "int") {
-      return "int";
+    if (maybe_a === "Js.Date.t") {
+      return "Js.Date.t";
     }
-    exit = 2;
+    exit$1 = 3;
   } else {
     if (maybe_b === undefined) {
       return ;
     }
-    exit = 2;
+    exit$1 = 3;
   }
-  if (exit === 2 && maybe_b !== undefined) {
-    switch (maybe_b) {
+  if (exit$1 === 3) {
+    if (maybe_b !== undefined) {
+      switch (maybe_b) {
+        case "Js.Date.t" :
+            return "Js.Date.t";
+        case "float" :
+            return "float";
+        default:
+          exit = 2;
+      }
+    } else {
+      exit = 2;
+    }
+  }
+  if (exit === 2 && maybe_a !== undefined) {
+    switch (maybe_a) {
       case "float" :
           return "float";
       case "int" :
@@ -258,8 +273,8 @@ function merge_params(_key, maybe_a, maybe_b) {
         
     }
   }
-  if (maybe_a === "float") {
-    return "float";
+  if (maybe_b === "int") {
+    return "int";
   } else {
     return "string";
   }
@@ -273,7 +288,7 @@ function get_first_argument(param) {
         Caml_builtin_exceptions.match_failure,
         /* tuple */[
           "simplifier.ml",
-          161,
+          163,
           25
         ]
       ];
@@ -301,27 +316,47 @@ function reduce_pattern_for_params(curr_type_and_acc, pattern_element) {
                 Belt_MapString.set(curr_acc, simplify_identifier(pattern_element[0].id), curr_type)
               ];
     case /* FunctionReference */11 :
-        var match$2 = reduce_pattern_for_params(/* tuple */[
-              "int",
+        var match$2 = pattern_element[0];
+        var match$3 = simplify_identifier(match$2.id);
+        var param_type;
+        switch (match$3) {
+          case "DATETIME" :
+              param_type = "Js.Date.t";
+              break;
+          case "NUMBER" :
+              param_type = "int";
+              break;
+          default:
+            throw [
+                  Caml_builtin_exceptions.match_failure,
+                  /* tuple */[
+                    "simplifier.ml",
+                    187,
+                    23
+                  ]
+                ];
+        }
+        var match$4 = reduce_pattern_for_params(/* tuple */[
+              param_type,
               curr_acc
-            ], get_first_argument(pattern_element[0].arguments));
+            ], get_first_argument(match$2.arguments));
         return /* tuple */[
                 curr_type,
-                Belt_MapString.merge(match$2[1], curr_acc, merge_params)
+                Belt_MapString.merge(match$4[1], curr_acc, merge_params)
               ];
     case /* SelectExpression */12 :
-        var match$3 = pattern_element[0];
-        var match$4 = reduce_pattern_for_params(curr_type_and_acc, match$3.selector);
-        var match$5 = Belt_Array.reduce(match$3.variants, curr_type_and_acc, reduce_pattern_for_params);
+        var match$5 = pattern_element[0];
+        var match$6 = reduce_pattern_for_params(curr_type_and_acc, match$5.selector);
+        var match$7 = Belt_Array.reduce(match$5.variants, curr_type_and_acc, reduce_pattern_for_params);
         return /* tuple */[
                 curr_type,
-                Belt_MapString.merge(match$4[1], match$5[1], merge_params)
+                Belt_MapString.merge(match$6[1], match$7[1], merge_params)
               ];
     case /* Variant */15 :
-        var match$6 = reduce_pattern_for_params(curr_type_and_acc, pattern_element[0].value);
+        var match$8 = reduce_pattern_for_params(curr_type_and_acc, pattern_element[0].value);
         return /* tuple */[
                 curr_type,
-                Belt_MapString.merge(match$6[1], curr_acc, merge_params)
+                Belt_MapString.merge(match$8[1], curr_acc, merge_params)
               ];
     default:
       return /* tuple */[
@@ -351,7 +386,7 @@ function make_fn(param, $$public, namespace, lc) {
           Caml_builtin_exceptions.match_failure,
           /* tuple */[
             "simplifier.ml",
-            234,
+            240,
             6
           ]
         ];
@@ -384,7 +419,7 @@ function make_entry(entry, $$public, lc) {
                           Caml_builtin_exceptions.match_failure,
                           /* tuple */[
                             "simplifier.ml",
-                            258,
+                            264,
                             21
                           ]
                         ];
@@ -412,7 +447,7 @@ function simplify_ast(lc, node) {
                                         Caml_builtin_exceptions.match_failure,
                                         /* tuple */[
                                           "simplifier.ml",
-                                          273,
+                                          279,
                                           24
                                         ]
                                       ];
@@ -423,7 +458,7 @@ function simplify_ast(lc, node) {
         Caml_builtin_exceptions.match_failure,
         /* tuple */[
           "simplifier.ml",
-          263,
+          269,
           2
         ]
       ];
