@@ -1,3 +1,7 @@
+html {
+  scrollbar-color: hsla(0,0%,100%,.2) transparent;
+}
+
 body {
   color: var(--color-main-text);
   overflow: hidden;
@@ -5,6 +9,7 @@ body {
 
 * {
   transition: background-color 0.5s ease;
+  scrollbar-width: thin;
 }
 
 #body {

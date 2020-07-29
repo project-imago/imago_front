@@ -125,3 +125,7 @@ let group_room_not_found () =
 
 let chat_room_not_found () =
 {js|Room not found|js}
+
+type chat_message_date_params = { date : Js.Date.t }
+let chat_message_date (params : chat_message_date_params)  =
+(Fluent.datetime_format params.date (Fluent.Runtime.make_datetime_params ~day:"2-digit" ~month:"2-digit" ~year:"2-digit" ~hour:"2-digit" ~minute:"2-digit" ~second:"2-digit"()) !Locale.get)

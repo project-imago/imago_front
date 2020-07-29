@@ -13,9 +13,41 @@
 #message-list {
   flex-grow: 1;
   overflow-y: scroll;
-  background-color: var(--color-background-darker);
-  border: 1px solid var(--color-border);
   margin: 20px 0;
+
+  .message {
+    background-color: var(--color-background-darker);
+    border: 1px solid var(--color-border);
+    margin-right: 10px;
+    padding: 5px;
+
+    &+ .message {
+      margin-top: 10px;
+    }
+
+    .message-metadata {
+      display: flex;
+      flex-direction: row;
+
+      .message-sender {
+        font-weight: bold;
+        flex: 1 auto;
+      }
+
+      &:hover > .message-date {
+        display: block;
+      }
+
+      .message-date {
+        font-size: .8em;
+        display: none;
+      }
+    }
+
+    .message-body {
+      white-space: pre-line;
+    }
+  }
 }
 
 #input-area {

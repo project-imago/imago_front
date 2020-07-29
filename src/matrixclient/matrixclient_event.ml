@@ -5,7 +5,7 @@ type event_content = < body : string ; msgtype : string > Js.t
 type event =
   < content : event_content
   ; event_id : event_id
-  ; origin_server_ts : int
+  ; origin_server_ts : float
   ; room_id : Matrixclient_common.room_id
   ; sender : Matrixclient_common.user_id >
   Js.t

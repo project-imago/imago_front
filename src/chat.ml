@@ -65,14 +65,25 @@ let get_messages room =
 
 
 let message_view matrix_event =
+  (* Js.log matrix_event; *)
   let open Tea.Html in
-  let message_display =
-    Printf.sprintf
-      "<%s> %s"
-      matrix_event##sender##rawDisplayName
-      matrix_event##event##content##body
-  in
-  div [] [ text message_display ]
+  (* let message_display = *)
+  (*   Printf.sprintf *)
+  (*     "<%s> %s" *)
+  (*     matrix_event##sender##rawDisplayName *)
+  (*     matrix_event##event##content##body *)
+  (* in *)
+  let date = Js.Date.fromFloat matrix_event##event##origin_server_ts in
+  let iso_date = Js.Date.toISOString date in
+
+  div [class' "message"]
+    [ div [class' "message-metadata"]
+        [ span [class' "message-sender"] [text matrix_event##sender##rawDisplayName]
+        ; time [class' "message-date"; Vdom.prop "datetime" iso_date ] [text
+        (T.chat_message_date {date = date}) ]
+        ]
+    ; div [class' "message-body"] [text matrix_event##event##content##body]
+    ]
 
 
 let input_area model room_id =

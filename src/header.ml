@@ -107,7 +107,7 @@ let view model =
       ]
   in
   let settings_dropdown inside_links =
-    let () = Js.log (T.header_settings ()) in
+    (* let () = Js.log (T.header_settings ()) in *)
     li
       []
       (* [ a [ href "#" ] [ text "settings" ] *)
