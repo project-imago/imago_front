@@ -45,6 +45,15 @@ let update_route model = function
   (* | AuthRoute auth_route -> *)
   (*     let auth, route = Auth.update_route model.auth auth_route in *)
   (*     {auth; route}, location_of_route route |> Tea.Navigation.newUrl *)
+  | Chat room_address as route ->
+      Js.log "updating route group" ;
+      Router.set_title_for_route route;
+      let chat_cmd = Chat.set_chat_room model.content.chat room_address in
+      ( { model with route }
+      , Tea.Cmd.batch
+          [ Tea.Cmd.map (fun m -> contentMsg (Content.chatMsg m)) chat_cmd
+          ; location_of_route route |> Tea.Navigation.newUrl
+          ] )
   | Group room_address as route ->
       Js.log "updating route group" ;
       Router.set_title_for_route route;

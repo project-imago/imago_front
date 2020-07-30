@@ -42,13 +42,10 @@ let update model = function
       Js.Nullable.toOption in
       (match room_in_store with
       | Some room ->
-          Js.log ("there's room"); Js.log room;
           ({model with current_room = Some room}, Tea.Cmd.none)
       | None ->
-          Js.log "peek";
           (model, peek_room_cmd model room_id))
   | GotRoomId (Tea.Result.Ok res) ->
-      let () = Js.log "matrix alias resolved" in
       (model, Tea.Cmd.msg (SetCurrentRoom res##room_id))
   | GotRoomId (Tea.Result.Error err) ->
       let () = Js.log err in

@@ -79,7 +79,7 @@ type client =
   ; sendMessage :
          Matrixclient_common.room_id
       -> Matrixclient_event.event_content
-      -> string Js.Promise.t [@bs.meth]
+      -> < event_id : string > Js.t Js.Promise.t [@bs.meth]
   ; store : Matrixclient_store.t
   ; getRoom : Matrixclient_common.room_id -> Matrixclient_room.t Js.Nullable.t [@bs.meth
                                                                                 ]

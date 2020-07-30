@@ -116,10 +116,8 @@ let view (route : Router.route) model =
           div [] []
       | CreateGroup ->
           Create_group.view model.create_group |> Vdom.map createGroupMsg
-      | Chat (Id room_id) ->
-          Chat.view model.chat room_id |> Vdom.map chatMsg
-      | Chat (Alias _room_alias) ->
-          index_view model (* XXX *)
+      | Chat _room_address ->
+          Chat.view model.chat |> Vdom.map chatMsg
       | Group _room_address ->
           Group.view model.group |> Vdom.map groupMsg
       | CreateChat maybe_group ->
