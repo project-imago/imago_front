@@ -53,6 +53,8 @@ type client_config = client_config_part Js.Dict.t
 type auto_discovery =
   < findClientConfig : string -> client_config Js.Promise.t [@bs.meth] > Js.t
 
+type paginate_opts = < backwards : bool; limit : int > Js.t
+
 type client =
   < credentials : < userId : user_id > Js.t
   ; clientRunning : bool
@@ -88,7 +90,9 @@ type client =
                                                                               ]
   ; peekInRoom : Matrixclient_common.room_id -> Matrixclient_room.t Js.Promise.t 
         [@bs.meth]
-  ; _AutoDiscovery : auto_discovery >
+  ; _AutoDiscovery : auto_discovery
+  ; paginateEventTimeline : Matrixclient_room.event_timeline -> paginate_opts ->
+    bool Js.Promise.t [@bs.meth] >
   Js.t
 
 external matrixcs : client = "matrixcs" [@@bs.val]

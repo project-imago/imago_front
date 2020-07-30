@@ -1,3 +1,5 @@
+type scroll_position = Up | Middle | Down
+
 type msg =
   | GoTo of Router.route
   | SetCurrentRoom of Matrix.room_id
@@ -7,12 +9,13 @@ type msg =
   | SendMessage of Matrix.room_id * string
   | SentMessage of (< event_id : string > Js.t, string) Tea.Result.t
   | GotMessage of Matrix.matrix_event * Matrix.room Js.Nullable.t
-  | ScrolledUp of bool
+  | Scrolled of scroll_position
+  | PaginatedBackwards of (bool, string) Tea.Result.t
 [@@bs.deriving { accessors }]
 
 type model =
   { new_messages : string Js.Dict.t
-  ; scrolled_up : bool Js.Dict.t
+  ; scrolled_positions : scroll_position Js.Dict.t
   ; current_room : Matrix.room option
   ; (* current_room : Matrix.room option; *)
     matrix_client : Matrix.client ref
@@ -22,7 +25,7 @@ let init matrix_client =
   { current_room = None
   ; matrix_client
   ; new_messages = Js.Dict.empty ()
-  ; scrolled_up = Js.Dict.empty ()
+  ; scrolled_positions = Js.Dict.empty ()
   }
 
 
@@ -64,6 +67,11 @@ let scrolled_down_element element =
 let scroll_down_element element =
   element ## scrollTop #= (element##scrollHeight - element##clientHeight)
 
+let scrolled_position_element element =
+  match element##scrollTop with
+  | 0 -> Up
+  | n when n = (element##scrollHeight - element##clientHeight) -> Down
+  | _ -> Middle
 
 external get_element_by_id : string -> html_element Js.Nullable.t
   = "getElementById"
@@ -92,6 +100,11 @@ let scroll_down_cmd =
       in
       ())
 
+let paginate_backwards_cmd model room =
+  let live_timeline = room##getLiveTimeline () in
+  let opts = [%bs.obj {backwards = true; limit = 20}] in
+  !(model.matrix_client)##paginateEventTimeline live_timeline opts
+  |. Tea_promise.result paginatedBackwards
 
 let update model = function
   | GoTo _ ->
@@ -138,22 +151,31 @@ let update model = function
         with
         | Some current_room, Some event_room, "m.room.message"
           when current_room = event_room
-               && Js.Dict.get model.scrolled_up current_room##roomId
-                  = Some false ->
+               && Js.Dict.get model.scrolled_positions current_room##roomId
+                  = Some Down ->
             scroll_down_cmd
         | _ ->
             Tea.Cmd.none
       in
       (model, cmd)
-  | ScrolledUp b ->
-      let () =
+  | Scrolled b ->
+      let cmd =
         match model.current_room with
         | Some room ->
-            Js.Dict.set model.scrolled_up room##roomId b
+            Js.Dict.set model.scrolled_positions room##roomId b;
+            (match b with
+            | Up -> paginate_backwards_cmd model room
+            | _ -> Tea.Cmd.none)
         | None ->
-            ()
+            Tea.Cmd.none
       in
-      Js.log model.scrolled_up ;
+      (* Js.log model.scrolled_positions ; *)
+      (model, cmd)
+  | PaginatedBackwards (Tea.Result.Ok res) ->
+      let () = Js.log res in
+      (model, Tea.Cmd.none)
+  | PaginatedBackwards (Tea.Result.Error err) ->
+      let () = Js.log err in
       (model, Tea.Cmd.none)
 
 
@@ -182,11 +204,13 @@ let on_scroll_up ?(key = "") msg =
       | None ->
           None
       | Some target ->
-        ( match scrolled_down_element (Obj.magic target) with
-        | true ->
-            Some (msg false)
-        | false ->
-            Some (msg true) ))
+        ( match scrolled_position_element (Obj.magic target) with
+        | Down ->
+            Some (msg Down)
+        | Middle ->
+            Some (msg Middle)
+        | Up ->
+            Some (msg Up) ))
 
 
 let get_messages room =
@@ -248,7 +272,7 @@ let view model =
         [ h3 [] [ text room##name ]
         ; div
             ~unique:room##roomId
-            [ id "message-list"; on_scroll_up scrolledUp ]
+            [ id "message-list"; on_scroll_up scrolled ]
             message_list
         ; div
             ~unique:room##roomId
