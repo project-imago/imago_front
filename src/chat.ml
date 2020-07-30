@@ -100,6 +100,11 @@ let scroll_down_cmd =
       in
       ())
 
+let first_scroll_down model room =
+  match Js.Dict.get model.scrolled_positions room##roomId with
+  | Some Down | None -> scroll_down_cmd 
+  | Some _ -> Tea.Cmd.none
+
 let paginate_backwards_cmd model room =
   let live_timeline = room##getLiveTimeline () in
   let opts = [%bs.obj {backwards = true; limit = 20}] in
@@ -115,7 +120,7 @@ let update model = function
       in
       ( match room_in_store with
       | Some room ->
-          ({ model with current_room = Some room }, Tea.Cmd.none)
+          ({ model with current_room = Some room }, first_scroll_down model room)
       | None ->
           (model, peek_room_cmd model room_id) )
   | GotRoomId (Tea.Result.Ok res) ->
@@ -124,7 +129,7 @@ let update model = function
       let () = Js.log err in
       (model, Tea.Cmd.none)
   | Peeked (Tea.Result.Ok room) ->
-      ({ model with current_room = Some room }, Tea.Cmd.none)
+      ({ model with current_room = Some room }, first_scroll_down model room)
   | Peeked (Tea.Result.Error err) ->
       let () = Js.log err in
       (model, Tea.Cmd.none)
