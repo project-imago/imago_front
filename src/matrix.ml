@@ -8,6 +8,8 @@ type client = Matrixclient.client
 
 type room = Matrixclient.Room.t
 
+type matrix_event = Matrixclient.Event.matrix_event
+
 type event = Matrixclient.Event.event
 
 type event_content = Matrixclient.Event.event_content

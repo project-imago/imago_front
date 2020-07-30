@@ -4,7 +4,6 @@ type msg =
   | GoTo of Router.route
   | Info of (string, string) Tea.Result.t
   | RestoredSession of (string * string * string, string) Tea.Result.t
-  | GotMessage of Matrix.event
   | Sync of string
   | LoggedOut of string
 [@@bs.deriving { accessors }]
@@ -17,8 +16,6 @@ let msg_to_string (msg : msg) =
       "info"
   | RestoredSession _ ->
       "restored session"
-  | GotMessage _ ->
-      "got msg"
   | Sync _ ->
       "sync"
   | LoggedOut _ ->
@@ -85,12 +82,7 @@ let subscriptions model =
   (* let () = Js.log "chat subs" in *)
   match !(model.matrix_client)##clientRunning with
   | true ->
-      Tea.Sub.batch
-        [ Matrix.Client.subscribe !(model.matrix_client) gotMessage
-        ; Matrix.Client.subscribe_once_logged_out !(model.matrix_client) loggedOut
-          (* ; Matrix.subscribe_once !(model.matrix_client) sync *)
-          (* TODO: move so it's really once *)
-        ]
+      Matrix.Client.subscribe_once_logged_out !(model.matrix_client) loggedOut
   | false ->
       Tea.Sub.none
 
@@ -147,9 +139,6 @@ let update model = function
       (model, Tea.Cmd.none)
   | Info (Tea.Result.Error err) ->
       let () = Js.log err in
-      (model, Tea.Cmd.none)
-  | GotMessage event ->
-      (* let () = Js.log event in *)
       (model, Tea.Cmd.none)
   | Sync _state ->
       (* let () = Js.log state in *)

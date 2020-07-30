@@ -142,7 +142,10 @@ let view model =
 
 let subscriptions model =
   (* Tea.Sub.none *)
-  Auth.subscriptions model.auth |> Tea.Sub.map authMsg
+  Tea.Sub.batch
+    [ Auth.subscriptions model.auth |> Tea.Sub.map authMsg
+    ; Chat.subscriptions model.content.chat |> Tea.Sub.map (fun m -> contentMsg (Content.chatMsg m))
+    ]
 
 
 let main =

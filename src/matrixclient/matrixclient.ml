@@ -129,10 +129,10 @@ external stop_client : client -> unit = "stopClient" [@@bs.send]
 external on :
      client
   -> ([ `timeline of
-           Matrixclient_event.event
-        -> Matrixclient_room.t
-        -> bool
-        -> bool
+           Matrixclient_event.matrix_event
+        -> Matrixclient_room.t Js.Nullable.t
+        -> bool (* toStartOfTimeLine *)
+        -> bool (* removed *)
         -> data
         -> unit[@bs.as "Room.timeline"]
       ]
@@ -143,8 +143,8 @@ external on :
 external off :
      client
   -> ([ `timeline of
-           Matrixclient_event.event
-        -> Matrixclient_room.t
+           Matrixclient_event.matrix_event
+        -> Matrixclient_room.t Js.Nullable.t
         -> bool
         -> bool
         -> data
@@ -181,20 +181,20 @@ let get_joined_rooms client =
          res##joined_rooms |> Belt.List.fromArray |> Js.Promise.resolve)
 
 
-let subscribe client tagger =
+let subscribe_to_timeline client tagger =
   let open Vdom in
   let enableCall callbacks =
     let args =
       `timeline
-        (fun event _room _toStartOfTimeline _removed _data ->
-          callbacks.enqueue (tagger event))
+        (fun event room _toStartOfTimeline _removed _data ->
+          callbacks.enqueue (tagger event room))
     in
     let _ = on client args in
     fun () ->
       let _ = off client args in
       ()
   in
-  Tea_sub.registration "test" enableCall
+  Tea_sub.registration "Room.timeline" enableCall
 
 
 let subscribe_once_sync client tagger =
