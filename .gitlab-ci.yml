@@ -170,3 +170,6 @@ Deploy to staging:
   trigger:
     project: imago-project/imago_deploy
     branch: master
+  environment:
+    name: staging
+    url: https://alpha.imago.pm
