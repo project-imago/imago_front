@@ -1,5 +1,26 @@
 type router_title_params = { page : string }
 let router_title (params : router_title_params)  =
+(match !Locale.get with
+| "fr" ->
+(match params.page with
+| "login" ->
+{js|Connexion – Imago|js}
+| "signup" ->
+{js|Nouveau compte – Imago|js}
+| "logout" ->
+{js|Déconnexion – Imago|js}
+| "create-group" ->
+{js|Nouveau groupe – Imago|js}
+| "create-chat" ->
+{js|Nouvelle conversation – Imago|js}
+| "chat" ->
+{js|Chat – Imago|js}
+| "group" ->
+{js|Groupe – Imago|js}
+| _ ->
+{js|Imago|js})
+
+| _ ->
 (match params.page with
 | "login" ->
 {js|Login – Imago|js}
@@ -17,6 +38,7 @@ let router_title (params : router_title_params)  =
 {js|Group – Imago|js}
 | _ ->
 {js|Imago|js})
+)
 
 
 let header_settings () =
@@ -76,56 +98,145 @@ let header_toggle_menu () =
 
 
 let login_username_label () =
-{js|Username|js}
+(match !Locale.get with
+| "fr" ->
+{js|Nom d'utilisateur|js}
+| _ ->
+{js|Username|js})
+
 
 let login_password_label () =
-{js|Password|js}
+(match !Locale.get with
+| "fr" ->
+{js|Mot de passe|js}
+| _ ->
+{js|Password|js})
+
 
 let login_submit () =
-{js|Login|js}
+(match !Locale.get with
+| "fr" ->
+{js|Envoyer|js}
+| _ ->
+{js|Login|js})
+
 
 let login_no_account_yet () =
-{js|No account yet?|js}
+(match !Locale.get with
+| "fr" ->
+{js|Pas encore de compte ?|js}
+| _ ->
+{js|No account yet?|js})
+
 
 let login_register_button () =
-{js|Register|js}
+(match !Locale.get with
+| "fr" ->
+{js|Créer un compte|js}
+| _ ->
+{js|Register|js})
+
 
 let signup_username_label () =
-{js|Username|js}
+(match !Locale.get with
+| "fr" ->
+{js|Nom d'utilisateur|js}
+| _ ->
+{js|Username|js})
+
 
 let signup_password_label () =
-{js|Password|js}
+(match !Locale.get with
+| "fr" ->
+{js|Mot de passe|js}
+| _ ->
+{js|Password|js})
+
 
 let signup_submit () =
-{js|Register|js}
+(match !Locale.get with
+| "fr" ->
+{js|Envoyer|js}
+| _ ->
+{js|Register|js})
+
 
 let content_welcome () =
-{js|Welcome on Imago!|js}
+(match !Locale.get with
+| "fr" ->
+{js|Bienvenue sur Imago !|js}
+| _ ->
+{js|Welcome on Imago!|js})
+
 
 let sidebar_new_chat () =
-{js|New chat|js}
+(match !Locale.get with
+| "fr" ->
+{js|Nouvelle conversation|js}
+| _ ->
+{js|New chat|js})
+
 
 let sidebar_outside_groups () =
-{js|Outside groups|js}
+(match !Locale.get with
+| "fr" ->
+{js|En-dehors des groupes|js}
+| _ ->
+{js|Outside groups|js})
+
 
 let sidebar_create_group () =
-{js|Create group|js}
+(match !Locale.get with
+| "fr" ->
+{js|Créer un groupe|js}
+| _ ->
+{js|Create group|js})
+
 
 let group_links_title () =
-{js|Links|js}
+(match !Locale.get with
+| "fr" ->
+{js|Liens|js}
+| _ ->
+{js|Links|js})
+
 
 let group_chats_title () =
-{js|Chats|js}
+(match !Locale.get with
+| "fr" ->
+{js|Conversations|js}
+| _ ->
+{js|Chats|js})
+
 
 let group_events_title () =
-{js|Events|js}
+(match !Locale.get with
+| "fr" ->
+{js|Évènements|js}
+| _ ->
+{js|Events|js})
+
 
 let group_room_not_found () =
-{js|Room not found|js}
+(match !Locale.get with
+| "fr" ->
+{js|Salon introuvable|js}
+| _ ->
+{js|Room not found|js})
+
 
 let chat_room_not_found () =
-{js|Room not found|js}
+(match !Locale.get with
+| "fr" ->
+{js|Salon introuvable|js}
+| _ ->
+{js|Room not found|js})
+
 
 type chat_message_date_params = { date : Js.Date.t }
 let chat_message_date (params : chat_message_date_params)  =
+(match !Locale.get with
+| "fr" ->
 (Fluent.datetime_format params.date (Fluent.Runtime.make_datetime_params ~day:"2-digit" ~month:"2-digit" ~year:"2-digit" ~hour:"2-digit" ~minute:"2-digit" ~second:"2-digit"()) !Locale.get)
+| _ ->
+(Fluent.datetime_format params.date (Fluent.Runtime.make_datetime_params ~day:"2-digit" ~month:"2-digit" ~year:"2-digit" ~hour:"2-digit" ~minute:"2-digit" ~second:"2-digit"()) !Locale.get))
