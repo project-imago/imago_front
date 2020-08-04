@@ -22,7 +22,9 @@ type client_config = Matrixclient.client_config
 
 let matrixcs = Matrixclient.matrixcs
 
-type room_address = Id of room_id | Alias of room_alias
+type room_address =
+  | Id of room_id
+  | Alias of room_alias
 
 let default_server = Config.matrix_url
 
@@ -30,22 +32,21 @@ let create_client () =
   let _ = Js.log default_server in
   Matrixclient.create_client default_server
 
+
 let create_client_to_server server =
   let _ = Js.log server in
   Matrixclient.create_client server
 
-let new_client_params ?(server=default_server) user_id access_token =
-  Matrixclient.new_client_params
-    server
-    user_id
-    access_token
+
+let new_client_params ?(server = default_server) user_id access_token =
+  Matrixclient.new_client_params server user_id access_token
+
 
 let current_user_name client =
   let user_id = !client##getUserId () in
   let user = !client##getUser user_id in
   Js.Nullable.toOption user
-  |. Belt.Option.map
-  (function user -> user##displayName)
+  |. Belt.Option.map (function user -> user##displayName)
 
 
 module TypeState = Client.MakeStateAccessors (struct
@@ -55,3 +56,18 @@ end)
 module IdState = Client.MakeStateAccessors (struct
   type t = < id : Matrixclient_common.room_id > Js.t
 end)
+
+module ObjectState = Client.MakeStateAccessors (struct
+  type t = < label : string Js.Dict.t ; description : string Js.Dict.t > Js.t
+end)
+
+module StatementState = Client.MakeStateAccessors (struct
+  type t = string Js.Dict.t
+end)
+
+let get_localized dict lc =
+  Js.Dict.get dict lc
+  |. Tablecloth.Option.or_ (Js.Dict.get dict "en")
+  |> Tablecloth.Option.or_
+       (Js.Dict.values dict |> Tablecloth.Array.get_at ~index:0)
+  |> Tablecloth.Option.with_default ~default:""

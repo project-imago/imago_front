@@ -78,7 +78,8 @@ let statements room =
 let iri_to_alias iri =
   iri
   |> Js.String.replace "http://www.wikidata.org/entity/" "#_stm_wd_"
-  |> Js.String.concat ":matrix.imago.local"
+  |> Js.String.concat ":"
+  |> Js.String.concat Config.matrix_homeserver
 
 let view_statements model room =
   let room_id = room##roomId in

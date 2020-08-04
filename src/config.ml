@@ -13,4 +13,7 @@
 external env : string = "process.env.NODE_ENV" [@@bs.val]
 
 external matrix_url : string = "matrix_url" [@@bs.val]
+
+external matrix_homeserver : string = "matrix_homeserver" [@@bs.val]
+
 external api_url : string = "api_url" [@@bs.val]
