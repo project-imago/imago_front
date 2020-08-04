@@ -64,8 +64,12 @@ let scrolled_down_element element =
   element##scrollTop + element##clientHeight = element##scrollHeight
 
 
-let scroll_down_element element =
-  element ## scrollTop #= (element##scrollHeight - element##clientHeight)
+let scroll_down_element ?(offset=None) element =
+  match offset with
+  | None ->
+      element ## scrollTop #= (element##scrollHeight - element##clientHeight)
+  | Some o ->
+      element ## scrollTop #= (element##scrollHeight - o)
 
 let scrolled_position_element element =
   match element##scrollTop with
@@ -81,22 +85,33 @@ external get_element_by_id : string -> html_element Js.Nullable.t
 (*   Js.log "scrolling_down"; *)
 (*   Tea.Cmd.none *)
 
+let current_height () =
+  match
+    get_element_by_id "message-list" |> Js.Nullable.toOption
+  with
+  | Some elm ->
+      Some elm##scrollHeight
+  | None ->
+      None
+
+let timeout_scroll_down ?(offset=None) ?(time=100.0) () =
+  Web.Window.setTimeout
+    (fun () ->
+      let () =
+        match
+          get_element_by_id "message-list" |> Js.Nullable.toOption
+        with
+        | Some elm ->
+            scroll_down_element ~offset elm
+        | None ->
+            ()
+      in
+      ())
+    time
+
 let scroll_down_cmd =
   Tea_cmd.call (fun _enqueue ->
-      let _ =
-        Web.Window.setTimeout
-          (fun () ->
-            let () =
-              match
-                get_element_by_id "message-list" |> Js.Nullable.toOption
-              with
-              | Some elm ->
-                  scroll_down_element elm
-              | None ->
-                  ()
-            in
-            ())
-          100.0
+      let _ = timeout_scroll_down ()
       in
       ())
 
@@ -109,6 +124,9 @@ let paginate_backwards_cmd model room =
   let live_timeline = room##getLiveTimeline () in
   let opts = [%bs.obj {backwards = true; limit = 20}] in
   !(model.matrix_client)##paginateEventTimeline live_timeline opts
+  |> Js.Promise.then_ (fun result ->
+      let _ = timeout_scroll_down ~offset:(current_height ()) () in
+      Js.Promise.resolve result)
   |. Tea_promise.result paginatedBackwards
 
 let update model = function
