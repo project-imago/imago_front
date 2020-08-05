@@ -67,13 +67,10 @@ let statements room =
   (* let room_state = room##currentState in *)
   (* let statements_states = Matrix.StatementState.get room_state "pm.imago.group" None in *)
   let room_state = room##currentState in
-  let maybe_statements_state =
-    Statements.StatementState.get_one room_state "pm.imago.group.statements" ""
+  let state_events =
+    Statements.StatementState.get room_state "pm.imago.statement"
   in
-  match Js.Nullable.toOption maybe_statements_state with
-  | None -> Statements.empty
-  | Some statement_state ->
-    Statements.build_from_state statement_state
+  Statements.build_from_state_events state_events
 
 let iri_to_alias iri =
   iri
@@ -84,17 +81,23 @@ let iri_to_alias iri =
 let view_statements model room =
   let room_id = room##roomId in
   let statements = statements room in
+  let room_state = room##currentState in
+  let localized_label iri =
+    let event = Statements.ObjectState.get_one_exn room_state "pm.imago.object" iri
+    in
+    (event##getContent ())##label |. Statements.get_localized !Locale.get
+  in
   let open Tea.Html in
   let obj_view _property (obj : Statements.obj) =
     div
       [ id "object-item" ]
-      [ Router.link goTo (Group (Alias (iri_to_alias obj##iri))) [ text
-      obj##label ] ]
+      [ Router.link goTo (Group (Alias (iri_to_alias obj))) [ text
+      (localized_label obj) ] ]
   in
   let statement_view (property, objs) =
     div
       [ id "statement-item" ]
-      [ div [ id "property-item" ] [ text property##label ]
+      [ div [ id "property-item" ] [ text (localized_label property) ]
       ; div
           [ id "objects-list" ]
           (Belt.Array.map objs (obj_view property) |> Belt.List.fromArray)
@@ -106,7 +109,7 @@ let view_statements model room =
       [ id "statements-list" ]
       (Belt.Map.toList statements |. Belt.List.map statement_view)
   in
-  div ~unique:"group" ~key:room##roomId
+  div ~unique:"group"
   [ id "statements"
   ; classList
       [ ("visible", model.show_chats)
@@ -140,15 +143,15 @@ let toggle_button title' active msg =
   let open Tea.Html in
   match active with
   | true ->
-    button ~key:"true" [ onClick msg ]
+    button ~unique:"true" [ onClick msg ]
     [h3 [] [ Icons.icon "chevron-bottom"; text title']]
   | false ->
-    button ~key:"false" [ onClick msg ]
+    button ~unique:"false" [ onClick msg ]
     [h3 [] [ Icons.icon "chevron-right"; text title']]
 
 let view_room model room =
   let open Tea.Html in
-  div ~unique:"group" ~key:room##roomId
+  div ~unique:("group" ^ room##roomId)
   [id "group-view"]
   [ h3 [] [text room##name]
   ; toggle_button (T.group_links_title ()) model.show_statements ToggleShowStatements

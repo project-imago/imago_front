@@ -56,18 +56,3 @@ end)
 module IdState = Client.MakeStateAccessors (struct
   type t = < id : Matrixclient_common.room_id > Js.t
 end)
-
-module ObjectState = Client.MakeStateAccessors (struct
-  type t = < label : string Js.Dict.t ; description : string Js.Dict.t > Js.t
-end)
-
-module StatementState = Client.MakeStateAccessors (struct
-  type t = < property : string ; value : string > Js.t
-end)
-
-let get_localized dict lc =
-  Js.Dict.get dict lc
-  |. Tablecloth.Option.or_ (Js.Dict.get dict "en")
-  |> Tablecloth.Option.or_
-       (Js.Dict.values dict |> Tablecloth.Array.get_at ~index:0)
-  |> Tablecloth.Option.with_default ~default:""

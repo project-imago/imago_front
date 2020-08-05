@@ -289,6 +289,11 @@ module MakeStateAccessors (S : CustomStateEvent) = struct
     = "getStateEvents"
     [@@bs.send]
 
+  let get_one_exn event type_ state_key =
+    get_one event type_ state_key
+    |> Js.Nullable.toOption
+    |> Tablecloth.Option.get_exn
+
   external send :
        client
     -> Matrixclient_common.room_id

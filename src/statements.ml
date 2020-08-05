@@ -1,4 +1,4 @@
-type node = < iri : string ; label : string ; description : string > Js.t
+type node = string
 
 (* type node = *)
 (*   { iri : string *)
@@ -13,16 +13,24 @@ type obj = node
 module StmCmp = Belt.Id.MakeComparable (struct
   type t = property
 
-  let cmp a b = String.compare a##iri b##iri
+  let cmp a b = String.compare a b
 end)
 
 type t = (StmCmp.t, obj array, StmCmp.identity) Belt.Map.t
 
-module StatementState = Matrix.Client.MakeStateAccessors (struct
+module StatementsState = Matrix.Client.MakeStateAccessors (struct
   (* type node = < iri : string ; label : string > Js.t *)
 
   type t =
     < statements : < property : property ; _object : obj > Js.t array > Js.t
+end)
+
+module StatementState = Matrix.Client.MakeStateAccessors (struct
+  type t = < property : property ; value : obj > Js.t
+end)
+
+module ObjectState = Matrix.Client.MakeStateAccessors (struct
+  type t = < label : string Js.Dict.t ; description : string Js.Dict.t > Js.t
 end)
 
 let empty : t = Belt.Map.make ~id:(module StmCmp)
@@ -51,10 +59,16 @@ let remove_obj statements property obj =
 
 let map = Belt.Map.map
 
-let build_from_state (state : StatementState.event) =
+let build_from_state (state : StatementsState.event) =
   (state##getContent ())##statements
   |> Tablecloth.Array.fold_left ~initial:empty ~f:(fun statement acc ->
          add_statements acc statement##property statement##_object)
+
+let build_from_state_events (events : StatementState.event array) =
+  Tablecloth.Array.fold_left ~initial:empty ~f:(fun event acc ->
+    let content = event##getContent () in
+    add_statements acc content##property content##value
+) events
 
 let to_state (statements : t) =
   statements
@@ -67,3 +81,9 @@ let to_state (statements : t) =
   |> Belt.List.flatten
   |> Belt.List.toArray
 
+let get_localized dict lc =
+  Js.Dict.get dict lc
+  |. Tablecloth.Option.or_ (Js.Dict.get dict "en")
+  |. Tablecloth.Option.or_
+       (Js.Dict.values dict |> Tablecloth.Array.get_at ~index:0)
+  |> Tablecloth.Option.with_default ~default:""
