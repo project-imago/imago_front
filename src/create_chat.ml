@@ -100,15 +100,15 @@ let form_view model maybe_group =
     [ onSubmit (createChat maybe_group) ]
     [ fieldset
         []
-        [ label [ for' "name-field" ] [ text "Name" ]
+        [ label [ for' "name-field" ] [ text (T.create_chat_name_label ()) ]
         ; input'
             [ type' "text"; id "name-field"; onInput saveName ]
             [ text model.name ]
-        ; label [ for' "topic-field" ] [ text "Topic" ]
+        ; label [ for' "topic-field" ] [ text (T.create_chat_topic_label ()) ]
         ; input'
             [ type' "text"; id "topic-field"; onInput saveTopic ]
             [ text model.topic ]
-        ; button [ type' "submit" ] [ text "Send" ]
+        ; button [ type' "submit" ] [ text (T.create_chat_submit ())]
         ]
     ]
 

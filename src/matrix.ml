@@ -62,7 +62,7 @@ module ObjectState = Client.MakeStateAccessors (struct
 end)
 
 module StatementState = Client.MakeStateAccessors (struct
-  type t = string Js.Dict.t
+  type t = < property : string ; value : string > Js.t
 end)
 
 let get_localized dict lc =

@@ -52,3 +52,8 @@ group =
 chat =
     .room-not-found = Salon introuvable
     .message-date = { DATETIME($date, day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit") }
+
+create-chat =
+    .name-label = Nom
+    .topic-label = Description
+    .submit = Créer

@@ -240,3 +240,27 @@ let chat_message_date (params : chat_message_date_params)  =
 (Fluent.datetime_format params.date (Fluent.Runtime.make_datetime_params ~day:"2-digit" ~month:"2-digit" ~year:"2-digit" ~hour:"2-digit" ~minute:"2-digit" ~second:"2-digit"()) !Locale.get)
 | _ ->
 (Fluent.datetime_format params.date (Fluent.Runtime.make_datetime_params ~day:"2-digit" ~month:"2-digit" ~year:"2-digit" ~hour:"2-digit" ~minute:"2-digit" ~second:"2-digit"()) !Locale.get))
+
+
+let create_chat_name_label () =
+(match !Locale.get with
+| "fr" ->
+{js|Nom|js}
+| _ ->
+{js|Name|js})
+
+
+let create_chat_topic_label () =
+(match !Locale.get with
+| "fr" ->
+{js|Description|js}
+| _ ->
+{js|Topic|js})
+
+
+let create_chat_submit () =
+(match !Locale.get with
+| "fr" ->
+{js|Créer|js}
+| _ ->
+{js|Create|js})
