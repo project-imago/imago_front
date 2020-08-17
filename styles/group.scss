@@ -1,5 +1,8 @@
 
 #group-view {
+  height: 100%;
+  overflow-y: auto;
+
   > h3 {
     margin-top: 0.75em;
     margin-bottom: 0;
