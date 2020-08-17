@@ -85,10 +85,10 @@ let view_statements model room =
   let localized_label iri =
     let event = Statements.ObjectState.get_one_exn room_state "pm.imago.object" iri
     in
-    (event##getContent ())##label |. Statements.get_localized !Locale.get
+    (event##getContent ())##label |. Localized_object.get_localized !Locale.get
   in
   let open Tea.Html in
-  let obj_view _property (obj : Statements.obj) =
+  let obj_view _property (obj : Statements.iri) =
     div
       [ id "object-item" ]
       [ Router.link goTo (Group (Alias (iri_to_alias obj))) [ text

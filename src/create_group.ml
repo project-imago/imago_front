@@ -1,33 +1,40 @@
+type search_result = <iri : string ; label : string ; description : string> Js.t
+
+let to_text obj =
+  obj##label
+  ^ " ("
+  ^ obj##description
+  ^ ")"
+
+type add_statement_step =
+  | Start
+  | PropertySelection
+  | ObjectSelection
+
 type model =
   { matrix_client : Matrix.client ref
   ; name : string
   ; topic : string
   ; (* statements : (property * obj) array; *)
     (* statements : (obj array) Belt.Map.String.t; *)
-    statements : Statements.t
-  ; property_search : string
-  ; property_suggestions : Statements.property array
-  ; property_selected : Statements.property option
+    statements : Labeled_statements.t
+  ; property_selected : Labeled_statements.labeled_object option
   ; obj_search : string
-  ; obj_suggestions : Statements.obj array
-  ; obj_selected : Statements.obj option
+  ; obj_suggestions : search_result array
+  ; obj_selected : search_result option
+  ; add_statement_step : add_statement_step
   }
 
 let init matrix_client =
   { matrix_client
   ; name = ""
   ; topic = ""
-  ; statements = Statements.empty
-  ; property_search = "img:location"
-  ; property_suggestions = [|
-    [%bs.obj {iri = "img:location"; label = "location"; description = ""}];
-    [%bs.obj {iri = "img:subgroup"; label = "subgroup"; description = ""}];
-    [%bs.obj {iri = "img:about"; label = "about"; description = ""}]
-    |]
+  ; statements = Labeled_statements.empty
   ; property_selected = None
   ; obj_search = ""
   ; obj_suggestions = [||]
   ; obj_selected = None
+  ; add_statement_step = Start
   }
 
 
@@ -35,14 +42,17 @@ type msg =
   | GoTo of Router.route
   | SaveName of string
   | SaveTopic of string
-  | SavePropertySearch of string
-  | SelectProperty of string
+  | ShowStartStep
+  | ShowPropertyStep
+  (* | AddStatementNextStep *)
+  (* | AddStatementPrevStep *)
+  | SelectProperty of Labeled_statements.labeled_object
   | SaveObjSearch of string
   | SelectObj of string
   | ReceivedObjResults of
-      (string * Statements.obj array, string Tea.Http.error) Tea.Result.t
+      (string * search_result array, string Tea.Http.error) Tea.Result.t
   | AddStatement
-  | RemoveObj of Statements.property * Statements.obj
+  | RemoveObj of search_result * search_result
   | CreateGroup
   | CreatedGroup of (Matrix.create_room_response, string) Tea.Result.t
   | SentGroupEvents of (string array, string) Tea.Result.t
@@ -52,14 +62,20 @@ type msg =
 (* TODO: add create/edit room *)
 
 let obj_search_cmd property obj =
+  let property_name = match (Custom_properties.variant_of_iri property##iri) with
+  | Location -> "location"
+  | Subgroup -> "subgroup"
+  | About -> "about" in
   let open Tea.Http in
   let url =
     Config.api_url
     ^ "/api/obj/search"
     ^ "?property="
-    ^ property##iri
+    ^ property_name
     ^ "&term="
     ^ obj
+    ^ "&lc="
+    ^ !Locale.get
   in
   Js.log url;
   let decode_response =
@@ -74,7 +90,8 @@ let obj_search_cmd property obj =
          (array
             (map3
                (fun a b c ->
-                 ([%bs.obj { iri = a; label = b; description = c }] : Statements.obj))
+                 ([%bs.obj { iri = a; label = b; description = c }] :
+                   search_result))
                (field "item" string)
                (field "label" string)
                (field "description" string))))
@@ -122,13 +139,13 @@ let create_group_cmd model =
 
 let send_group_events_cmd model room_id =
   [|
-    Statements.StatementState.send
-       !(model.matrix_client)
-       room_id
-       "pm.imago.group.statements"
-       [%bs.obj { statements = Statements.to_state model.statements }]
-       ""
-     ;  Matrix.TypeState.send
+    (* Statements.StatementsState.send *)
+    (*    !(model.matrix_client) *)
+    (*    room_id *)
+    (*    "pm.imago.group.statements" *)
+    (*    [%bs.obj { statements = Statements.to_state model.statements }] *)
+    (*    "" *)
+        Matrix.TypeState.send
         !(model.matrix_client)
         room_id
         "pm.imago.type"
@@ -149,15 +166,32 @@ let update model = function
       ({ model with name }, Tea.Cmd.none)
   | SaveTopic topic ->
       ({ model with topic }, Tea.Cmd.none)
-  | SavePropertySearch property ->
-      ({ model with property_search = property }, Tea.Cmd.none)
+  | ShowStartStep ->
+      ({ model with add_statement_step = Start }, Tea.Cmd.none)
+  | ShowPropertyStep ->
+      ({ model with add_statement_step = PropertySelection }, Tea.Cmd.none)
+  (* | AddStatementNextStep -> *)
+  (*     let model = match model.add_statement_step with *)
+  (*     | Start -> {model with add_statement_step = PropertySelection} *)
+  (*     | PropertySelection -> {model with add_statement_step = ObjectSelection} *)
+  (*     | ObjectSelection -> {model with add_statement_step = Start} *)
+  (*     in *)
+  (*     (model, Tea.Cmd.none) *)
+  (* | AddStatementPrevStep -> *)
+  (*     let model = match model.add_statement_step with *)
+  (*     | Start -> {model with add_statement_step = Start} *)
+  (*     | PropertySelection -> {model with add_statement_step = Start} *)
+  (*     | ObjectSelection -> {model with add_statement_step = PropertySelection} *)
+  (*     in *)
+  (*     (model, Tea.Cmd.none) *)
   | SelectProperty property_item ->
-      let property =
-        Belt.Array.getBy model.property_suggestions (fun x -> x##label == property_item)
-      in
+      (* let property = *)
+      (*   Belt.Array.getBy model.property_suggestions (fun x -> x##label == property_item) *)
+      (* in *)
       Js.log property_item;
-      Js.log property;
-      ({ model with property_selected = property }, Tea.Cmd.none)
+      ({ model with property_selected = Some property_item;
+                    add_statement_step = ObjectSelection
+       }, Tea.Cmd.none)
   | SaveObjSearch obj ->
       let cmd =
         match model.property_selected with
@@ -186,20 +220,22 @@ let update model = function
       let new_statements =
         match (model.property_selected, model.obj_selected) with
         | Some property, Some obj ->
-            Statements.add_statements model.statements property obj
+            Labeled_statements.add_statements model.statements property obj
         | _ ->
             model.statements
       in
       ( { model with
           statements =
-            new_statements
+            new_statements;
+          add_statement_step = Start;
+          obj_suggestions = [||]
             (* property_selected = None; *)
             (* obj_selected = None; *)
         }
       , Tea.Cmd.none )
   | RemoveObj (property, obj) ->
       let new_statements =
-        Statements.remove_obj model.statements property obj
+        Labeled_statements.remove_obj model.statements property obj
       in
       ({ model with statements = new_statements }, Tea.Cmd.none)
   | CreateGroup ->
@@ -225,12 +261,13 @@ let update model = function
 
 let statement_list_view model =
   let open Tea.Html in
-  let obj_view property (obj : Statements.obj) =
+  let obj_view property (obj : Labeled_statements.labeled_object) =
     div
       [ id "object-item" ]
-      [ span [] [ text (obj##label ^ " (" ^ obj##description ^ ")") ]
+      [ span [] [ text (Labeled_statements.obj_to_text obj) ]
       ; button
-          [ onClick (removeObj property obj)
+          [ type' "button"
+          ; onClick (removeObj property obj)
           ; class' "icon"
           ; Icons.aria_label "Remove statement"
           ]
@@ -240,7 +277,7 @@ let statement_list_view model =
   let statement_view (property, objs) =
     div
       [ id "statement-item" ]
-      [ div [ id "property-item" ] [ text property##label ]
+      [ div [ id "property-item" ] [ text (Labeled_statements.obj_to_text property) ]
       ; div
           [ id "objects-list" ]
           (Belt.Array.map objs (obj_view property) |> Belt.List.fromArray)
@@ -254,11 +291,32 @@ let statement_list_view model =
 
 (* (Belt.Array.map model.statements statement_view *)
 (* |> Belt.List.fromArray) *)
-
-let statement_form_view model =
+let add_statement_start_view model =
   let open Tea.Html in
-  let property_option property = option' [] [ text property##label ] in
-  (* TODO: add selected for what is really selected *)
+  div []
+    [ button [ type' "button"; onClick showPropertyStep ] [ text "Add a new
+    link" ]
+    ]
+
+let add_statement_property_view model =
+  let open Tea.Html in
+  let property_button property =
+    button [onClick (selectProperty property)]
+    [text (Labeled_statements.obj_to_text property)]
+  in
+  div [] 
+    [ div [id "property-buttons"]
+        (Custom_properties.localized_properties !Locale.get
+        |> Tablecloth.Array.map ~f:property_button
+        |> Tablecloth.Array.to_list
+        )
+    ; div [id "property-step-control"]
+      [ button [ type' "button"; onClick showStartStep ] [ text "Cancel" ]
+      ]
+    ]
+
+let add_statement_object_view model =
+  let open Tea.Html in
   let is_obj_selected model obj =
     match model.obj_selected with
     | Some s_obj when s_obj == obj ->
@@ -270,11 +328,43 @@ let statement_form_view model =
   (*   let open Vdom in *)
   (*   if b then attribute "" "selected" "true" else attribute "" "selected" "false" *)
   (* in *)
-  let obj_option (obj : Statements.obj) =
+  let obj_option (obj) =
     option'
       [ value obj##iri; Attributes.selected (is_obj_selected model obj) ]
       [ text (obj##label ^ " (" ^ obj##description ^ ")") ]
   in
+  div []
+      [ div
+          [ id "object-fields" ]
+          [ label [ for' "object-search-field" ] [ text "Search" ]
+          ; label [ class' "icon-label" ]
+              [ Icons.icon "search"
+              ; input'
+                  [ type' "text"
+                  ; id "object-search-field"
+                  ; onInput saveObjSearch
+                  ]
+                  [ text model.obj_search ]
+              ]
+          ; select
+              [ onChange selectObj; Tea.Html2.Attributes.size 5 ]
+              ( Belt.Array.map model.obj_suggestions obj_option
+              |> Belt.List.fromArray )
+          ]
+      ; div [id "object-step-control"]
+        [ button [ type' "button"; onClick showPropertyStep ] [ text "Back" ]
+        ; button [ type' "button"; onClick addStatement; class' "default" ] [ text "Add" ]
+        ]
+      ]
+
+let new_statement_form_view model =
+  match model.add_statement_step with
+  | Start -> add_statement_start_view model
+  | PropertySelection -> add_statement_property_view model
+  | ObjectSelection -> add_statement_object_view model
+
+let form_view model =
+  let open Tea.Html in
   (* TODO: add selected for what is really selected *)
   form
     [ Tea.Html2.Events.onSubmit createGroup ]
@@ -289,50 +379,15 @@ let statement_form_view model =
             [ type' "text"; id "topic-field"; onInput saveTopic ]
             [ text model.topic ]
         ]
-    ; statement_list_view model
-    ; div
-        [ id "statement-fields" ]
-        (* wanted to use fieldset but chromium bug 375693, maybe nest fieldset in div *)
-        [ div
-            [ id "property-fields" ]
-            [ label [ for' "property-search-field" ] [ text "Property" ]
-            ; label [ class' "icon-label" ]
-                [ Icons.icon "search"
-                ; input'
-                    [ type' "text"
-                    ; id "property-search-field"
-                    ; onInput savePropertySearch
-                    ]
-                    [ text model.property_search ]
-                ]
-            ; select
-                [ onChange selectProperty; Tea.Html2.Attributes.size 5 ]
-                ( Belt.Array.map model.property_suggestions property_option
-                |> Belt.List.fromArray )
-            ]
-        ; div
-            [ id "object-fields" ]
-            [ label [ for' "object-search-field" ] [ text "Object" ]
-            ; label [ class' "icon-label" ]
-                [ Icons.icon "search"
-                ; input'
-                    [ type' "text"
-                    ; id "object-search-field"
-                    ; onInput saveObjSearch
-                    ]
-                    [ text model.obj_search ]
-                ]
-            ; select
-                [ onChange selectObj; Tea.Html2.Attributes.size 5 ]
-                ( Belt.Array.map model.obj_suggestions obj_option
-                |> Belt.List.fromArray )
-            ]
-        ; button [ type' "button"; onClick addStatement ] [ text "Add" ]
-        ]
+    ; div [id "statements"]
+      [ label [] [ text "Links" ]
+      ; statement_list_view model
+      ; new_statement_form_view model
+      ]
     ; button [ type' "submit" ] [ text "Create group" ]
     ]
 
 
 let view model =
   let open Tea.Html in
-  div ~unique:"create_group" [ id "create-group" ] [ statement_form_view model ]
+  div ~unique:"create_group" [ id "create-group" ] [ form_view model ]
