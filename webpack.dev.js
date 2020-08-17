@@ -15,7 +15,7 @@ module.exports = merge(common, {
         hot: 			true,
         liveReload: 		false,
         port: 			9000,
-        publicPath: 		'/dist/',
+        // publicPath: 		'/dist/',
         historyApiFallback: {
             disableDotRule: 	true
         },
