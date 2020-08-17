@@ -3,14 +3,14 @@ type property = Location | Subgroup | About
 let location : Localized_object.t =
   let labels =
     [|
-      ("en", "Located in");
-      ("fr", "Situé à")
+      ("en", {js|Located in|js});
+      ("fr", {js|Situé à|js})
     |] |> Js.Dict.fromArray
   in
   let descriptions =
     [|
-      ("en", "A place where the group exists");
-      ("fr", "Un lieu dans lequel existe le groupe")
+      ("en", {js|A place where the group exists|js});
+      ("fr", {js|Un lieu dans lequel existe le groupe|js})
     |] |> Js.Dict.fromArray
   in
   [%bs.obj {label = labels; description = descriptions}]
@@ -18,14 +18,14 @@ let location : Localized_object.t =
 let subgroup : Localized_object.t =
   let labels =
     [|
-      ("en", "Subgroup of");
-      ("fr", "Sous-groupe de")
+      ("en", {js|Subgroup of|js});
+      ("fr", {js|Sous-groupe de|js})
     |] |> Js.Dict.fromArray
   in
   let descriptions =
     [|
-      ("en", "A parent group");
-      ("fr", "Un groupe parent")
+      ("en", {js|A parent group|js});
+      ("fr", {js|Un groupe parent|js})
     |] |> Js.Dict.fromArray
   in
   [%bs.obj {label = labels; description = descriptions}]
@@ -33,14 +33,14 @@ let subgroup : Localized_object.t =
 let about : Localized_object.t =
   let labels =
     [|
-      ("en", "About");
-      ("fr", "À propos de")
+      ("en", {js|About|js});
+      ("fr", {js|À propos de|js})
     |] |> Js.Dict.fromArray
   in
   let descriptions =
     [|
-      ("en", "A theme that the group is related");
-      ("fr", "Un thème auquel le groupe est apparenté")
+      ("en", {js|A theme that the group is related|js});
+      ("fr", {js|Un thème auquel le groupe est apparenté|js})
     |] |> Js.Dict.fromArray
   in
   [%bs.obj {label = labels; description = descriptions}]

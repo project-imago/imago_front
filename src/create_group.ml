@@ -301,7 +301,7 @@ let add_statement_start_view model =
 let add_statement_property_view model =
   let open Tea.Html in
   let property_button property =
-    button [onClick (selectProperty property)]
+    button [type' "button"; onClick (selectProperty property)]
     [text (Labeled_statements.obj_to_text property)]
   in
   div [] 
