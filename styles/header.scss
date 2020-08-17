@@ -49,14 +49,17 @@ header {
           color: var(--color-main-text);
           font-weight: normal;
           padding: 0 20px;
+          transition: background-color 0s;
+
           @include media("<=small") {
             padding: 0 10px;
           }
 
-          &:hover {
+          &:hover, &:focus {
             background-color: var(--color-background-hover);
             color: var(--color-main-text);
             opacity: 1;
+            transition: background-color 0s;
           }
 
           &.icon-only {
@@ -120,6 +123,8 @@ header {
               color: var(--color-main-text);
               font-weight: normal;
               padding: 10px 20px;
+              transition: background-color 0s;
+
               @include media("<=small") {
                 padding: 10px 10px;
               }
@@ -128,10 +133,11 @@ header {
                 margin-right: 20px;
               }
 
-              &:hover {
+              &:hover, &:focus {
                 background-color: var(--color-background-hover);
                 color: var(--color-main-text);
                 opacity: 1;
+                transition: background-color 0s;
               }
             }
           }
