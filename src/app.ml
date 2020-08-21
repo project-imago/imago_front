@@ -47,7 +47,7 @@ let update_route model = function
   (*     {auth; route}, location_of_route route |> Tea.Navigation.newUrl *)
   | Chat room_address as route ->
       Js.log "updating route group" ;
-      Router.set_title_for_route route;
+      Router.set_title_for_route route ;
       let chat_cmd = Chat.set_chat_room model.content.chat room_address in
       ( { model with route }
       , Tea.Cmd.batch
@@ -56,7 +56,7 @@ let update_route model = function
           ] )
   | Group room_address as route ->
       Js.log "updating route group" ;
-      Router.set_title_for_route route;
+      Router.set_title_for_route route ;
       let group_cmd = Group.set_group_room model.content.group room_address in
       ( { model with route }
       , Tea.Cmd.batch
@@ -69,7 +69,7 @@ let update_route model = function
       , Tea.Cmd.batch [ Tea.Cmd.map authMsg auth_cmd; Tea.Cmd.msg (GoTo Index) ]
       )
   | route ->
-      Router.set_title_for_route route;
+      Router.set_title_for_route route ;
       ({ model with route }, location_of_route route |> Tea.Navigation.newUrl)
 
 
@@ -107,7 +107,12 @@ let update model = function
   | HeaderMsg (GoTo route) ->
       update_route model route
   | HeaderMsg ToggleMenu ->
-      let model = { model with sidebar = { model.sidebar with show_menu = not model.sidebar.show_menu } } in
+      let model =
+        { model with
+          sidebar =
+            { model.sidebar with show_menu = not model.sidebar.show_menu }
+        }
+      in
       (model, Tea.Cmd.none)
   | HeaderMsg header_msg ->
       let header, header_cmd = Header.update model.header header_msg in
@@ -144,12 +149,50 @@ let subscriptions model =
   (* Tea.Sub.none *)
   Tea.Sub.batch
     [ Auth.subscriptions model.auth |> Tea.Sub.map authMsg
-    ; Chat.subscriptions model.content.chat |> Tea.Sub.map (fun m -> contentMsg (Content.chatMsg m))
+    ; Chat.subscriptions model.content.chat
+      |> Tea.Sub.map (fun m -> contentMsg (Content.chatMsg m))
     ]
 
 
-let main =
-  Tea.Debug.navigationProgram
-    location_changed
-    { init; update; view; subscriptions; shutdown = (fun _ -> Tea.Cmd.none) }
-    msg_to_string
+let start_app container =
+  let _ =
+    Tea.Navigation.navigationProgram
+      location_changed
+      { init; update; view; subscriptions; shutdown = (fun _ -> Tea.Cmd.none) }
+      container
+      ()
+  in
+  ()
+
+
+let start_dev_app container cachedModel =
+  (* Replace the existing shutdown function with one that returns the current
+   * state of the app, for hot module replacement purposes *)
+  (* copied from https://github.com/walfie/ac-tune-maker *)
+  let modelRef = ref None in
+  let shutdown model =
+    let () = modelRef := Some model in
+    Tea.Cmd.none
+  in
+  let init =
+    match cachedModel with
+    | None ->
+        init
+    | Some model ->
+        fun _flags _location -> (model, Tea.Cmd.none)
+  in
+  let app =
+    Tea.Debug.navigationProgram
+      location_changed
+      { init; update; view; subscriptions; shutdown }
+      msg_to_string
+      container
+      ()
+  in
+  let oldShutdown = app##shutdown in
+  let newShutdown () =
+    let () = oldShutdown () in
+    !modelRef
+  in
+  let _ = Js.Obj.assign app [%obj { shutdown = newShutdown }] in
+  newShutdown

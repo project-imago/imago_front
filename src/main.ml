@@ -1,11 +1,30 @@
 external isHotEnabled : bool = "hot" [@@bs.val] [@@bs.scope "module"]
 
-external hotAccept : unit -> unit = "accept"
+external hotAccept : string array -> (unit -> unit) -> unit = "accept"
   [@@bs.val] [@@bs.scope "module", "hot"]
 
-let _ =
-  if isHotEnabled then hotAccept () ;
+let container () = Web.Document.getElementById "main"
 
+let start_app () =
+  App.start_app (container ())
+
+let start_dev_app cachedModel =
+  App.start_dev_app (container ()) cachedModel
+
+let run () =
+  if isHotEnabled && Config.env == "development"
+  then begin
+    let shutdown_fun = ref (start_dev_app None) in
+    hotAccept
+      [|"./app.bs.js"|]
+      (fun _ ->
+        shutdown_fun := start_dev_app (!shutdown_fun ());
+        ()
+      )
+  end
+  else start_app ()
+
+let _ =
   Js.Global.setTimeout
-    (fun _ -> App.main (Web.Document.getElementById "main") () |. ignore)
+    (fun _ -> run () |. ignore)
     0
