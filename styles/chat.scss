@@ -3,45 +3,57 @@
   height: 100%;
   display: flex;
   flex-direction: column;
+}
 
-  > h3 {
-    margin-top: 0.75em;
-    margin-bottom: 0;
+#chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  h3 {
+    margin: 10px;
+  }
+
+  svg.icon {
+    margin: 10px;
   }
 }
 
 #message-list {
   flex-grow: 1;
   overflow-y: scroll;
-  margin: 20px 0;
+  padding: 0 10px;
+  // background-color: var(--color-background-darker);
+  border-top: 1px solid var(--color-border);
+  // padding: 5px 10px;
 
   .message {
-    background-color: var(--color-background-darker);
-    border: 1px solid var(--color-border);
-    margin-right: 10px;
-    padding: 5px;
+    // background-color: var(--color-background-darker);
+    // border: 1px solid var(--color-border);
+    // margin-right: 10px;
+    // padding: 5px;
+    line-height: 1.4em;
+    clear: both;
 
-    &+ .message {
-      margin-top: 10px;
+    // &+ .message {
+      // margin-top: 10px;
+    // }
+
+    .message-sender {
+      font-weight: bold;
+      flex: 1 auto;
+      float: left;
+      margin-right: 10px;
     }
 
-    .message-metadata {
-      display: flex;
-      flex-direction: row;
+    &:hover > .message-date {
+      display: block;
+    }
 
-      .message-sender {
-        font-weight: bold;
-        flex: 1 auto;
-      }
-
-      &:hover > .message-date {
-        display: block;
-      }
-
-      .message-date {
-        font-size: .8em;
-        display: none;
-      }
+    .message-date {
+      font-size: .8em;
+      display: none;
+      float: right;
     }
 
     .message-body {
@@ -52,12 +64,15 @@
 
 #input-area {
   flex-shrink: 0;
+  margin: 20px;
+  margin-top: 0;
 
   textarea {
-    height: 150px;
+    height: 25px;
     background-color: var(--color-background-darker);
     border: 1px solid var(--color-border);
     color: var(--color-main-text);
+    margin: 0;
 
     &:focus {
       border-color: var(--color-border-active);

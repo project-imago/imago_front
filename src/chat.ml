@@ -256,15 +256,12 @@ let message_view matrix_event =
 
   div
     [ class' "message"; id (matrix_event##getId ()) ]
-    [ div
-        [ class' "message-metadata" ]
-        [ span
-            [ class' "message-sender" ]
-            [ text matrix_event##sender##rawDisplayName ]
-        ; time
-            [ class' "message-date"; Vdom.prop "datetime" iso_date ]
-            [ text (T.chat_message_date { date }) ]
-        ]
+    [ span
+        [ class' "message-sender" ]
+        [ text matrix_event##sender##rawDisplayName ]
+    ; time
+        [ class' "message-date"; Vdom.prop "datetime" iso_date ]
+        [ text (T.chat_message_date { date }) ]
     ; div [ class' "message-body" ] [ text (matrix_event##getContent ())##body ]
     ]
 
@@ -292,7 +289,9 @@ let view model =
       div
         ~unique:"chat"
         [ id "chat-view" ]
-        [ h3 [] [ text room##name ]
+        [ div [ id "chat-header" ]
+          [ h3 [] [ text room##name ]
+          ; Icons.icon "ellipsis-vertical"]
         ; div
             ~unique:room##roomId
             [ id "message-list"; on_scroll_up scrolled ]
