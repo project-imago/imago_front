@@ -130,7 +130,7 @@ let room_list_view route model =
               [ classList
                   [ ("chat_link", true); ("active", equal_to_room room route) ]
               ]
-              [ text room##name ]
+              [ div [class' "room-name"] [ text room##name ] ]
           ]
       ]
   in
@@ -150,7 +150,7 @@ let room_list_view route model =
                       ; ("active", equal_to_room g route)
                       ]
                   ]
-                  [ text g##name
+                  [ div [class' "room-name"] [text g##name]
                   ; Router.link
                       ~props:
                         [ class' "create_chat_link"

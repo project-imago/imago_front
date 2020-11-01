@@ -62,11 +62,19 @@
       margin: 0;
 
       .chat_link, .group_link {
-        padding: 10px;
         margin: 0 -10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        .room-name {
+          margin: 10px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
 
         .create_chat_link {
-          float: right;
           display: none;
 
           svg {
