@@ -1,4 +1,7 @@
-type model = { matrix_client : Matrix.client ref; show_menu : bool }
+type model =
+  { matrix_client : Matrix.client ref
+  ; show_menu : bool
+  }
 
 type msg = GoTo of Router.route [@@bs.deriving { accessors }]
 
@@ -79,9 +82,11 @@ let get_room_type room matrix_client =
   | Group, _ ->
       Group
   | _, Some group ->
-      (match matrix_client##getRoom group |> Js.Nullable.toOption with
-      | Some g -> SubChat g
-      | None -> Chat)
+    ( match matrix_client##getRoom group |> Js.Nullable.toOption with
+    | Some g ->
+        SubChat g
+    | None ->
+        Chat )
   | _, None ->
       Chat
 
@@ -180,7 +185,7 @@ let room_list_view route model =
           ]
   in
   ul
-    []
+    [id "room-list"]
     (* (rooms *)
     (* |. Belt.Array.map room_view *)
     (* |> Belt.List.fromArray) *)
@@ -189,20 +194,36 @@ let room_list_view route model =
 
 let view route model =
   let open Tea.Html in
-  div
-    [ id "sidebar"
-    ; classList
-        [ ("visible", model.show_menu)
-        ]
-    ]
-    ( if Auth.is_logged_in model.matrix_client
-    then
-      [ Router.link
-          ~props:[ class' "button pill" ]
+  let header =
+    div
+      [ id "sidebar-header" ]
+      [ label
+          [ id "sidebar-filter-label"
+          ; class' "icon-label" ]
+          [ Icons.icon "search"
+          ; input'
+              [ type' "text"
+              ; id "sidebar-filter-field"
+                (* ; onInput saveObjSearch *)
+              ]
+              [ text "Filter" ]
+          ]
+      ; Router.link
+          ~props:
+            [ class' "create_chat_link round"
+            ; Icons.aria_label (T.sidebar_create_group ())
+            ; title (T.sidebar_create_group ())
+            ]
           goTo
           Router.CreateGroup
-          [ text (T.sidebar_create_group ()) ]
+          [ Icons.icon "plus" ]
+      ]
+  in
+  div
+    [ id "sidebar"; classList [ ("visible", model.show_menu) ] ]
+    ( if Auth.is_logged_in model.matrix_client
+    then
+      [ header
       ; room_list_view route model
       ]
-    else
-      [] )
+    else [] )
