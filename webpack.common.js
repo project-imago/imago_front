@@ -6,6 +6,7 @@ const SvgSpriteHtmlWebpackPlugin = require('svg-sprite-html-webpack');
 // const CopyPlugin = require('copy-webpack-plugin');
 // const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const BsFluentPlugin = require ('bs-fluent/plugin')
+const GoogleFontsPlugin = require("@beyonk/google-fonts-webpack-plugin")
 
 module.exports = {
     entry: {
@@ -44,6 +45,12 @@ module.exports = {
             destFile: 'src/t.ml',
             defaultLocale: 'en',
             useLocaleModule: true
+        }),
+        new GoogleFontsPlugin({
+            fonts: [
+                { family: "Montserrat", variants: ["300","500","700","300italic","500italic","700italic"] },
+                { family: "Open Sans", variants: ["300","500","700","300italic","500italic","700italic"] }
+            ]
         })
     ],
     module: {

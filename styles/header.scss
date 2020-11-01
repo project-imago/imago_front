@@ -10,12 +10,19 @@ header {
 
   #logo {
     flex-grow: 1;
-    margin-left: 10px;
+    // margin-left: 10px;
+
+    a {
+      padding: 0;
+
+      &:hover {
+        background-color: var(--color-main-background);
+      }
+    }
 
     h1 {
       text-transform: uppercase;
       margin: 0;
-      font-family: "Verdana";
     }
   }
 
