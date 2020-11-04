@@ -92,7 +92,7 @@ let get_room_type room matrix_client =
 
 
 let dropdown_menu =
-  Components.ClickDropdown.element "sidebar-item__dropdown-button" goTo
+  Components.ClickDropdown.element "sidebar-item__dropdown" goTo
 
 
 let room_list_view route model =
@@ -126,18 +126,20 @@ let room_list_view route model =
     (* let () = Js.log !(model.matrix_client) in *)
     li
       ~unique:room##roomId
-      [ class' "sidebar-item sidebar-chat-item" ]
+      []
       [ Router.link
           ~props:
             [ classList
                 [ ("room-link", true)
                 ; ("chat-link", true)
+                ; ("sidebar-item", true)
+                ; ("sidebar-chat-item", true)
                 ; ("active", equal_to_room room route)
                 ]
             ]
           goTo
           (Chat (Id room##roomId)) (* XXX *)
-          [ div [ class' "room-name" ] [ text room##name ] ]
+          [ span [ class' "room-name" ] [ text room##name ] ]
       ]
   in
   let group_view (group, chats) =
@@ -145,19 +147,21 @@ let room_list_view route model =
     | Some g ->
         li
           ~unique:g##roomId
-          [ class' "sidebar-item sidebar-group-item" ]
+          []
           [ Router.link
               ~props:
                 [ classList
                     [ ("room-link", true)
                     ; ("group-link", true)
+                    ; ("sidebar-item", true)
+                    ; ("sidebar-group-item", true)
                     ; ("active", equal_to_room g route)
                     ]
                 ]
               goTo
               (Group (Id g##roomId))
               (* XXX *)
-              [ div [ class' "room-name" ] [ text g##name ]
+              [ span [ class' "room-name" ] [ text g##name ]
               ; Router.link
                   ~props:
                     [ class' ""
@@ -175,9 +179,9 @@ let room_list_view route model =
     | None ->
         li
           ~unique:"no group"
-          [ class' "sidebar-item sidebar-group-item" ]
+          []
           [ div
-              [ class' "group_link" ]
+              [ class' "room-link group-link sidebar-item sidebar-group-item" ]
               [ span [] [ text (T.sidebar_outside_groups ()) ]; dropdown_menu ]
           ; ul
               [ class' "sidebar-list sidebar-chat-list" ]
@@ -209,7 +213,7 @@ let view route model =
           ]
       ; Router.link
           ~props:
-            [ class' "sidebar-header__dropdown-button button_round"
+            [ class' "sidebar-header__dropdown button_round"
             ; Icons.aria_label (T.sidebar_create_group ())
             ; title (T.sidebar_create_group ())
             ]

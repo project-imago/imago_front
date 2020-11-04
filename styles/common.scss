@@ -117,22 +117,23 @@ button,
     }
   }
 
-  &.round {
+  &.button_round {
     border-radius: 50%;
     text-align: center;
     // line-height: 100px;
     vertical-align: middle;
     // padding: 30px;
-    height: 3.5em;
-    width: 3.5em;
     display: inline-flex;
     align-self: center;
+    padding: 5px;
+    width: 2.5em;
+    height: 2.5em;
 
     svg[class^="icon"] {
       display: block;
-      margin: auto;
-      height: 2em;
-      width: 2em;
+      // margin: auto;
+      height: auto;
+      width: auto;
       // height: 50%;
       // width: 50%;
       // left: 50%;

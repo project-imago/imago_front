@@ -134,7 +134,7 @@ module ClickDropdown = struct
       [ class' (classes ^ " click-dropdown") ]
       (* ; Tea.Html2.Attributes.tabindex 0 ] *)
       [ button
-          [ class' "button_round"
+          [ class' "click-dropdown__button button_round"
           ; Icons.aria_label (T.sidebar_create_group ())
           ; title (T.sidebar_create_group ())
           ]

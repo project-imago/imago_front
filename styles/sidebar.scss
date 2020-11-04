@@ -34,6 +34,11 @@
 
 .sidebar-list {
   margin: 0;
+
+  li {
+    margin: 0;
+    padding: 0;
+  }
 }
 
 .sidebar-group-list {
@@ -41,10 +46,6 @@
 }
 
 .sidebar-chat-list {
-}
-
-.sidebar-item {
-  margin: 0;
 }
 
 .sidebar-group-item {
@@ -55,13 +56,15 @@
 .sidebar-chat-item {
 }
 
-.room-link {
-  margin: 0 -10px;
+.sidebar-item {
+  // margin: 0 -10px;
+  margin: 0;
+  padding: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
 
-  .room-name {
+  > span {
     margin: 10px;
     white-space: nowrap;
     overflow: hidden;
@@ -71,8 +74,8 @@
   &:hover, &:focus {
     background-color: var(--color-background-hover);
 
-    .sidebar-item__dropdown-button {
-      display: block;
+    .click-dropdown__button {
+      display: inline-flex !important;
     }
   }
 
@@ -88,7 +91,7 @@
   padding-left: 30px;
 }
 
-.sidebar-item__dropdown-button {
+.sidebar-item__dropdown.click-dropdown {
   margin: 10px;
   border-radius: 50%;
   text-align: center;
@@ -97,15 +100,18 @@
   // padding: 30px;
   display: inline-flex;
   align-self: center;
-  // display: none;
 
-  svg {
-    width: 1.5rem;
-    height: 1.5rem;
-  }
+//   svg[class^="icon"] {
+//     width: 1.5rem;
+//     height: 1.5rem;
+//   }
 
   &:hover, &:focus {
     color: var(--color-background-hover);
+  }
+
+  .click-dropdown__button {
+    display: none;
   }
 }
 
@@ -187,6 +193,11 @@
       font-weight: normal;
       padding: 10px 20px;
       transition: background-color 0s;
+
+      &:focus, &:hover {
+        background-color: var(--color-background-hover);
+        transition: background-color 0s;
+      }
 
       > svg {
         margin-right: 20px;
