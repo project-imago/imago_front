@@ -91,6 +91,12 @@ let get_room_type room matrix_client =
       Chat
 
 
+let dropdown_menu =
+  Components.ClickDropdown.element
+    "sidebar-item__dropdown-button button_round"
+    goTo
+
+
 let room_list_view route model =
   let open Tea.Html in
   (* let () = Js.log !(model.matrix_client) in *)
@@ -122,15 +128,15 @@ let room_list_view route model =
     (* let () = Js.log !(model.matrix_client) in *)
     li
       ~unique:room##roomId
-      []
+      [class' "sidebar-item sidebar-chat-item"]
       [ Router.link
           goTo
           (Chat (Id room##roomId)) (* XXX *)
           [ div
               [ classList
-                  [ ("chat_link", true); ("active", equal_to_room room route) ]
+                  [("room-link", true); ("chat-link", true); ("active", equal_to_room room route) ]
               ]
-              [ div [class' "room-name"] [ text room##name ] ]
+              [ div [ class' "room-name" ] [ text room##name ] ]
           ]
       ]
   in
@@ -139,18 +145,19 @@ let room_list_view route model =
     | Some g ->
         li
           ~unique:g##roomId
-          []
+          [class' "sidebar-item sidebar-group-item"]
           [ Router.link
               goTo
               (Group (Id g##roomId))
               (* XXX *)
               [ div
                   [ classList
-                      [ ("group_link", true)
+                      [ ("room-link", true)
+                      ; ("group-link", true)
                       ; ("active", equal_to_room g route)
                       ]
                   ]
-                  [ div [class' "room-name"] [text g##name]
+                  [ div [ class' "room-name" ] [ text g##name ]
                   ; Router.link
                       ~props:
                         [ class' "create_chat_link"
@@ -162,30 +169,22 @@ let room_list_view route model =
                       [ Icons.icon "plus" ]
                   ]
               ]
-          ; ul [] (Belt.List.map chats chat_view)
+          ; ul [class' "sidebar-list sidebar-chat-list"] (Belt.List.map chats chat_view)
           ]
     | None ->
         li
           ~unique:"no group"
-          []
+          [class' "sidebar-item sidebar-group-item"]
           [ div
               [ class' "group_link" ]
               [ span [] [ text (T.sidebar_outside_groups ()) ]
-              ; Router.link
-                  ~props:
-                    [ class' "create_chat_link"
-                    ; Icons.aria_label (T.sidebar_new_chat ())
-                    ; title (T.sidebar_new_chat ())
-                    ]
-                  goTo
-                  (CreateChat None)
-                  [ Icons.icon "plus" ]
+              ; dropdown_menu
               ]
           ; ul [] (Belt.List.map chats chat_view)
           ]
   in
   ul
-    [id "room-list"]
+    [ class' "sidebar-list sidebar-group-list" ]
     (* (rooms *)
     (* |. Belt.Array.map room_view *)
     (* |> Belt.List.fromArray) *)
@@ -198,8 +197,7 @@ let view route model =
     div
       [ id "sidebar-header" ]
       [ label
-          [ id "sidebar-filter-label"
-          ; class' "icon-label" ]
+          [ id "sidebar-filter-label"; class' "icon-label" ]
           [ Icons.icon "search"
           ; input'
               [ type' "text"
@@ -210,7 +208,7 @@ let view route model =
           ]
       ; Router.link
           ~props:
-            [ class' "create_chat_link round"
+            [ class' "sidebar-header__dropdown-button button_round"
             ; Icons.aria_label (T.sidebar_create_group ())
             ; title (T.sidebar_create_group ())
             ]
@@ -222,8 +220,5 @@ let view route model =
   div
     [ id "sidebar"; classList [ ("visible", model.show_menu) ] ]
     ( if Auth.is_logged_in model.matrix_client
-    then
-      [ header
-      ; room_list_view route model
-      ]
+    then [ header; room_list_view route model ]
     else [] )

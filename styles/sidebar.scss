@@ -22,15 +22,6 @@
     width: $sidebar_width;
   }
 
-  #room-list {
-    overflow-y: auto;
-  }
-
-  > ul > li {
-    // border-bottom: 1px solid black;
-    padding: 0 10px;
-  }
-
   a {
     font-weight: normal;
     color: var(--color-main-text);
@@ -39,67 +30,85 @@
       opacity: 1;
     }
   }
+}
 
-  .create_chat_link {
+.sidebar-list {
+  margin: 0;
+}
+
+.sidebar-group-list {
+  overflow-y: auto;
+}
+
+.sidebar-chat-list {
+}
+
+.sidebar-item {
+  margin: 0;
+}
+
+.sidebar-group-item {
+  // border-bottom: 1px solid black;
+  padding: 0 10px;
+}
+
+.sidebar-chat-item {
+}
+
+.room-link {
+  margin: 0 -10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  .room-name {
     margin: 10px;
-    border-radius: 50%;
-    text-align: center;
-    // line-height: 100px;
-    vertical-align: middle;
-    // padding: 30px;
-    display: inline-flex;
-    align-self: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
-    &:hover, &:focus {
-      color: var(--color-background-hover);
+  &:hover, &:focus {
+    background-color: var(--color-background-hover);
+
+    .sidebar-item__dropdown-button {
+      display: block;
     }
   }
 
-  ul {
-    margin: 0;
+  &.active {
+    background-color: var(--color-primary-element);
+  }
+}
 
-    li {
-      margin: 0;
+.group-link {
+}
 
-      .chat_link, .group_link {
-        margin: 0 -10px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
+.chat-link {
+  padding-left: 30px;
+}
 
-        .room-name {
-          margin: 10px;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
+.button_round {
+}
 
-        .create_chat_link {
-          display: none;
+.sidebar-item__dropdown-button {
+  margin: 10px;
+  border-radius: 50%;
+  text-align: center;
+  // line-height: 100px;
+  vertical-align: middle;
+  // padding: 30px;
+  display: inline-flex;
+  align-self: center;
+  // display: none;
 
-          svg {
-            width: 1.5rem;
-            height: 1.5rem;
-          }
-        }
+  svg {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
 
-        &:hover, &:focus {
-          background-color: var(--color-background-hover);
-
-          .create_chat_link {
-            display: block;
-          }
-        }
-
-        &.active {
-          background-color: var(--color-primary-element);
-        }
-      }
-
-      .chat_link {
-        padding-left: 30px;
-      }
-    }
+  &:hover, &:focus {
+    color: var(--color-background-hover);
   }
 }
 
@@ -111,4 +120,84 @@
 
 #sidebar-filter-label {
   margin: 10px;
+}
+
+.sidebar-header__dropdown-button {
+}
+
+.click-dropdown {
+  // position:relative;
+  display:inline-block;
+  // z-index:2;
+  padding:0;
+  margin:0;
+  outline:0;
+  text-align:left;
+
+  padding: 5px 10px;
+  border: 1px solid #555;
+  border-radius:3px;
+  border: 1px solid var(--color-border);
+
+
+  &:focus {
+    pointer-events:none;
+  }
+
+  &:focus, &:hover {
+    border-color: var(--color-border-active);
+    transition: border-color 0.2s ease;
+    // display: block;
+  }
+
+//   &:focus ul.click-dropdown-menu {
+//     opacity:1;
+//     visibility:visible;
+//     display: block;
+//   }
+}
+
+.click-dropdown__menu {
+  display:none;
+  // visibility: hidden;
+  background-color: #364656;
+  width: auto;
+  margin:3px 0 0 0;
+  padding: 10px;
+  border-radius:3px;
+  pointer-events: auto;
+  position: absolute;
+  z-index: 1;
+  // opacity: 0;
+  transition: all 0.5s ease;
+  background-color: var(--color-background-darker);
+  border: 1px solid var(--color-border);
+}
+
+.click-dropdown__item {
+    background:transparent;
+    border:none;
+    outline:0;
+    display:block;
+    text-decoration:none;
+
+    > a {
+      height: 100%;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      color: var(--color-main-text);
+      font-weight: normal;
+      padding: 10px 20px;
+      transition: background-color 0s;
+
+      > svg {
+        margin-right: 20px;
+      }
+    }
+  }
+
+.click-dropdown__menu_show {
+  display: block !important;
+  // visibility: visible !important;
 }
