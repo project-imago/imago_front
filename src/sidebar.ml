@@ -92,9 +92,7 @@ let get_room_type room matrix_client =
 
 
 let dropdown_menu =
-  Components.ClickDropdown.element
-    "sidebar-item__dropdown-button button_round"
-    goTo
+  Components.ClickDropdown.element "sidebar-item__dropdown-button" goTo
 
 
 let room_list_view route model =
@@ -128,16 +126,18 @@ let room_list_view route model =
     (* let () = Js.log !(model.matrix_client) in *)
     li
       ~unique:room##roomId
-      [class' "sidebar-item sidebar-chat-item"]
+      [ class' "sidebar-item sidebar-chat-item" ]
       [ Router.link
+          ~props:
+            [ classList
+                [ ("room-link", true)
+                ; ("chat-link", true)
+                ; ("active", equal_to_room room route)
+                ]
+            ]
           goTo
           (Chat (Id room##roomId)) (* XXX *)
-          [ div
-              [ classList
-                  [("room-link", true); ("chat-link", true); ("active", equal_to_room room route) ]
-              ]
-              [ div [ class' "room-name" ] [ text room##name ] ]
-          ]
+          [ div [ class' "room-name" ] [ text room##name ] ]
       ]
   in
   let group_view (group, chats) =
@@ -145,42 +145,43 @@ let room_list_view route model =
     | Some g ->
         li
           ~unique:g##roomId
-          [class' "sidebar-item sidebar-group-item"]
+          [ class' "sidebar-item sidebar-group-item" ]
           [ Router.link
+              ~props:
+                [ classList
+                    [ ("room-link", true)
+                    ; ("group-link", true)
+                    ; ("active", equal_to_room g route)
+                    ]
+                ]
               goTo
               (Group (Id g##roomId))
               (* XXX *)
-              [ div
-                  [ classList
-                      [ ("room-link", true)
-                      ; ("group-link", true)
-                      ; ("active", equal_to_room g route)
-                      ]
-                  ]
-                  [ div [ class' "room-name" ] [ text g##name ]
-                  ; Router.link
-                      ~props:
-                        [ class' "create_chat_link"
-                        ; Icons.aria_label (T.sidebar_new_chat ())
-                        ; title (T.sidebar_new_chat ())
-                        ]
-                      goTo
-                      (CreateChat (Some g##roomId))
-                      [ Icons.icon "plus" ]
-                  ]
+              [ div [ class' "room-name" ] [ text g##name ]
+              ; Router.link
+                  ~props:
+                    [ class' ""
+                    ; Icons.aria_label (T.sidebar_new_chat ())
+                    ; title (T.sidebar_new_chat ())
+                    ]
+                  goTo
+                  (CreateChat (Some g##roomId))
+                  [ Icons.icon "plus" ]
               ]
-          ; ul [class' "sidebar-list sidebar-chat-list"] (Belt.List.map chats chat_view)
+          ; ul
+              [ class' "sidebar-list sidebar-chat-list" ]
+              (Belt.List.map chats chat_view)
           ]
     | None ->
         li
           ~unique:"no group"
-          [class' "sidebar-item sidebar-group-item"]
+          [ class' "sidebar-item sidebar-group-item" ]
           [ div
               [ class' "group_link" ]
-              [ span [] [ text (T.sidebar_outside_groups ()) ]
-              ; dropdown_menu
-              ]
-          ; ul [] (Belt.List.map chats chat_view)
+              [ span [] [ text (T.sidebar_outside_groups ()) ]; dropdown_menu ]
+          ; ul
+              [ class' "sidebar-list sidebar-chat-list" ]
+              (Belt.List.map chats chat_view)
           ]
   in
   ul

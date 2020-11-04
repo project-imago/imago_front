@@ -88,9 +88,6 @@
   padding-left: 30px;
 }
 
-.button_round {
-}
-
 .sidebar-item__dropdown-button {
   margin: 10px;
   border-radius: 50%;
@@ -134,10 +131,10 @@
   outline:0;
   text-align:left;
 
-  padding: 5px 10px;
-  border: 1px solid #555;
-  border-radius:3px;
-  border: 1px solid var(--color-border);
+//   padding: 5px 10px;
+//   border: 1px solid #555;
+//   border-radius:3px;
+//   border: 1px solid var(--color-border);
 
 
   &:focus {
