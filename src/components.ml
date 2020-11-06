@@ -90,8 +90,6 @@ module ClickDropdown = struct
 
   let handle_dropdown elem =
     let dropdown = [%raw {|elem.lastChild|}] in
-    Js.log elem ;
-    Js.log dropdown ;
     let () = toggle_visibility dropdown in
     opened :=
       match Js.Nullable.toOption !opened with
@@ -106,10 +104,9 @@ module ClickDropdown = struct
 
 
   let handle_click : Web.Node.event_cb =
-   fun [@bs] event ->
-    Js.log event ;
+   fun [@bs] _event ->
     let nearest_button : Web.Node.t Js.Nullable.t =
-      [%raw {|event.target.closest('.click-dropdown')|}]
+      [%raw {|_event.target.closest('.click-dropdown')|}]
     in
     match
       (Js.Nullable.toOption nearest_button, Js.Nullable.toOption !opened)

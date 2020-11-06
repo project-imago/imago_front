@@ -94,7 +94,7 @@ let get_room_type room matrix_client =
 let header_dropdown =
   let open Tea.Html in
   Components.ClickDropdown.element
-    "sidebar-item__dropdown"
+    "sidebar-header__dropdown"
     goTo
     ~items:
       [ (Router.CreateChat None, "plus", T.sidebar_new_chat ())
@@ -186,8 +186,8 @@ let room_list_view route model =
     | Some g ->
         li
           ~unique:g##roomId
-          []
-          [ div [class' "sidebar-item sidebar-group-item"]
+          [class' "sidebar-group-item"]
+          [ div [class' "sidebar-item"]
             [ Router.link
               ~props:
                 [ classList
@@ -242,15 +242,7 @@ let view route model =
               ]
               [ text "Filter" ]
           ]
-      ; Router.link
-          ~props:
-            [ class' "sidebar-header__dropdown button_round"
-            ; Icons.aria_label (T.sidebar_create_group ())
-            ; title (T.sidebar_create_group ())
-            ]
-          goTo
-          Router.CreateGroup
-          [ Icons.icon "plus" ]
+      ; header_dropdown
       ]
   in
   div

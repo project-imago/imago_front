@@ -34,11 +34,6 @@
 
 .sidebar-list {
   margin: 0;
-
-  li {
-    margin: 0;
-    padding: 0;
-  }
 }
 
 .sidebar-group-list {
@@ -51,6 +46,8 @@
 .sidebar-group-item {
   // border-bottom: 1px solid black;
   padding: 0 10px;
+  margin: 0;
+  padding: 0;
 }
 
 .sidebar-chat-item {
@@ -82,7 +79,7 @@
   flex-grow: 1;
   display: flex;
   align-items: center;
-  padding: 10px;
+  padding: 5px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -96,14 +93,14 @@
 }
 
 .sidebar-item__dropdown.click-dropdown {
-  margin: 10px;
+  margin: 5px;
   border-radius: 50%;
   text-align: center;
-  // line-height: 100px;
   vertical-align: middle;
-  // padding: 30px;
   display: inline-flex;
   align-self: center;
+  // line-height: 100px;
+  // padding: 30px;
 
 //   svg[class^="icon"] {
 //     width: 1.5rem;
@@ -128,9 +125,16 @@
 
 #sidebar-filter-label {
   margin: 10px;
+  margin-right: 0;
 }
 
-.sidebar-header__dropdown-button {
+.sidebar-header__dropdown.click-dropdown {
+  margin: 10px;
+  border-radius: 50%;
+  text-align: center;
+  vertical-align: middle;
+  display: inline-flex;
+  align-self: center;
 }
 
 .click-dropdown {
@@ -189,6 +193,8 @@
     outline:0;
     display:block;
     text-decoration:none;
+    margin: 0;
+    padding: 0;
 
     > a {
       height: 100%;
