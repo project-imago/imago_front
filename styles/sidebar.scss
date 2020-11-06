@@ -75,7 +75,8 @@
     background-color: var(--color-background-hover);
 
     .click-dropdown__button {
-      display: inline-flex !important;
+      // display: inline-flex !important;
+      visibility: visible !important;
     }
   }
 
@@ -111,7 +112,8 @@
   }
 
   .click-dropdown__button {
-    display: none;
+    // display: none;
+    visibility: hidden;
   }
 }
 
@@ -131,6 +133,7 @@
 .click-dropdown {
   // position:relative;
   display:inline-block;
+  // visibility: visible;
   // z-index:2;
   padding:0;
   margin:0;

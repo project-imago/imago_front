@@ -91,14 +91,54 @@ let get_room_type room matrix_client =
       Chat
 
 
-let dropdown_menu =
-  Components.ClickDropdown.element "sidebar-item__dropdown" goTo
+let header_dropdown =
+  let open Tea.Html in
+  Components.ClickDropdown.element
+    "sidebar-item__dropdown"
+    goTo
+    ~items:
+      [ (Router.CreateChat None, "plus", T.sidebar_new_chat ())
+      ; (Router.CreateGroup, "plus", "Create group")
+      ]
+    ~button_icon:"ellipsis-vertical"
+    ~button_label:"More"
+
+
+let group_dropdown group =
+  let open Tea.Html in
+  Components.ClickDropdown.element
+    "sidebar-item__dropdown"
+    goTo
+    ~items:
+      [ (Router.CreateChat (Some group##roomId), "plus", T.sidebar_new_chat ())
+      ]
+    ~button_icon:"ellipsis-vertical"
+    ~button_label:"More"
+
+
+let chat_dropdown _chat =
+  let open Tea.Html in
+  Components.ClickDropdown.element
+    "sidebar-item__dropdown"
+    goTo
+    ~items:[]
+    ~button_icon:"ellipsis-vertical"
+    ~button_label:"More"
+
+
+let outside_groups_dropdown =
+  let open Tea.Html in
+  Components.ClickDropdown.element
+    "sidebar-item__dropdown"
+    goTo
+    ~items:[]
+    ~button_icon:"ellipsis-vertical"
+    ~button_label:"More"
 
 
 let room_list_view route model =
   let open Tea.Html in
   (* let () = Js.log !(model.matrix_client) in *)
-  (* TODO: fix trouver si connecté (et username si oui) *)
   let rooms = Js.Dict.values !(model.matrix_client)##store##rooms in
   let rooms_t_empty =
     Belt.Map.make ~id:(module RoomCmp) |. Belt.Map.set None []
@@ -139,7 +179,8 @@ let room_list_view route model =
             ]
           goTo
           (Chat (Id room##roomId)) (* XXX *)
-          [ span [ class' "room-name" ] [ text room##name ] ]
+          [ span [ class' "room-name" ] [ text room##name ];
+          chat_dropdown room]
       ]
   in
   let group_view (group, chats) =
@@ -162,15 +203,7 @@ let room_list_view route model =
               (Group (Id g##roomId))
               (* XXX *)
               [ span [ class' "room-name" ] [ text g##name ]
-              ; Router.link
-                  ~props:
-                    [ class' ""
-                    ; Icons.aria_label (T.sidebar_new_chat ())
-                    ; title (T.sidebar_new_chat ())
-                    ]
-                  goTo
-                  (CreateChat (Some g##roomId))
-                  [ Icons.icon "plus" ]
+              ; group_dropdown g
               ]
           ; ul
               [ class' "sidebar-list sidebar-chat-list" ]
@@ -182,7 +215,8 @@ let room_list_view route model =
           []
           [ div
               [ class' "room-link group-link sidebar-item sidebar-group-item" ]
-              [ span [] [ text (T.sidebar_outside_groups ()) ]; dropdown_menu ]
+              [ span [] [ text (T.sidebar_outside_groups ()) ];
+              outside_groups_dropdown ]
           ; ul
               [ class' "sidebar-list sidebar-chat-list" ]
               (Belt.List.map chats chat_view)

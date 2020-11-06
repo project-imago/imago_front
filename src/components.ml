@@ -128,19 +128,29 @@ module ClickDropdown = struct
     document##addEventListener "click" handle_click false
 
 
-  let element classes goTo =
+  let element classes goTo ~button_icon ~button_label ~items =
     let open Tea.Html in
+    let item_view (route, icon, label) =
+      li [class' "click-dropdown__item"] [ header_link goTo route
+  icon label ]
+    in
     div
       [ class' (classes ^ " click-dropdown") ]
       (* ; Tea.Html2.Attributes.tabindex 0 ] *)
       [ button
           [ class' "click-dropdown__button button_round"
-          ; Icons.aria_label (T.sidebar_create_group ())
-          ; title (T.sidebar_create_group ())
+          ; Icons.aria_label button_label
+          ; title button_label
+          ; Tea.Html.onCB "click" "" (fun event ->
+            event##stopPropagation () |> ignore;
+            event##preventDefault () |> ignore;
+            None
+            )
           ]
-          [ Icons.icon "plus" ]
+          [ Icons.icon button_icon ]
       ; ul
           [ class' "click-dropdown__menu" ]
-          [ li [class' "click-dropdown__item"] [ header_link goTo Index "settings" (T.header_settings ()) ] ]
+      (Tablecloth.List.map 
+          items ~f:item_view)
       ]
 end
