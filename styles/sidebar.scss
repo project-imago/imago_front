@@ -64,13 +64,6 @@
   align-items: stretch;
   justify-content: space-between;
 
-  > span {
-    margin: 10px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
   &:hover, &:focus {
     background-color: var(--color-background-hover);
 
@@ -89,6 +82,10 @@
   flex-grow: 1;
   display: flex;
   align-items: center;
+  padding: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .group-link {

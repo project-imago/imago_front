@@ -172,8 +172,6 @@ let room_list_view route model =
             [ classList
                 [ ("room-link", true)
                 ; ("chat-link", true)
-                (* ; ("sidebar-item", true) *)
-                (* ; ("sidebar-chat-item", true) *)
                 ; ("active", equal_to_room room route)
                 ]
             ]
@@ -195,8 +193,6 @@ let room_list_view route model =
                 [ classList
                     [ ("room-link", true)
                     ; ("group-link", true)
-                    (* ; ("sidebar-item", true) *)
-                    (* ; ("sidebar-group-item", true) *)
                     ; ("active", equal_to_room g route)
                     ]
                 ]
@@ -204,7 +200,7 @@ let room_list_view route model =
               (Group (Id g##roomId))
               (* XXX *)
               [ text g##name ]
-              ; group_dropdown g
+            ; group_dropdown g
             ]
           ; ul
               [ class' "sidebar-list sidebar-chat-list" ]
@@ -213,10 +209,10 @@ let room_list_view route model =
     | None ->
         li
           ~unique:"no group"
-          [class' "sidebar-item sidebar-group-item"]
+          []
           [ div
-              [ class' "room-link group-link" ]
-              [ span [] [ text (T.sidebar_outside_groups ()) ];
+              [class' "sidebar-item sidebar-group-item"]
+              [ span [ class' "room-link group-link" ] [ text (T.sidebar_outside_groups ()) ];
               outside_groups_dropdown ]
           ; ul
               [ class' "sidebar-list sidebar-chat-list" ]
