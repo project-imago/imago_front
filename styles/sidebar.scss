@@ -61,7 +61,7 @@
   margin: 0;
   padding: 0;
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: space-between;
 
   > span {
@@ -83,6 +83,12 @@
   &.active {
     background-color: var(--color-primary-element);
   }
+}
+
+.room-link {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
 }
 
 .group-link {

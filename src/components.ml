@@ -141,11 +141,11 @@ module ClickDropdown = struct
           [ class' "click-dropdown__button button_round"
           ; Icons.aria_label button_label
           ; title button_label
-          ; Tea.Html.onCB "click" "" (fun event ->
-            event##stopPropagation () |> ignore;
-            event##preventDefault () |> ignore;
-            None
-            )
+          (* ; Tea.Html.onCB "click" "" (fun event -> *)
+          (*   event##stopPropagation () |> ignore; *)
+          (*   event##preventDefault () |> ignore; *)
+          (*   None *)
+          (*   ) *)
           ]
           [ Icons.icon button_icon ]
       ; ul

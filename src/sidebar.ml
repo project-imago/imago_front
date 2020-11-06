@@ -166,21 +166,21 @@ let room_list_view route model =
     (* let () = Js.log !(model.matrix_client) in *)
     li
       ~unique:room##roomId
-      []
+      [class' "sidebar-item sidebar-chat-item"]
       [ Router.link
           ~props:
             [ classList
                 [ ("room-link", true)
                 ; ("chat-link", true)
-                ; ("sidebar-item", true)
-                ; ("sidebar-chat-item", true)
+                (* ; ("sidebar-item", true) *)
+                (* ; ("sidebar-chat-item", true) *)
                 ; ("active", equal_to_room room route)
                 ]
             ]
           goTo
           (Chat (Id room##roomId)) (* XXX *)
-          [ span [ class' "room-name" ] [ text room##name ];
-          chat_dropdown room]
+          [ span [ class' "room-name" ] [ text room##name ] ]
+      ; chat_dropdown room
       ]
   in
   let group_view (group, chats) =
@@ -189,22 +189,23 @@ let room_list_view route model =
         li
           ~unique:g##roomId
           []
-          [ Router.link
+          [ div [class' "sidebar-item sidebar-group-item"]
+            [ Router.link
               ~props:
                 [ classList
                     [ ("room-link", true)
                     ; ("group-link", true)
-                    ; ("sidebar-item", true)
-                    ; ("sidebar-group-item", true)
+                    (* ; ("sidebar-item", true) *)
+                    (* ; ("sidebar-group-item", true) *)
                     ; ("active", equal_to_room g route)
                     ]
                 ]
               goTo
               (Group (Id g##roomId))
               (* XXX *)
-              [ span [ class' "room-name" ] [ text g##name ]
+              [ text g##name ]
               ; group_dropdown g
-              ]
+            ]
           ; ul
               [ class' "sidebar-list sidebar-chat-list" ]
               (Belt.List.map chats chat_view)
@@ -212,9 +213,9 @@ let room_list_view route model =
     | None ->
         li
           ~unique:"no group"
-          []
+          [class' "sidebar-item sidebar-group-item"]
           [ div
-              [ class' "room-link group-link sidebar-item sidebar-group-item" ]
+              [ class' "room-link group-link" ]
               [ span [] [ text (T.sidebar_outside_groups ()) ];
               outside_groups_dropdown ]
           ; ul
