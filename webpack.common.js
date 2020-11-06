@@ -48,8 +48,8 @@ module.exports = {
         }),
         new GoogleFontsPlugin({
             fonts: [
-                { family: "Montserrat", variants: ["300","500","700","300italic","500italic","700italic"] },
-                { family: "Open Sans", variants: ["300","500","700","300italic","500italic","700italic"] }
+                { family: "Montserrat", variants: ["300","regular","500","600","700","300italic","italic","500italic","600italic","700italic"] },
+                { family: "Open Sans", variants: ["300","regular","600","700","300italic","italic","600italic","700italic"] }
             ]
         })
     ],
