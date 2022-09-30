@@ -46,7 +46,7 @@
     "bs-fluent": "file:bs-fluent",
     "bucklescript-tea": "^0.14.0",
     "bytesize-icons": "^1.4.0",
-    "matrix-js-sdk": "^5.1.0",
+    "matrix-js-sdk": "^19.7.0",
     "sscaffold-css": "^0.1.1",
     "tablecloth-bucklescript": "0.0.7"
   },
